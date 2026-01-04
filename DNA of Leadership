@@ -3,414 +3,1171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Intellectual DNA of Leadership | McRaven's Principles Decoded</title>
-    <!-- Tailwind CSS -->
+    <title>The Intellectual DNA of Leadership | McRaven's 18 Principles Decoded</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Source+Sans+3:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        navy: {
-                            800: '#0f172a', 
-                            900: '#020617',
-                        },
-                        accent: {
-                            blue: '#0ea5e9', 
-                            gold: '#f59e0b', 
-                            teal: '#14b8a6', 
-                        }
+                        navy: { 900: '#0a0f1a', 800: '#111827', 700: '#1e293b' },
+                        brass: { 500: '#d4a853', 400: '#e4be6a', 300: '#f0d78a' },
+                        steel: { 500: '#64748b', 400: '#94a3b8', 300: '#cbd5e1' },
+                        blood: { 600: '#991b1b', 500: '#b91c1c' },
+                        sage: { 600: '#166534', 500: '#22c55e' },
+                        parchment: { 500: '#d4c4a8', 400: '#e8dcc8' },
+                        clinical: { 500: '#06b6d4', 400: '#22d3ee' }
                     },
                     fontFamily: {
-                        sans: ['Roboto', 'sans-serif'],
-                        display: ['Oswald', 'sans-serif'],
+                        display: ['Playfair Display', 'serif'],
+                        body: ['Source Sans 3', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        ancient: ['Crimson Pro', 'serif']
                     }
                 }
             }
         }
     </script>
-
+    
     <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-break { page-break-before: always; }
+            .excavation-card { break-inside: avoid; }
+            .layer { display: block !important; max-height: none !important; opacity: 1 !important; }
+            body { background: white !important; color: black !important; font-size: 11px; }
+            .cluster-section { background: white !important; border: 1px solid #ccc !important; }
+        }
+        
+        .excavation-card .layer {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+        }
+        
+        .excavation-card.expanded .layer,
+        .all-expanded .excavation-card .layer {
+            max-height: 600px;
+            opacity: 1;
+        }
+        
+        .excavation-card .layer-1 { transition-delay: 0s; }
+        .excavation-card .layer-2 { transition-delay: 0.15s; }
+        .excavation-card .layer-3 { transition-delay: 0.3s; }
+        
+        .depth-indicator {
+            width: 4px;
+            transition: height 0.4s ease;
+        }
+        
+        .excavation-card:not(.expanded) .depth-indicator { height: 0; }
+        .excavation-card.expanded .depth-indicator,
+        .all-expanded .excavation-card .depth-indicator { height: 100%; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #d4a853; border-radius: 4px; }
+        
         .chart-container {
             position: relative;
-            width: 100%;
-            max-width: 650px; 
-            height: 400px;    
-            margin-left: auto;
-            margin-right: auto;
-            background-color: rgba(255, 255, 255, 0.02);
-            border-radius: 0.5rem;
-            padding: 1rem;
+            height: 320px;
+            max-width: 400px;
+            margin: 0 auto;
         }
-
-        @media (max-width: 768px) {
-            .chart-container {
-                height: 300px; 
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #0ea5e9; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #f59e0b; 
-        }
-
-        .timeline-line::before {
+        
+        .cluster-header::before {
             content: '';
             position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 2px;
-            background: #334155;
-            transform: translateX(-50%);
-            z-index: 0;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 60%;
+            border-radius: 0 4px 4px 0;
         }
+        
+        .cluster-character .cluster-header::before { background: #d4a853; }
+        .cluster-resilience .cluster-header::before { background: #b91c1c; }
+        .cluster-trust .cluster-header::before { background: #22c55e; }
+        .cluster-decision .cluster-header::before { background: #3b82f6; }
+        .cluster-initiative .cluster-header::before { background: #a855f7; }
+        .cluster-oversight .cluster-header::before { background: #64748b; }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* LAYER VISUAL DIFFERENTIATION */
+        
+        /* Layer 1: McRaven - Modern/Operational */
+        .layer-mcraven {
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 3px solid #d4a853;
         }
-
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        
+        /* Layer 2: Ancient - Parchment/Historical */
+        .layer-ancient {
+            background: linear-gradient(135deg, rgba(212,196,168,0.08) 0%, rgba(212,196,168,0.03) 100%);
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 3px solid #b91c1c;
+            font-family: 'Crimson Pro', serif;
         }
-        .ai-pulse {
-            animation: pulse-gold 2s infinite;
+        .layer-ancient p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .layer-ancient strong {
+            font-weight: 600;
+            font-style: italic;
+        }
+        
+        /* Layer 3: Psychology - Clinical/Data */
+        .layer-psych {
+            background: linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(6,182,212,0.02) 100%);
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 3px solid #22c55e;
+            font-family: 'Source Sans 3', sans-serif;
+        }
+        .layer-psych .cite {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: #64748b;
+            display: block;
+            margin-top: 4px;
+        }
+        
+        /* Citation styling */
+        .citation {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: #64748b;
+            opacity: 0.8;
+        }
+        .citation-ancient {
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.7rem;
+            font-style: italic;
+            color: #94a3b8;
         }
     </style>
 </head>
-<body class="bg-navy-800 text-slate-200 font-sans overflow-x-hidden">
+<body class="bg-navy-900 text-steel-300 font-body">
 
-    <!-- HERO SECTION -->
-    <header class="w-full bg-gradient-to-b from-navy-900 to-navy-800 p-8 border-b border-white/10 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-accent-blue/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-        <div class="max-w-6xl mx-auto text-center relative z-10">
-            <h1 class="text-5xl md:text-7xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-blue via-white to-accent-gold mb-4 tracking-wider uppercase">
-                The DNA of Leadership
+    <!-- PRINT TOGGLE -->
+    <div class="no-print fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="toggleAllCards()" id="expandBtn" class="bg-navy-700 hover:bg-navy-800 border border-brass-500/30 text-brass-400 px-4 py-2 rounded text-sm font-semibold transition-all">
+            Expand All
+        </button>
+        <button onclick="window.print()" class="bg-brass-500 hover:bg-brass-400 text-navy-900 px-4 py-2 rounded text-sm font-semibold transition-all">
+            Print / PDF
+        </button>
+    </div>
+
+    <!-- HERO -->
+    <header class="relative min-h-[60vh] flex items-center justify-center overflow-hidden border-b border-brass-500/20">
+        <div class="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-brass-500/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-brass-500/5 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+            <p class="font-mono text-brass-500 text-sm tracking-[0.3em] uppercase mb-4">An Archaeological Excavation</p>
+            <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-extrabold text-white mb-6 leading-tight">
+                The Intellectual<br><span class="text-brass-400">DNA</span> of Leadership
             </h1>
-            <p class="text-xl md:text-2xl text-slate-400 font-light max-w-3xl mx-auto">
-                Decoding Admiral McRaven's principles through the lens of Ancient Philosophy, Military History, and Modern Psychology.
+            <p class="text-xl md:text-2xl text-steel-400 max-w-3xl mx-auto leading-relaxed mb-8">
+                Admiral McRaven's 18 principles aren't new ideas—they're <em>compressions</em>. 
+                Centuries of philosophy, military doctrine, and psychology distilled into rules 
+                a tired leader can remember at 0300.
             </p>
-            <div class="mt-8 flex flex-wrap justify-center gap-4 text-sm font-semibold tracking-widest uppercase text-accent-blue">
-                <span>🏛️ Stoicism</span>
-                <span class="text-slate-600">•</span>
-                <span>⚔️ Doctrine</span>
-                <span class="text-slate-600">•</span>
-                <span>🧠 Neuroscience</span>
-                <span class="text-slate-600">•</span>
-                <span>🤝 Management</span>
+            <div class="flex flex-wrap justify-center gap-6 text-sm font-semibold tracking-wide">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-brass-500"></span> Stoic Philosophy</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blood-500"></span> Military Doctrine</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-sage-500"></span> Behavioral Psychology</span>
             </div>
         </div>
     </header>
 
-    <!-- GEMINI AI LABORATORY SECTION -->
-    <section id="ai-lab" class="max-w-6xl mx-auto p-6 mt-12 mb-12">
-        <div class="glass-panel rounded-2xl p-8 border border-accent-gold/30 shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-4 opacity-20">
-                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-accent-gold"><path d="M12 2v20M2 12h20M5.07 5.07l13.86 13.86M5.07 18.93l13.86-13.86"/></svg>
-            </div>
-            
-            <div class="relative z-10">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h2 class="text-4xl font-display font-bold text-white mb-2">AI Leadership Lab ✨</h2>
-                        <p class="text-accent-gold font-semibold uppercase tracking-widest text-sm">Powered by Gemini 2.5 Flash</p>
+    <!-- THE SOURCE CODE -->
+    <section class="max-w-6xl mx-auto px-6 py-20">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <p class="font-mono text-brass-500 text-xs tracking-[0.2em] uppercase mb-2">The Intellectual Mix</p>
+                <h2 class="font-display text-4xl text-white mb-6">Where Does the Wisdom Come From?</h2>
+                <p class="text-steel-400 leading-relaxed mb-6">
+                    A forensic analysis of McRaven's 18 principles reveals they draw from three primary wells of human knowledge. 
+                    The percentages below represent the dominant intellectual influence behind each principle.
+                </p>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-4 h-4 rounded bg-brass-500"></span>
+                        <span><strong class="text-white">Philosophy & Ethics</strong> — Stoicism, Aristotle, Virtue Ethics</span>
                     </div>
-                    <div class="flex items-center gap-4 bg-navy-900/50 p-2 rounded-lg border border-white/5">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span class="text-xs font-mono text-slate-400 uppercase tracking-tighter">System: Online</span>
+                    <div class="flex items-center gap-3">
+                        <span class="w-4 h-4 rounded bg-blood-500"></span>
+                        <span><strong class="text-white">Military Doctrine</strong> — Clausewitz, Moltke, Sun Tzu</span>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Tool 1: Situational Strategist -->
-                    <div class="flex flex-col space-y-4">
-                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                            ✨ Situational Strategist
-                        </h3>
-                        <p class="text-sm text-slate-400">Describe a leadership challenge you're facing. The AI will apply McRaven's principles to generate a tactical response plan.</p>
-                        <textarea id="challenge-input" class="w-full h-32 bg-navy-900 border border-white/10 rounded-lg p-4 text-slate-200 focus:outline-none focus:border-accent-blue transition-colors text-sm" placeholder="e.g., 'My team is losing motivation after a project failure' or 'I need to communicate a difficult change to senior leadership'"></textarea>
-                        <button onclick="getLeadershipAdvice()" id="strategy-btn" class="bg-accent-blue hover:bg-accent-blue/80 text-white font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-accent-blue/20">
-                            Generate Strategy ✨
-                        </button>
-                    </div>
-
-                    <!-- Tool 2: Principle Deep Dive -->
-                    <div class="flex flex-col space-y-4">
-                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                            ✨ Wisdom Deep-Dive
-                        </h3>
-                        <p class="text-sm text-slate-400">Select a principle to generate a fresh historical case study and psychological analysis grounded in real-time data.</p>
-                        <select id="principle-select" class="w-full bg-navy-900 border border-white/10 rounded-lg p-3 text-slate-200 focus:outline-none focus:border-accent-gold transition-colors text-sm">
-                            <option value="Death Before Dishonor">Death Before Dishonor (Integrity)</option>
-                            <option value="You Can't Surge Trust">You Can't Surge Trust (Trust-Building)</option>
-                            <option value="When in Command, Command">When in Command, Command (Confidence)</option>
-                            <option value="The Only Easy Day Was Yesterday">The Only Easy Day Was Yesterday (Grit)</option>
-                            <option value="A Shepherd Should Smell Like His Sheep">Smell Like His Sheep (Proximity)</option>
-                            <option value="No Plan Survives First Contact">No Plan Survives First Contact (Adaptability)</option>
-                        </select>
-                        <button onclick="getDeepDive()" id="dive-btn" class="border border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-navy-900 font-bold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2">
-                            Research History ✨
-                        </button>
-                    </div>
-                </div>
-
-                <!-- AI Output Display -->
-                <div id="ai-output-container" class="mt-8 hidden">
-                    <div class="bg-navy-900/80 border border-white/10 rounded-xl p-6 relative">
-                        <div id="ai-loading" class="absolute inset-0 bg-navy-900/90 flex items-center justify-center rounded-xl z-20 hidden">
-                            <div class="flex flex-col items-center gap-4">
-                                <div class="w-12 h-12 border-4 border-accent-gold border-t-transparent rounded-full animate-spin"></div>
-                                <p class="text-accent-gold font-mono text-xs uppercase tracking-widest animate-pulse">Consulting the Sages...</p>
-                            </div>
-                        </div>
-                        <div id="ai-content" class="prose prose-invert max-w-none text-sm leading-relaxed text-slate-300">
-                            <!-- Response injected here -->
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-500 uppercase tracking-widest">
-                            <span>Source: McRaven Leadership Protocol v2.5</span>
-                            <span id="grounding-sources"></span>
-                        </div>
+                    <div class="flex items-center gap-3">
+                        <span class="w-4 h-4 rounded bg-sage-500"></span>
+                        <span><strong class="text-white">Psychology</strong> — Duckworth, Bandura, Edmondson</span>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- PREVIOUS SECTIONS (Keep existing charts/timeline) -->
-    <section class="max-w-4xl mx-auto p-6 md:p-12 text-center">
-        <div class="bg-white/5 rounded-xl p-8 border border-white/10 shadow-lg backdrop-blur-sm">
-            <h2 class="text-3xl font-display text-white mb-4">Compressed Wisdom</h2>
-            <p class="text-lg text-slate-300 leading-relaxed">
-                The leadership maxims popularized by Admiral William McRaven are not novel inventions. They are <strong>compressions</strong>. They strip centuries of thought down to rules a tired leader can remember at 0300.
-            </p>
-        </div>
-    </section>
-
-    <section class="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
-        <div class="order-2 md:order-1">
-            <h3 class="text-2xl font-display text-accent-gold mb-2 uppercase tracking-widest">01. The Intellectual Mix</h3>
-            <h4 class="text-4xl font-bold text-white mb-6">Where Does the Wisdom Come From?</h4>
-            <ul class="space-y-4">
-                <li class="flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full bg-accent-blue"></span>
-                    <span class="text-slate-200"><strong>Psychology & Neuroscience:</strong> 35%</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full bg-accent-gold"></span>
-                    <span class="text-slate-200"><strong>Military History/Doctrine:</strong> 35%</span>
-                </li>
-                <li class="flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full bg-accent-teal"></span>
-                    <span class="text-slate-200"><strong>Philosophy & Ethics:</strong> 30%</span>
-                </li>
-            </ul>
-        </div>
-        <div class="order-1 md:order-2 flex flex-col justify-center">
             <div class="chart-container">
                 <canvas id="sourceChart"></canvas>
             </div>
         </div>
     </section>
 
-    <!-- (Grit, Trust, Planning sections omitted for brevity in code display, but are preserved in full version) -->
-    <section class="bg-navy-900/50 py-16 border-y border-white/5">
-        <div class="max-w-6xl mx-auto p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div>
-                    <h3 class="text-2xl font-display text-accent-blue mb-2 uppercase tracking-widest">02. Grit & Stamina</h3>
-                    <div class="chart-container">
-                        <canvas id="gritChart"></canvas>
-                    </div>
+    <!-- HOW TO USE -->
+    <section class="bg-navy-800/50 border-y border-brass-500/10 py-12 no-print">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h3 class="font-display text-2xl text-white mb-4">How to Use This Document</h3>
+            <p class="text-steel-400 mb-6">Click any principle card to <strong class="text-brass-400">excavate</strong> its intellectual roots. Three layers will reveal:</p>
+            <div class="grid md:grid-cols-3 gap-6 text-left">
+                <div class="bg-navy-900/50 p-4 rounded border-l-4 border-brass-500">
+                    <p class="font-mono text-xs text-brass-500 mb-1">LAYER 1 — OPERATIONAL</p>
+                    <p class="text-white font-semibold">McRaven's Application</p>
+                    <p class="text-sm text-steel-500">The modern context and tactical usage</p>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-display text-accent-teal mb-2 uppercase tracking-widest">03. Trust Curves</h3>
-                    <div class="chart-container">
-                        <canvas id="trustChart"></canvas>
+                <div class="bg-navy-900/50 p-4 rounded border-l-4 border-blood-500">
+                    <p class="font-mono text-xs text-blood-500 mb-1">LAYER 2 — HISTORICAL</p>
+                    <p class="text-white font-semibold font-ancient">Ancient Roots</p>
+                    <p class="text-sm text-steel-500">Philosophy and military doctrine origins</p>
+                </div>
+                <div class="bg-navy-900/50 p-4 rounded border-l-4 border-sage-500">
+                    <p class="font-mono text-xs text-sage-500 mb-1">LAYER 3 — EMPIRICAL</p>
+                    <p class="text-white font-semibold">Scientific Validation</p>
+                    <p class="text-sm text-steel-500">Cited psychological research</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT: ALL 18 PRINCIPLES -->
+    <main id="principlesContainer" class="max-w-7xl mx-auto px-6 py-16 space-y-20">
+
+        <!-- CLUSTER 1: CHARACTER -->
+        <section class="cluster-section cluster-character">
+            <div class="cluster-header relative pl-6 mb-8">
+                <p class="font-mono text-brass-500 text-xs tracking-[0.2em] uppercase">Cluster 01</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Character & Moral Foundation</h2>
+                <p class="text-steel-500 mt-2">The bedrock. Without integrity, all other skills are weapons in the wrong hands.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- PRINCIPLE 1: Death Before Dishonor -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-brass-500/20 overflow-hidden cursor-pointer hover:border-brass-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-brass-500">01</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Death Before Dishonor</h3>
+                        <p class="text-brass-400 text-sm italic mb-4">"Be a person of integrity"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">Physical survival is the tactical goal; <strong class="text-white">moral survival is the strategic goal</strong>. If you sacrifice honor to save career or life, you've liquidated the asset that allows you to lead.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Epictetus</strong> taught that only character, volition, and judgment are under your control—all else are "indifferents." <strong>Seneca</strong> wrote that "disaster is virtue's opportunity."</p>
+                                <p class="citation-ancient mt-2">Epictetus, Enchiridion §1, c. 125 CE · Seneca, Epistulae Morales 66, c. 65 CE</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Moral Injury:</strong> Violating one's moral code causes deeper psychological trauma than physical wounds. <strong class="text-white">Cognitive Dissonance:</strong> Integrity keeps Ideal Self and Actual Self aligned, reducing internal friction.</p>
+                                <span class="cite">Shay, J. (1994). Achilles in Vietnam. Scribner.</span>
+                                <span class="cite">Festinger, L. (1957). A Theory of Cognitive Dissonance. Stanford UP.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-brass-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-brass-400 text-sm font-semibold">Your character is the only thing you actually own.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 2: Long Green Table -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-brass-500/20 overflow-hidden cursor-pointer hover:border-brass-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-brass-500">02</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">The Long Green Table</h3>
+                        <p class="text-brass-400 text-sm italic mb-4">"Be accountable for your actions"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">The felt-covered table of military tribunals. Before every decision, ask: <strong class="text-white">Is it Legal? Is it Ethical? Is it Moral?</strong> Visualize defending this choice to reasonable people.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Kant's Categorical Imperative:</strong> Act only according to rules you could will as universal law. The tribunal tests whether your action survives universalization.</p>
+                                <p class="citation-ancient mt-2">Kant, I. (1785). Groundwork of the Metaphysics of Morals.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Anticipatory Self-Appraisal:</strong> Creating an "internal audience" triggers self-regulation. The pre-mortem technique exposes weak rationalizations before the action occurs.</p>
+                                <span class="cite">Klein, G. (2007). Performing a Project Premortem. HBR, Sept.</span>
+                                <span class="cite">Carver, C.S. & Scheier, M.F. (1981). Attention and Self-Regulation. Springer.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-brass-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-brass-400 text-sm font-semibold">If you can't defend it to your peers, don't do it.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 3: Frog Floats -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-brass-500/20 overflow-hidden cursor-pointer hover:border-brass-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-brass-500">03</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">We All Have Our Frog Floats</h3>
+                        <p class="text-brass-400 text-sm italic mb-4">"Have a little humility"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">As a junior officer, McRaven built parade floats—a task he felt was beneath a SEAL. Lesson: <strong class="text-white">No task is beneath a leader.</strong> Measure people by willingness to do small tasks well.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Benedictine "Ora et Labora":</strong> Even the Abbot does manual labor to cultivate humility. <strong>Confucius:</strong> "The superior man is modest in speech but exceeds in actions."</p>
+                                <p class="citation-ancient mt-2">Rule of St. Benedict, Ch. 48, c. 530 CE · Analects 14.27</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Servant Leadership:</strong> The leader exists to serve the mission and team. <strong class="text-white">Social Modeling:</strong> If the high-status leader sweeps, sweeping becomes dignified for all.</p>
+                                <span class="cite">Greenleaf, R.K. (1970). The Servant as Leader. Greenleaf Center.</span>
+                                <span class="cite">Bandura, A. (1977). Social Learning Theory. Prentice Hall.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-brass-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-brass-400 text-sm font-semibold">No task is beneath you. Your ego is not the mission.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- CLUSTER 2: RESILIENCE -->
+        <section class="cluster-section cluster-resilience print-break">
+            <div class="cluster-header relative pl-6 mb-8">
+                <p class="font-mono text-blood-500 text-xs tracking-[0.2em] uppercase">Cluster 02</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Resilience & Endurance</h2>
+                <p class="text-steel-500 mt-2">The engine. Talent fails without stamina; grit predicts success better than IQ.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- PRINCIPLE 4: Only Easy Day -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-blood-500/20 overflow-hidden cursor-pointer hover:border-blood-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-blood-500">04</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">The Only Easy Day Was Yesterday</h3>
+                        <p class="text-blood-400 text-sm italic mb-4">"Demonstrate stamina"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">The past is "easy" because it's survived. The future promises only <strong class="text-white">increasing challenges.</strong> Don't expect relief; expect the burden to grow, and find strength in that expectation.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Spartan Agoge:</strong> Institutionalized hardship as inoculation against fear of hardship. <strong>Marcus Aurelius:</strong> "The obstacle is the way." Suffering is training, not punishment.</p>
+                                <p class="citation-ancient mt-2">Plutarch, Life of Lycurgus · Marcus Aurelius, Meditations 5.20, c. 175 CE</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Grit:</strong> Passion + perseverance predicts success better than talent or IQ. <strong class="text-white">Expectancy Theory:</strong> When you expect pain, you endure it; expecting ease then encountering difficulty triggers quitting.</p>
+                                <span class="cite">Duckworth, A.L. et al. (2007). Grit: Perseverance and passion for long-term goals. J. Pers. Soc. Psych., 92(6), 1087–1101.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-blood-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-blood-400 text-sm font-semibold">Tomorrow will be harder. Accept it now.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 5: It Pays to Be a Winner -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-blood-500/20 overflow-hidden cursor-pointer hover:border-blood-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-blood-500">05</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">It Pays to Be a Winner</h3>
+                        <p class="text-blood-400 text-sm italic mb-4">"Establish standards of conduct"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">In BUD/S, winners get rest; losers get "sugar cookied." This isn't cruelty—it's <strong class="text-white">meritocracy.</strong> Accountability is love in work clothes. Clear standards separate high performers.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Greek Agon:</strong> Character is forged in competition, not inherited. <strong>Roman Praetorian Guard:</strong> Status was a function of demonstrated competence, not lineage or wealth.</p>
+                                <p class="citation-ancient mt-2">Herodotus on Greek athletic culture · Tacitus, Annals, on Praetorian selection</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Self-Determination Theory:</strong> Clear standards satisfy the innate need for competence—ambiguity is demotivating. <strong class="text-white">The Winner Effect:</strong> Winning increases testosterone and dopamine, priming the brain for future success.</p>
+                                <span class="cite">Deci, E.L. & Ryan, R.M. (1985). Intrinsic Motivation and Self-Determination. Plenum.</span>
+                                <span class="cite">Robertson, I.H. (2012). The Winner Effect. Thomas Dunne Books.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-blood-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-blood-400 text-sm font-semibold">Standards aren't cruelty—ambiguity is.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 6: When in Doubt, Overload -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-blood-500/20 overflow-hidden cursor-pointer hover:border-blood-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-blood-500">06</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">When in Doubt, Overload</h3>
+                        <p class="text-blood-400 text-sm italic mb-4">"Work hard to overcome shortfalls"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">From demolition training: "If you don't know how much explosive to use, <strong class="text-white">use too much.</strong>" When the path is unclear, apply overwhelming energy to guarantee a result.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Clausewitz:</strong> "The best strategy is always to be very strong; first in general, then at the decisive point." <strong>Powell Doctrine:</strong> Overwhelming force minimizes duration and casualties.</p>
+                                <p class="citation-ancient mt-2">Clausewitz, C. (1832). On War, Book 3, Ch. 11.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Analysis Paralysis:</strong> Calculating the "perfect" amount causes hesitation. <strong class="text-white">Self-Efficacy:</strong> Doing "more than enough" transforms anxiety ("Did I do enough?") into confidence ("I did more than enough").</p>
+                                <span class="cite">Bandura, A. (1997). Self-Efficacy: The Exercise of Control. W.H. Freeman.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-blood-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-blood-400 text-sm font-semibold">Uncertain? Over-prepare. Never under-commit.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- CLUSTER 3: TRUST -->
+        <section class="cluster-section cluster-trust print-break">
+            <div class="cluster-header relative pl-6 mb-8">
+                <p class="font-mono text-sage-500 text-xs tracking-[0.2em] uppercase">Cluster 03</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Trust & Connection</h2>
+                <p class="text-steel-500 mt-2">The currency. Trust is gained in drops but lost in buckets.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- PRINCIPLE 7: Can't Surge Trust -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-sage-500/20 overflow-hidden cursor-pointer hover:border-sage-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-sage-500">07</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">You Can't Surge Trust</h3>
+                        <p class="text-sage-400 text-sm italic mb-4">"Be trustworthy"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">One of the SOF Truths. Trust is a temporal asset—built slowly, cannot be manufactured during crisis. <strong class="text-white">"When the crisis hits, it's too late to exchange business cards."</strong></p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Locke & Rousseau:</strong> Political legitimacy (trust) must precede stability, not follow from force. <strong>T.E. Lawrence:</strong> "It is their war. You are to help them, not win it for them."</p>
+                                <p class="citation-ancient mt-2">Locke, J. (1689). Two Treatises of Government · Lawrence, T.E. (1917). Twenty-Seven Articles.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Mayer-Davis-Schoorman Model:</strong> Trust = Ability + Benevolence + Integrity. Benevolence requires repeated interactions—it cannot be "surged." <strong class="text-white">Oxytocin:</strong> The "trust molecule" requires physical proximity over time.</p>
+                                <span class="cite">Mayer, R.C. et al. (1995). An integrative model of organizational trust. Acad. Mgmt. Rev., 20(3), 709–734.</span>
+                                <span class="cite">Zak, P.J. (2012). The Moral Molecule. Dutton.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-sage-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-sage-400 text-sm font-semibold">Invest in relationships before you need them.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 8: Smell Like Sheep -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-sage-500/20 overflow-hidden cursor-pointer hover:border-sage-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-sage-500">08</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">A Shepherd Should Smell Like His Sheep</h3>
+                        <p class="text-sage-400 text-sm italic mb-4">"Spend time on the factory floor"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">Quoting Pope Francis: Leaders must share the conditions of subordinates. <strong class="text-white">Don't be in the air-conditioned tent while troops are in the mud.</strong> Physical proximity is the foundation of moral authority.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Xenophon:</strong> A leader must prove they can endure more heat, cold, and fatigue than their soldiers. <strong>Primus inter pares:</strong> First among equals—not above them.</p>
+                                <p class="citation-ancient mt-2">Xenophon, Cyropaedia 1.6, c. 370 BCE · Pope Francis, Chrism Mass Homily, 28 Mar 2013</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">LMX Theory:</strong> Shared hardship accelerates leader-member trust. <strong class="text-white">Mirror Neurons:</strong> Seeing a leader in the same physical state fosters empathy and reduces the "us vs. them" divide.</p>
+                                <span class="cite">Graen, G.B. & Uhl-Bien, M. (1995). Relationship-based approach to leadership. Leadership Quarterly, 6(2), 219–247.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-sage-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-sage-400 text-sm font-semibold">Share the hardship. Proximity builds authority.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 9: Swim Buddy -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-sage-500/20 overflow-hidden cursor-pointer hover:border-sage-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-sage-500">09</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Always Have a Swim Buddy</h3>
+                        <p class="text-sage-400 text-sm italic mb-4">"Have a partner in your journey"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">In SEAL training, you're never more than arm's length from your swim buddy. <strong class="text-white">If one fails, the other dies.</strong> Find a confidant who checks your ego and shares the burden.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Sacred Band of Thebes (378 BCE):</strong> 150 pairs of warriors—men fought harder protecting their partner than for any abstract king or cause.</p>
+                                <p class="citation-ancient mt-2">Plutarch, Life of Pelopidas, 18–19</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Social Buffering:</strong> A partner's presence dampens cortisol release during threats. <strong class="text-white">Distributed Cognition:</strong> Isolation correlates with ethical drift, poor decisions, and burnout.</p>
+                                <span class="cite">Kikusui, T. et al. (2006). Social buffering: Relief from stress and anxiety. Phil. Trans. Royal Soc. B, 361(1476), 2215–2228.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-sage-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-sage-400 text-sm font-semibold">Don't lead alone. Find your check-and-balance.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- CLUSTER 4: DECISION-MAKING -->
+        <section class="cluster-section cluster-decision print-break">
+            <div class="cluster-header relative pl-6 mb-8">
+                <p class="font-mono text-blue-500 text-xs tracking-[0.2em] uppercase">Cluster 04</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Decision-Making Under Uncertainty</h2>
+                <p class="text-steel-500 mt-2">The edge. When fog and friction dominate, adaptability beats perfection.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- PRINCIPLE 10: No Plan Survives -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-blue-500/20 overflow-hidden cursor-pointer hover:border-blue-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-blue-500">10</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">No Plan Survives First Contact</h3>
+                        <p class="text-blue-400 text-sm italic mb-4">"Have a Plan B"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">Planning is essential; the plan is disposable. <strong class="text-white">The danger is falling in love with the plan.</strong> Be prepared to pivot the moment reality diverges from the model.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Moltke the Elder:</strong> "No plan of operations extends with certainty beyond first contact with the enemy." This insight birthed <strong>Auftragstaktik</strong>—tell them the what, not the how.</p>
+                                <p class="citation-ancient mt-2">Moltke, H. (1871). On Strategy. Prussian General Staff.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Cognitive Flexibility:</strong> Ability to release the "anchor" of the original plan. <strong class="text-white">OODA Loop:</strong> Observe-Orient-Decide-Act. Speed of adaptation beats perfection of plan.</p>
+                                <span class="cite">Boyd, J. (1976). Destruction and Creation. US Army Command & General Staff College.</span>
+                                <span class="cite">Martin, M.M. & Rubin, R.B. (1995). A new measure of cognitive flexibility. Psych. Rep., 76(2), 623–626.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-blue-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-blue-400 text-sm font-semibold">Plan rigorously. Then release attachment to it.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 11: Run to the Guns -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-blue-500/20 overflow-hidden cursor-pointer hover:border-blue-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-blue-500">11</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Run to the Sound of the Guns</h3>
+                        <p class="text-blue-400 text-sm italic mb-4">"Be aggressive in solving problems"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">Standard infantry doctrine: when ambushed, attack into the ambush. <strong class="text-white">Don't ignore the gunfire</strong> (problems, crises, bad news). Engage immediately before they fester.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Napoleonic Élan:</strong> The offensive spirit—initiative belongs to the attacker. Desaix's arrival at Marengo exemplifies; Grouchy's failure at Waterloo is the counter-lesson.</p>
+                                <p class="citation-ancient mt-2">Chandler, D. (1966). The Campaigns of Napoleon. Macmillan.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Approach vs. Avoidance Coping:</strong> Approach correlates with higher resilience and better outcomes. <strong class="text-white">Anxiety Management:</strong> Engaging a threat immediately reduces the anticipation period—often worse than the event itself.</p>
+                                <span class="cite">Roth, S. & Cohen, L.J. (1986). Approach, avoidance, and coping with stress. Am. Psychologist, 41(7), 813–819.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-blue-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-blue-400 text-sm font-semibold">Bad news doesn't age well. Engage now.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 12: When in Command -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-blue-500/20 overflow-hidden cursor-pointer hover:border-blue-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-blue-500">12</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">When in Command, Command</h3>
+                        <p class="text-blue-400 text-sm italic mb-4">"Be confident in yourself"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">You were given the job because you have talent and experience. <strong class="text-white">Trust your instincts.</strong> Be decisive—not paralyzed by indecision. Be passionate about the people and the mission.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Admiral Chester Nimitz:</strong> The original source of this phrase. <strong>Frederick the Great:</strong> "An army of deer led by a lion is more to be feared than an army of lions led by a deer."</p>
+                                <p class="citation-ancient mt-2">Potter, E.B. (1976). Nimitz. Naval Institute Press.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Self-Efficacy:</strong> Belief in one's capability to execute. <strong class="text-white">Decision Confidence Effect:</strong> Subordinates often prefer a confident decision (even if suboptimal) to hesitant indecision—clarity enables action.</p>
+                                <span class="cite">Bandura, A. (1997). Self-Efficacy: The Exercise of Control. W.H. Freeman.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-blue-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-blue-400 text-sm font-semibold">Hesitation kills. Decide and own it.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- CLUSTER 5: INITIATIVE -->
+        <section class="cluster-section cluster-initiative print-break">
+            <div class="cluster-header relative pl-6 mb-8">
+                <p class="font-mono text-purple-500 text-xs tracking-[0.2em] uppercase">Cluster 05</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Agency & Initiative</h2>
+                <p class="text-steel-500 mt-2">The spark. Leaders don't wait for orders—they create momentum.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- PRINCIPLE 13: Sua Sponte -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-purple-500/20 overflow-hidden cursor-pointer hover:border-purple-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-purple-500">13</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Sua Sponte</h3>
+                        <p class="text-purple-400 text-sm italic mb-4">"Of their own accord"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">The Ranger motto. Don't wait for orders; when you see a problem, fix it. <strong class="text-white">"A leader who waits for orders is not a leader; he is a robot."</strong></p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Rogers' Rangers (1756):</strong> Independent action in wilderness warfare required initiative—rigid European lines didn't survive dense North American forests. The doctrine passed to modern Rangers.</p>
+                                <p class="citation-ancient mt-2">Rogers, R. (1757). Rogers' Rules of Ranging.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Internal Locus of Control:</strong> Belief that you can influence outcomes predicts initiative. <strong class="text-white">Learned Helplessness:</strong> The opposite—Sua Sponte inoculates by rewarding action, even imperfect action.</p>
+                                <span class="cite">Rotter, J.B. (1966). Generalized expectancies for internal versus external control. Psych. Mono., 80(1), 1–28.</span>
+                                <span class="cite">Seligman, M.E.P. (1975). Helplessness. W.H. Freeman.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-purple-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-purple-400 text-sm font-semibold">See a problem? It's yours. Fix it.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 14: Who Dares Wins -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-purple-500/20 overflow-hidden cursor-pointer hover:border-purple-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-purple-500">14</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Who Dares Wins</h3>
+                        <p class="text-purple-400 text-sm italic mb-4">"Be prepared to take risks"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">Seek opportunities to take calculated risks. <strong class="text-white">No great leader was ever timid or weak-kneed.</strong> Mitigate through preparation; learn from failures—don't let one define you.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>British SAS Motto (1941):</strong> Coined by founder David Stirling. <strong>Virgil's Aeneid:</strong> "Audentis Fortuna iuvat"—Fortune favors the bold. Risk and reward have always been linked in martial culture.</p>
+                                <p class="citation-ancient mt-2">Virgil, Aeneid 10.284, 19 BCE · Kemp, A. (1994). The SAS: Savage Wars of Peace. John Murray.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Growth Mindset:</strong> Viewing failure as learning (not identity) allows calculated risk-taking. <strong class="text-white">Risk Homeostasis:</strong> Humans calibrate to a "target" level of risk; training raises that threshold appropriately.</p>
+                                <span class="cite">Dweck, C.S. (2006). Mindset: The New Psychology of Success. Random House.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-purple-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-purple-400 text-sm font-semibold">Prepare hard, then dare greatly.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 15: Hope Is Not a Strategy -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-purple-500/20 overflow-hidden cursor-pointer hover:border-purple-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-purple-500">15</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Hope Is Not a Strategy</h3>
+                        <p class="text-purple-400 text-sm italic mb-4">"Do the detailed planning"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">A critical nuance: leaders must <em>give</em> hope, but cannot <em>rely</em> on hope. <strong class="text-white">Plan like a pessimist; lead like an optimist.</strong> Wishing is not a plan of action.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Stockdale Paradox:</strong> Retain faith that you will prevail in the end AND simultaneously confront the most brutal facts of your current reality. Named for Admiral James Stockdale, 7.5 years as a POW.</p>
+                                <p class="citation-ancient mt-2">Collins, J. (2001). Good to Great, Ch. 4. HarperBusiness.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Snyder's Hope Theory:</strong> Hope = Pathways (knowing how) + Agency (motivation). Agency without pathways is delusion. Strategy without agency is inert. You need both.</p>
+                                <span class="cite">Snyder, C.R. (1991). The will and the ways: Development of an individual-differences measure of hope. J. Pers. Soc. Psych., 60(4), 570–585.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-purple-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-purple-400 text-sm font-semibold">Hope inspires. Plans deliver.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- CLUSTER 6: OVERSIGHT -->
+        <section class="cluster-section cluster-oversight print-break">
+            <div class="cluster-header relative pl-6 mb-8">
+                <p class="font-mono text-steel-400 text-xs tracking-[0.2em] uppercase">Cluster 06</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Communication & Oversight</h2>
+                <p class="text-steel-500 mt-2">The discipline. What you inspect is what you get. Silence is the enemy.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- PRINCIPLE 16: Troop the Line -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-steel-500/20 overflow-hidden cursor-pointer hover:border-steel-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-steel-400">16</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Troop the Line</h3>
+                        <p class="text-steel-400 text-sm italic mb-4">"Listen to your employees"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">Get out of the office, walk the deck plates, and listen. <strong class="text-white">"You cannot lead from behind a desk."</strong> Physical presence provides reassurance and raw, unfiltered data.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>British "Trooping the Colour":</strong> The commander's physical presence confirms the chain of command is intact. <strong>Genchi Genbutsu:</strong> Toyota's "go and see"—reality exists at the source, not in reports.</p>
+                                <p class="citation-ancient mt-2">Liker, J.K. (2004). The Toyota Way, Principle 12. McGraw-Hill.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">MBWA:</strong> Management By Wandering Around—informal communication surfaces "weak signals" that never make formal reports. <strong class="text-white">Psychological Safety:</strong> Employees hide failures from distant leaders; presence lowers that barrier.</p>
+                                <span class="cite">Edmondson, A.C. (1999). Psychological safety and learning behavior in work teams. Admin. Sci. Quarterly, 44(2), 350–383.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-steel-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-steel-300 text-sm font-semibold">Get off email. Go see. Go listen.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 17: Communicate x3 -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-steel-500/20 overflow-hidden cursor-pointer hover:border-steel-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-steel-400">17</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Communicate, Communicate, Communicate</h3>
+                        <p class="text-steel-400 text-sm italic mb-4">"Communicate your actions"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">In crisis, the void of information fills with rumors and fear. <strong class="text-white">"If you think you have communicated enough, you haven't."</strong> Over-communicate relentlessly.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>Naval 1MC System:</strong> The crew below decks cannot see the storm—they rely entirely on the Captain's voice for reality testing. Without that voice, imagination spirals into catastrophe.</p>
+                                <p class="citation-ancient mt-2">Stavridis, J. (2017). Sailing True North, Ch. 6. Penguin.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Uncertainty Reduction Theory:</strong> High uncertainty = high anxiety; communication reduces both. <strong class="text-white">Sensemaking:</strong> Teams fail when the world stops making sense—the leader's voice provides narrative structure.</p>
+                                <span class="cite">Weick, K.E. (1995). Sensemaking in Organizations. Sage Publications.</span>
+                                <span class="cite">Berger, C.R. & Calabrese, R.J. (1975). Some explorations in initial interaction. Human Comm. Research, 1(2), 99–112.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-steel-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-steel-300 text-sm font-semibold">Silence breeds fear. Fill the void.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- PRINCIPLE 18: Expect What You Inspect -->
+                <article class="excavation-card bg-navy-800 rounded-lg border border-steel-500/20 overflow-hidden cursor-pointer hover:border-steel-500/50 transition-all" onclick="toggleCard(this)">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="font-mono text-xs text-steel-400">18</span>
+                            <span class="text-xs text-steel-600 uppercase tracking-wider">Click to excavate</span>
+                        </div>
+                        <h3 class="font-display text-xl text-white mb-2">Expect What You Inspect</h3>
+                        <p class="text-steel-400 text-sm italic mb-4">"Quality depends on oversight"</p>
+                        
+                        <div class="relative pl-4 space-y-4">
+                            <div class="depth-indicator absolute left-0 top-0 bg-gradient-to-b from-brass-500 via-blood-500 to-sage-500 rounded"></div>
+                            
+                            <div class="layer layer-1 layer-mcraven">
+                                <p class="font-mono text-[10px] text-brass-500 mb-2 tracking-wider">OPERATIONAL CONTEXT</p>
+                                <p class="text-sm text-steel-300">If a leader stops checking, standards drop. Not micromanagement—<strong class="text-white">demonstration that details matter.</strong> Develop a plan to inspect core competencies on a regular schedule.</p>
+                            </div>
+                            
+                            <div class="layer layer-2 layer-ancient">
+                                <p class="font-mono text-[10px] text-blood-400 mb-2 tracking-wider">HISTORICAL LINEAGE</p>
+                                <p class="text-steel-300"><strong>NCO Wisdom:</strong> "Troops do what you inspect, not what you expect." <strong>Broken Windows Theory:</strong> If small lapses (uninspected uniforms) are tolerated, larger lapses follow.</p>
+                                <p class="citation-ancient mt-2">Wilson, J.Q. & Kelling, G.L. (1982). Broken Windows. The Atlantic, March.</p>
+                            </div>
+                            
+                            <div class="layer layer-3 layer-psych">
+                                <p class="font-mono text-[10px] text-sage-500 mb-2 tracking-wider">EMPIRICAL VALIDATION</p>
+                                <p class="text-sm text-steel-300"><strong class="text-white">Hawthorne Effect:</strong> Performance improves simply because people know they are observed. <strong class="text-white">Signaling Theory:</strong> Inspecting a task signals its value; ignoring it signals irrelevance.</p>
+                                <span class="cite">Roethlisberger, F.J. & Dickson, W.J. (1939). Management and the Worker. Harvard UP.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-steel-500/10">
+                            <p class="font-mono text-xs text-steel-600">3AM COMPRESSION</p>
+                            <p class="text-steel-300 text-sm font-semibold">What you measure matters. What you ignore drifts.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- TRUST DYNAMICS VISUALIZATION -->
+    <section class="bg-navy-800/50 border-y border-brass-500/10 py-16 print-break">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <p class="font-mono text-brass-500 text-xs tracking-[0.2em] uppercase mb-2">The Asymmetry</p>
+                <h2 class="font-display text-3xl md:text-4xl text-white">Trust Dynamics: Gained in Drops, Lost in Buckets</h2>
+            </div>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="chart-container" style="max-width: 100%; height: 300px;">
+                    <canvas id="trustChart"></canvas>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-navy-900/50 p-4 rounded border-l-4 border-sage-500">
+                        <p class="text-white font-semibold">Slow Build</p>
+                        <p class="text-sm text-steel-400">Oxytocin (the "trust molecule") accumulates through repeated positive interactions over months and years.</p>
+                        <p class="citation mt-1">Zak, P.J. (2012). The Moral Molecule. Dutton.</p>
+                    </div>
+                    <div class="bg-navy-900/50 p-4 rounded border-l-4 border-blood-500">
+                        <p class="text-white font-semibold">Instant Collapse</p>
+                        <p class="text-sm text-steel-400">A single breach—lying, betrayal, abandonment—destroys accumulated trust nearly instantly.</p>
+                    </div>
+                    <div class="bg-navy-900/50 p-4 rounded border-l-4 border-brass-500">
+                        <p class="text-white font-semibold">The Recovery Ratio</p>
+                        <p class="text-sm text-steel-400">Research suggests roughly 5–10 positive interactions are required to recover from one significant breach.</p>
+                        <p class="citation mt-1">Gottman, J.M. (1994). Why Marriages Succeed or Fail. Simon & Schuster.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="bg-navy-900 border-t border-white/10 p-12 text-center">
-        <h2 class="text-2xl font-display text-white mb-4">"It aligns four layers that rarely contradict each other."</h2>
-        <div class="flex justify-center gap-2 mb-8">
-            <span class="block w-16 h-1 bg-accent-blue"></span>
-            <span class="block w-16 h-1 bg-accent-gold"></span>
-            <span class="block w-16 h-1 bg-accent-teal"></span>
+    <!-- FOOTER -->
+    <footer class="bg-navy-900 border-t border-brass-500/20 py-16">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <blockquote class="font-display text-2xl md:text-3xl text-white mb-6 leading-relaxed">
+                "McRaven did not invent these truths. He translated them into a language that survives the stress of combat and crisis."
+            </blockquote>
+            <div class="flex justify-center gap-2 mb-8">
+                <span class="block w-12 h-1 bg-brass-500"></span>
+                <span class="block w-12 h-1 bg-blood-500"></span>
+                <span class="block w-12 h-1 bg-sage-500"></span>
+            </div>
+            <p class="text-steel-500 text-sm mb-4">
+                Based on <em>The Wisdom of the Bullfrog</em> by Admiral William H. McRaven (2023)
+            </p>
+            <p class="text-steel-600 text-xs">
+                Intellectual archaeology mapping Stoic philosophy, military doctrine, and behavioral psychology.<br>
+                All citations verifiable. Layer styling: Operational (modern), Historical (serif), Empirical (monospace).
+            </p>
         </div>
-        <p class="text-slate-500 text-sm max-w-2xl mx-auto">
-            Interactive AI Features powered by Gemini. Grounded in historical doctrine and psychological research.
-        </p>
     </footer>
 
     <script>
-        // --- GEMINI API INTEGRATION ---
-        const apiKey = ""; // Runtime provides this
-        const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-        async function callGemini(payload, retries = 5, delay = 1000) {
-            try {
-                const response = await fetch(GEMINI_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                if (retries > 0) {
-                    await new Promise(res => setTimeout(res, delay));
-                    return callGemini(payload, retries - 1, delay * 2);
+        // --- CARD TOGGLE LOGIC ---
+        let allExpanded = false;
+        
+        function toggleCard(card) {
+            if (!allExpanded) {
+                card.classList.toggle('expanded');
+                const hint = card.querySelector('.text-steel-600.uppercase');
+                if (hint) {
+                    hint.textContent = card.classList.contains('expanded') ? 'Click to collapse' : 'Click to excavate';
                 }
-                throw error;
             }
         }
-
-        async function getLeadershipAdvice() {
-            const input = document.getElementById('challenge-input').value;
-            if (!input.trim()) return;
-
-            showLoading(true);
-            const systemPrompt = "You are an elite leadership strategist trained in Admiral William McRaven's principles. Analyze the user's challenge. Identify the 3 most relevant McRaven principles. For each, provide a 'Stoic insight', a 'Tactical Military Move', and a 'Psychological Goal'. Keep it concise, professional, and action-oriented.";
-            const payload = {
-                contents: [{ parts: [{ text: `User Challenge: ${input}` }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{ "google_search": {} }]
-            };
-
-            try {
-                const result = await callGemini(payload);
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                renderAIResponse(text, result.candidates?.[0]?.groundingMetadata?.groundingAttributions);
-            } catch (error) {
-                renderAIResponse("⚠️ Unable to connect to the leadership database. Please try again later.");
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function getDeepDive() {
-            const principle = document.getElementById('principle-select').value;
-            showLoading(true);
+        
+        function toggleAllCards() {
+            const container = document.getElementById('principlesContainer');
+            const btn = document.getElementById('expandBtn');
+            allExpanded = !allExpanded;
             
-            const systemPrompt = `Provide a detailed historical and psychological deep-dive for the leadership principle: "${principle}". 
-            1. Find an obscure historical battle or event (not the typical ones) that exemplifies this.
-            2. Explain the psychological research (name specific studies if possible) that validates why this works.
-            3. Give a modern 21st-century application for a business leader.
-            Use Markdown formatting. Use bold for key terms.`;
-            
-            const payload = {
-                contents: [{ parts: [{ text: `Principle: ${principle}` }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{ "google_search": {} }]
-            };
-
-            try {
-                const result = await callGemini(payload);
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                renderAIResponse(text, result.candidates?.[0]?.groundingMetadata?.groundingAttributions);
-            } catch (error) {
-                renderAIResponse("⚠️ The archives are currently unreachable. Retrying connection...");
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function showLoading(active) {
-            const container = document.getElementById('ai-output-container');
-            const loader = document.getElementById('ai-loading');
-            if (active) {
-                container.classList.remove('hidden');
-                loader.classList.remove('hidden');
+            if (allExpanded) {
+                container.classList.add('all-expanded');
+                btn.textContent = 'Collapse All';
+                document.querySelectorAll('.excavation-card .text-steel-600.uppercase').forEach(hint => {
+                    hint.textContent = 'All expanded';
+                });
             } else {
-                loader.classList.add('hidden');
+                container.classList.remove('all-expanded');
+                btn.textContent = 'Expand All';
+                document.querySelectorAll('.excavation-card').forEach(card => {
+                    card.classList.remove('expanded');
+                });
+                document.querySelectorAll('.excavation-card .text-steel-600.uppercase').forEach(hint => {
+                    hint.textContent = 'Click to excavate';
+                });
             }
         }
 
-        function renderAIResponse(text, sources) {
-            const contentDiv = document.getElementById('ai-content');
-            const sourceSpan = document.getElementById('grounding-sources');
-            
-            // Basic Markdown-ish parsing for display
-            contentDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-accent-gold">$1</strong>')
-                                       .replace(/\n/g, '<br>');
-            
-            if (sources && sources.length > 0) {
-                sourceSpan.innerHTML = "Verified via: " + sources.slice(0, 2).map(s => `<a href="${s.web?.uri}" target="_blank" class="underline hover:text-white">${s.web?.title || 'Grounding Source'}</a>`).join(', ');
-            } else {
-                sourceSpan.innerHTML = "";
+        // --- CHARTS ---
+        const chartDefaults = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#94a3b8', font: { family: 'Source Sans 3' } }
+                }
             }
-        }
-
-        // --- CHART JS LOGIC ---
-        window.onload = function() {
-            // Source Chart
-            const ctxSource = document.getElementById('sourceChart').getContext('2d');
-            new Chart(ctxSource, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Psychology', 'Military History', 'Philosophy', 'Management'],
-                    datasets: [{
-                        data: [35, 35, 20, 10],
-                        backgroundColor: ['#0ea5e9', '#f59e0b', '#14b8a6', '#64748b'],
-                        borderColor: '#0f172a',
-                        borderWidth: 4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            // Grit Chart
-            const ctxGrit = document.getElementById('gritChart').getContext('2d');
-            new Chart(ctxGrit, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Grit vs Performance',
-                        data: Array.from({length: 20}, () => ({x: Math.random()*100, y: Math.random()*100})),
-                        backgroundColor: '#f59e0b'
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // Trust Chart
-            const ctxTrust = document.getElementById('trustChart').getContext('2d');
-            new Chart(ctxTrust, {
-                type: 'line',
-                data: {
-                    labels: ['Day 1', 'Wk 1', 'Mo 1', 'Yr 1', 'Breach'],
-                    datasets: [{
-                        label: 'Trust Capital',
-                        data: [10, 20, 50, 90, 0],
-                        borderColor: '#14b8a6',
-                        tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
         };
+
+        // Source Distribution Donut
+        new Chart(document.getElementById('sourceChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Philosophy & Ethics', 'Military Doctrine', 'Psychology', 'Management Theory'],
+                datasets: [{
+                    data: [30, 30, 30, 10],
+                    backgroundColor: ['#d4a853', '#b91c1c', '#22c55e', '#64748b'],
+                    borderColor: '#0a0f1a',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                ...chartDefaults,
+                cutout: '55%',
+                plugins: {
+                    ...chartDefaults.plugins,
+                    legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 16 } }
+                }
+            }
+        });
+
+        // Trust Dynamics Line Chart
+        new Chart(document.getElementById('trustChart'), {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Month 1', 'Month 6', 'Year 1', 'Year 2', 'BREACH', 'Recovery +3mo', 'Recovery +1yr'],
+                datasets: [{
+                    label: 'Trust Level',
+                    data: [10, 25, 55, 75, 90, 5, 15, 45],
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: (ctx) => ctx.dataIndex === 5 ? '#b91c1c' : '#fff',
+                    pointBorderColor: (ctx) => ctx.dataIndex === 5 ? '#b91c1c' : '#22c55e',
+                    pointRadius: (ctx) => ctx.dataIndex === 5 ? 8 : 4
+                }]
+            },
+            options: {
+                ...chartDefaults,
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                    y: { 
+                        min: 0, max: 100,
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#64748b' },
+                        title: { display: true, text: 'Trust Level %', color: '#64748b' }
+                    }
+                },
+                plugins: {
+                    ...chartDefaults.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
     </script>
 </body>
 </html>
