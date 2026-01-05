@@ -1065,6 +1065,192 @@
             border: 1px dashed var(--red-400);
         }
 
+        /* Escalation Continuum Phase Cards */
+        .continuum-phases {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .phase-card {
+            position: relative;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 0.875rem;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .phase-header:hover {
+            transform: translateY(-2px);
+        }
+
+        .phase-header.active {
+            background: var(--amber-500);
+            color: var(--slate-900);
+        }
+
+        .phase-header.phase1 {
+            background: rgba(168, 85, 247, 0.3);
+            color: var(--purple-300);
+        }
+
+        .phase-header.blurred {
+            background: linear-gradient(90deg, rgba(168, 85, 247, 0.3), rgba(239, 68, 68, 0.3));
+            color: var(--slate-100);
+            border: 1px dashed var(--red-400);
+        }
+
+        .phase-header.phase2 {
+            background: rgba(239, 68, 68, 0.3);
+            color: var(--red-300);
+        }
+
+        .phase-status {
+            font-size: 0.625rem;
+        }
+
+        .phase-arrow {
+            color: var(--slate-500);
+            font-size: 1.25rem;
+            align-self: center;
+            padding-top: 0.25rem;
+        }
+
+        .phase-details {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(8px);
+            width: 320px;
+            max-width: 90vw;
+            background: var(--slate-800);
+            border: 1px solid var(--slate-600);
+            border-radius: 8px;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .phase-card:hover .phase-details {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(12px);
+        }
+
+        .phase-details-inner {
+            padding: 1rem 1.25rem;
+        }
+
+        .phase-detail-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate-400);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--slate-700);
+        }
+
+        .phase-detail-content p {
+            font-size: 0.8125rem;
+            color: var(--slate-300);
+            line-height: 1.6;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .phase-detail-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .phase-detail-content strong {
+            color: var(--slate-100);
+        }
+
+        @media (max-width: 768px) {
+            .continuum-phases {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .phase-arrow {
+                transform: rotate(90deg);
+                align-self: center;
+            }
+            .phase-details {
+                position: relative;
+                top: auto;
+                left: auto;
+                transform: none;
+                width: 100%;
+                margin-top: 0.5rem;
+                opacity: 1;
+                visibility: visible;
+            }
+            .phase-card:hover .phase-details {
+                transform: none;
+            }
+        }
+
+        /* SVG Map Styles */
+        .map-ring {
+            transition: all 0.3s ease;
+        }
+
+        .svg-map-container:hover .outer-ring {
+            fill: rgba(239, 68, 68, 0.12);
+        }
+
+        .svg-map-container:hover .inner-ring {
+            fill: rgba(168, 85, 247, 0.18);
+        }
+
+        .map-marker circle {
+            transition: all 0.2s ease;
+        }
+
+        .map-marker:hover circle {
+            r: 12;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .map-tooltip {
+            position: absolute;
+            background: var(--slate-800);
+            border: 1px solid var(--slate-600);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.8125rem;
+            color: var(--slate-200);
+            max-width: 280px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .map-tooltip-title {
+            font-weight: 600;
+            color: var(--slate-100);
+            margin-bottom: 0.375rem;
+        }
+
+        .map-tooltip-desc {
+            color: var(--slate-400);
+            line-height: 1.5;
+        }
+
         .flow-arrow {
             color: var(--slate-500);
             font-size: 1rem;
@@ -1332,15 +1518,82 @@
                 <!-- Escalation Continuum -->
                 <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%); border: 1px solid var(--purple-500); border-radius: 8px; padding: 1.25rem 1.5rem; margin-top: 1.5rem;">
                     <h4 style="font-size: 0.8125rem; font-weight: 600; color: var(--purple-400); margin: 0 0 0.5rem 0; text-transform: uppercase; letter-spacing: 0.05em;">⚠ The Escalation Continuum</h4>
-                    <p style="font-size: 0.875rem; color: var(--slate-300); margin: 0 0 1rem 0; line-height: 1.6;">These scenarios are sequential phases, not independent alternatives. Justice Mission 2025 showed the PLA integrating amphibious assault elements into blockade exercises—the distinction is blurring.</p>
-                    <div class="continuum-flow">
-                        <div class="flow-step active">Gray Zone</div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-step phase1">CCG Blockade</div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-step blurred">Blockade + Assault Prep</div>
-                        <span class="flow-arrow">→</span>
-                        <div class="flow-step phase2">Invasion</div>
+                    <p style="font-size: 0.875rem; color: var(--slate-300); margin: 0 0 1rem 0; line-height: 1.6;">These scenarios are sequential phases, not independent alternatives. Hover over each phase for details.</p>
+                    
+                    <div class="continuum-phases">
+                        <div class="phase-card" onmouseenter="showPhaseDetails(this)" onmouseleave="hidePhaseDetails(this)">
+                            <div class="phase-header active">
+                                <span class="phase-status">●</span>
+                                Gray Zone
+                            </div>
+                            <div class="phase-details">
+                                <div class="phase-details-inner">
+                                    <div class="phase-detail-label">Status: <strong style="color: var(--amber-400);">ONGOING</strong></div>
+                                    <div class="phase-detail-content">
+                                        <p><strong>Activities:</strong> Daily ADIZ incursions (2,712 in 2024), median line erosion, cyber operations, disinformation campaigns, economic coercion.</p>
+                                        <p><strong>Purpose:</strong> Exhaust Taiwan's military, normalize PLA presence, erode international attention.</p>
+                                        <p><strong>2025 Update:</strong> Two major exercises confirm this is the permanent baseline—not episodic signaling.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <span class="phase-arrow">→</span>
+
+                        <div class="phase-card" onmouseenter="showPhaseDetails(this)" onmouseleave="hidePhaseDetails(this)">
+                            <div class="phase-header phase1">
+                                <span class="phase-status">◐</span>
+                                CCG Blockade
+                            </div>
+                            <div class="phase-details">
+                                <div class="phase-details-inner">
+                                    <div class="phase-detail-label">Status: <strong style="color: var(--purple-400);">LIKELY PHASE 1</strong></div>
+                                    <div class="phase-detail-content">
+                                        <p><strong>Mechanism:</strong> CCG "law enforcement" zones around Taiwan ports. 2024 detention regulation enables apprehension of foreigners in "jurisdictional waters."</p>
+                                        <p><strong>Legal cover:</strong> Quarantine framed as customs/health inspection—not an act of war. Interdicts civilian shipping without kinetic action.</p>
+                                        <p><strong>Justice Mission 2025:</strong> 15 CCG vessels practiced "interception and detention." First Pratas Island patrols. Entered prohibited waters.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <span class="phase-arrow">→</span>
+
+                        <div class="phase-card" onmouseenter="showPhaseDetails(this)" onmouseleave="hidePhaseDetails(this)">
+                            <div class="phase-header blurred">
+                                <span class="phase-status">◑</span>
+                                Blockade + Assault
+                            </div>
+                            <div class="phase-details">
+                                <div class="phase-details-inner">
+                                    <div class="phase-detail-label">Status: <strong style="color: var(--red-400);">DISTINCTION BLURRING</strong></div>
+                                    <div class="phase-detail-content">
+                                        <p><strong>Key finding:</strong> Justice Mission 2025 included Type 075 LHD <em>Hainan</em> for the first time—an amphibious assault ship practicing "long-range rapid assaults" during a blockade exercise.</p>
+                                        <p><strong>Implication:</strong> The PLA is rehearsing rapid transition from blockade to assault. If blockade begins, assume amphibious forces are already positioned.</p>
+                                        <p><strong>Warning time:</strong> Decision window for intervention is shorter than previously assessed.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <span class="phase-arrow">→</span>
+
+                        <div class="phase-card" onmouseenter="showPhaseDetails(this)" onmouseleave="hidePhaseDetails(this)">
+                            <div class="phase-header phase2">
+                                <span class="phase-status">○</span>
+                                Invasion
+                            </div>
+                            <div class="phase-details">
+                                <div class="phase-details-inner">
+                                    <div class="phase-detail-label">Status: <strong style="color: var(--blue-400);">LOWEST PROBABILITY</strong></div>
+                                    <div class="phase-detail-content">
+                                        <p><strong>Requirements:</strong> Air/maritime superiority, suppression of Taiwan's defenses, 2M+ troops sustained, global economic disruption tolerance.</p>
+                                        <p><strong>Inhibitors:</strong> Civilian ROROs are soft targets; requires "permissive environment" that may not exist. Urban warfare in Taipei extremely costly.</p>
+                                        <p><strong>The "Invisible Fleet":</strong> PLA solved lift gap with civilian mobilization—but those ships need air cover the PLA may not achieve against US intervention.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1351,35 +1604,165 @@
             <div class="container">
                 <div class="section-header">
                     <h2>Dual-Layer "Cabbage Strategy" <span class="updated-tag">New Doctrinal Concept</span></h2>
-                    <p>Strait Thunder-2025A revealed a new operational model: concentric layers of encirclement that simultaneously isolate Taiwan AND deny foreign intervention. Validated by Jamestown Foundation analysis.</p>
+                    <p>Strait Thunder-2025A revealed a new operational model: concentric layers of encirclement that simultaneously isolate Taiwan AND deny foreign intervention.</p>
                 </div>
 
+                <!-- Etymology Callout -->
+                <div class="lift-card" style="padding: 1.5rem; margin-bottom: 2rem; border-left: 3px solid var(--cyan-500);">
+                    <div style="display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 280px;">
+                            <h4 style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cyan-400); margin: 0 0 0.75rem 0;">🥬 Why "Cabbage"?</h4>
+                            <p style="font-size: 0.875rem; color: var(--slate-300); line-height: 1.7; margin: 0;">
+                                The term <strong style="color: var(--slate-100);">白菜策略</strong> (báicài cèlüè) was coined by <strong style="color: var(--slate-100);">PLA Rear Admiral Zhang Zhaozhong</strong> in a May 2013 interview. The metaphor is literal: wrap layers around a target like leaves of a cabbage until it's smothered. Each layer (militia → coast guard → navy) adds pressure while providing deniability.
+                            </p>
+                        </div>
+                        <div style="flex: 1; min-width: 280px;">
+                            <h4 style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate-400); margin: 0 0 0.75rem 0;">📅 Doctrinal History</h4>
+                            <p style="font-size: 0.875rem; color: var(--slate-300); line-height: 1.7; margin: 0;">
+                                First applied at <strong style="color: var(--slate-100);">Scarborough Shoal (2012–13)</strong> against the Philippines. The strategy succeeded—China controls the shoal today. It's been standard PLA doctrine in the South China Sea for <strong style="color: var(--slate-100);">over a decade</strong>. The "dual-layer" variant around Taiwan—adding an outer counter-intervention ring—is the 2025 evolution.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Map -->
                 <div class="cabbage-diagram">
-                    <div class="cabbage-visual">
-                        <div class="cabbage-layer layer-outer">
-                            <span class="layer-label label-outer">Outer Layer: Counter-Intervention</span>
+                    <h4 style="font-size: 1rem; font-weight: 600; color: var(--slate-100); margin: 0 0 0.5rem 0;">Blockade Geometry: Actual Scale</h4>
+                    <p style="font-size: 0.8125rem; color: var(--slate-400); margin: 0 0 1rem 0;">Based on Justice Mission 2025 exercise positions. Hover over markers for details.</p>
+                    
+                    <div class="svg-map-container" style="position: relative; width: 100%; max-width: 700px; margin: 0 auto;">
+                        <svg viewBox="0 0 700 500" style="width: 100%; height: auto; background: var(--slate-800); border-radius: 8px; border: 1px solid var(--slate-700);">
+                            <!-- Grid lines for reference -->
+                            <defs>
+                                <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#grid)"/>
+                            
+                            <!-- Outer Layer: ~170nm -->
+                            <circle cx="350" cy="250" r="200" fill="rgba(239, 68, 68, 0.08)" stroke="#ef4444" stroke-width="2" stroke-dasharray="10,5" class="map-ring outer-ring"/>
+                            
+                            <!-- Inner Layer: ~50nm -->
+                            <circle cx="350" cy="250" r="100" fill="rgba(168, 85, 247, 0.12)" stroke="#a855f7" stroke-width="2" stroke-dasharray="5,5" class="map-ring inner-ring"/>
+                            
+                            <!-- Contiguous Zone: 24nm -->
+                            <circle cx="350" cy="250" r="48" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="3,3"/>
+                            
+                            <!-- Territorial Waters: 12nm -->
+                            <circle cx="350" cy="250" r="24" fill="rgba(100, 116, 139, 0.2)" stroke="#64748b" stroke-width="1"/>
+                            
+                            <!-- Taiwan shape (simplified) -->
+                            <path d="M350,220 Q370,230 365,260 Q360,290 350,295 Q340,290 335,260 Q330,230 350,220" 
+                                  fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+                            <text x="350" y="260" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="IBM Plex Sans">Taiwan</text>
+                            
+                            <!-- China coastline (simplified) -->
+                            <path d="M120,80 Q140,150 130,250 Q120,350 140,420" fill="none" stroke="#475569" stroke-width="2"/>
+                            <text x="100" y="250" text-anchor="middle" fill="#475569" font-size="11" font-family="IBM Plex Sans" transform="rotate(-90, 100, 250)">PRC Coast</text>
+                            
+                            <!-- Philippines indicator -->
+                            <text x="580" y="450" text-anchor="middle" fill="#475569" font-size="10" font-family="IBM Plex Sans">← Philippines</text>
+                            
+                            <!-- Japan/Okinawa indicator -->
+                            <text x="550" y="60" text-anchor="middle" fill="#475569" font-size="10" font-family="IBM Plex Sans">Okinawa →</text>
+                            
+                            <!-- Scale bar -->
+                            <line x1="50" y1="470" x2="150" y2="470" stroke="#64748b" stroke-width="2"/>
+                            <line x1="50" y1="465" x2="50" y2="475" stroke="#64748b" stroke-width="2"/>
+                            <line x1="150" y1="465" x2="150" y2="475" stroke="#64748b" stroke-width="2"/>
+                            <text x="100" y="485" text-anchor="middle" fill="#64748b" font-size="10" font-family="IBM Plex Sans">~100 nm</text>
+                            
+                            <!-- Location markers with hover tooltips -->
+                            <!-- Keelung -->
+                            <g class="map-marker" data-location="keelung">
+                                <circle cx="365" cy="225" r="8" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="380" y="220" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Keelung</text>
+                            </g>
+                            
+                            <!-- Kaohsiung -->
+                            <g class="map-marker" data-location="kaohsiung">
+                                <circle cx="340" cy="290" r="8" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="295" y="295" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Kaohsiung</text>
+                            </g>
+                            
+                            <!-- Hualien -->
+                            <g class="map-marker" data-location="hualien">
+                                <circle cx="375" cy="255" r="8" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="390" y="260" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Hualien</text>
+                            </g>
+                            
+                            <!-- Matsu -->
+                            <g class="map-marker" data-location="matsu">
+                                <circle cx="280" cy="170" r="6" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="255" y="160" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Matsu</text>
+                            </g>
+                            
+                            <!-- Wuqiu -->
+                            <g class="map-marker" data-location="wuqiu">
+                                <circle cx="260" cy="240" r="6" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="230" y="235" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Wuqiu</text>
+                            </g>
+                            
+                            <!-- Kinmen -->
+                            <g class="map-marker" data-location="kinmen">
+                                <circle cx="230" cy="270" r="6" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="200" y="280" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Kinmen</text>
+                            </g>
+                            
+                            <!-- Pratas -->
+                            <g class="map-marker" data-location="pratas">
+                                <circle cx="180" cy="400" r="6" fill="#f59e0b" stroke="#fbbf24" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="155" y="415" fill="#fbbf24" font-size="9" font-family="IBM Plex Sans">Pratas</text>
+                            </g>
+                            
+                            <!-- Type 075 LHD Position -->
+                            <g class="map-marker" data-location="lhd">
+                                <circle cx="520" cy="350" r="10" fill="#ef4444" stroke="#f87171" stroke-width="2" style="cursor: pointer;"/>
+                                <text x="535" y="340" fill="#f87171" font-size="9" font-family="IBM Plex Sans">Type 075 LHD</text>
+                                <text x="535" y="352" fill="#f87171" font-size="8" font-family="IBM Plex Sans">(160-170nm E)</text>
+                            </g>
+                            
+                            <!-- Layer labels -->
+                            <text x="350" y="70" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600" font-family="IBM Plex Sans">OUTER LAYER: Counter-Intervention (~170nm)</text>
+                            <text x="350" y="160" text-anchor="middle" fill="#a855f7" font-size="10" font-weight="600" font-family="IBM Plex Sans">INNER LAYER (~50nm)</text>
+                        </svg>
+                        
+                        <!-- Tooltip -->
+                        <div id="mapTooltip" class="map-tooltip" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Map Legend -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1rem; padding: 1rem; background: var(--slate-800); border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--slate-400);">
+                            <span style="width: 20px; height: 2px; background: #64748b;"></span> 12nm Territorial
                         </div>
-                        <div class="cabbage-layer layer-inner">
-                            <span class="layer-label label-inner">Inner Layer: Taiwan Isolation</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--slate-400);">
+                            <span style="width: 20px; height: 2px; background: #64748b; border-top: 1px dashed;"></span> 24nm Contiguous
                         </div>
-                        <div class="cabbage-layer layer-target">Taiwan</div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--slate-400);">
+                            <span style="width: 20px; height: 2px; background: #a855f7;"></span> ~50nm Inner Layer
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--slate-400);">
+                            <span style="width: 20px; height: 2px; background: #ef4444;"></span> ~170nm Outer Layer
+                        </div>
                     </div>
 
-                    <div class="cabbage-legend">
-                        <div class="legend-item outer">
-                            <div class="legend-title">Outer Layer: Counter-Intervention</div>
+                    <div class="cabbage-legend" style="margin-top: 1.5rem;">
+                        <div class="legend-item inner">
+                            <div class="legend-title">Inner Layer: Taiwan Isolation (~50nm)</div>
                             <div class="legend-forces">
-                                <strong>Forces:</strong> Carrier Strike Groups • H-6 Bombers • Maritime Militia (outer)<br>
-                                <strong>Mission:</strong> Harass/delay foreign military forces approaching Taiwan. Create ASW barrier. Threaten US SLOCs.<br>
-                                <strong>Validated:</strong> Shandong CSG positioned 160-170nm east of Taiwan during Justice Mission 2025.
+                                <strong>Forces:</strong> Maritime Militia → CCG → PLAN frigates/corvettes<br>
+                                <strong>Mission:</strong> Blockade ports, interdict shipping, "law enforcement" cover<br>
+                                <strong>Justice Mission 2025:</strong> CCG entered prohibited waters around Wuqiu (1.6nm) and Matsu (1.3nm). 8+ CCG vessels in Taiwan's contiguous zone.
                             </div>
                         </div>
-                        <div class="legend-item inner">
-                            <div class="legend-title">Inner Layer: Taiwan Isolation</div>
+                        <div class="legend-item outer">
+                            <div class="legend-title">Outer Layer: Counter-Intervention (~170nm)</div>
                             <div class="legend-forces">
-                                <strong>Forces:</strong> Maritime Militia → CCG → PLAN (from center outward)<br>
-                                <strong>Mission:</strong> Blockade ports, interdict shipping, exhaust Taiwan's defenders. CCG provides "law enforcement" cover.<br>
-                                <strong>Validated:</strong> CCG practiced "interception and detention" within Taiwan's contiguous zone.
+                                <strong>Forces:</strong> Carrier Strike Groups • H-6 Bombers • PLAN destroyers • Maritime Militia (outer)<br>
+                                <strong>Mission:</strong> Deny US/allied approach, threaten SLOCs, ASW barrier<br>
+                                <strong>Justice Mission 2025:</strong> Type 075 LHD <em>Hainan</em> + 3 escorts operated 160–170nm east of Taiwan's southern tip.
                             </div>
                         </div>
                     </div>
@@ -1656,6 +2039,92 @@
         function toggleCard(card) {
             card.classList.toggle('expanded');
         }
+
+        // Phase details show/hide (for touch devices)
+        function showPhaseDetails(card) {
+            // Handled by CSS hover
+        }
+        function hidePhaseDetails(card) {
+            // Handled by CSS hover
+        }
+
+        // SVG Map Tooltip functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltip = document.getElementById('mapTooltip');
+            const markers = document.querySelectorAll('.map-marker');
+            
+            const locationData = {
+                keelung: {
+                    title: 'Keelung Port',
+                    desc: 'Northern port adjacent to Taipei. PLAN positioned forces here during Justice Mission 2025 to simulate blockade of Taiwan\'s capital region.'
+                },
+                kaohsiung: {
+                    title: 'Kaohsiung Port',
+                    desc: 'Taiwan\'s largest port and primary energy import hub. Critical blockade target—most LNG imports arrive here. 10-11 days of reserves.'
+                },
+                hualien: {
+                    title: 'Hualien Port',
+                    desc: 'Eastern port facing the Pacific. PLAN blockaded this approach to prevent intervention forces from reaching Taiwan from US bases.'
+                },
+                matsu: {
+                    title: 'Matsu Islands',
+                    desc: 'CCG entered prohibited waters (within 1.3nm) during Justice Mission 2025. Outlying island vulnerable to isolation.'
+                },
+                wuqiu: {
+                    title: 'Wuqiu Island',
+                    desc: 'CCG entered prohibited waters (within 1.6nm) during Justice Mission 2025. Small garrison island in the Taiwan Strait.'
+                },
+                kinmen: {
+                    title: 'Kinmen (Quemoy)',
+                    desc: 'Just 2km from PRC coast. Site of 1958 Taiwan Strait Crisis. Exercise zones cut off direct routes to this island.'
+                },
+                pratas: {
+                    title: 'Pratas Island (Dongsha)',
+                    desc: 'First CCG patrols around this island during a blockade exercise (Justice Mission 2025). Controls northern South China Sea approach.'
+                },
+                lhd: {
+                    title: 'Type 075 LHD Hainan',
+                    desc: 'First participation of amphibious assault ship in Taiwan blockade exercise. Operated 160-170nm east with 3 escorts. Practiced "long-range rapid assaults."'
+                }
+            };
+            
+            markers.forEach(marker => {
+                marker.addEventListener('mouseenter', function(e) {
+                    const location = this.getAttribute('data-location');
+                    const data = locationData[location];
+                    
+                    if (data && tooltip) {
+                        tooltip.innerHTML = `
+                            <div class="map-tooltip-title">${data.title}</div>
+                            <div class="map-tooltip-desc">${data.desc}</div>
+                        `;
+                        tooltip.style.display = 'block';
+                    }
+                });
+                
+                marker.addEventListener('mousemove', function(e) {
+                    if (tooltip) {
+                        const container = document.querySelector('.svg-map-container');
+                        const rect = container.getBoundingClientRect();
+                        const x = e.clientX - rect.left + 15;
+                        const y = e.clientY - rect.top - 10;
+                        
+                        // Keep tooltip within container
+                        const maxX = rect.width - 290;
+                        const maxY = rect.height - 100;
+                        
+                        tooltip.style.left = Math.min(x, maxX) + 'px';
+                        tooltip.style.top = Math.min(y, maxY) + 'px';
+                    }
+                });
+                
+                marker.addEventListener('mouseleave', function() {
+                    if (tooltip) {
+                        tooltip.style.display = 'none';
+                    }
+                });
+            });
+        });
 
         // Naval Balance Chart
         const ctx = document.getElementById('navalChart');
