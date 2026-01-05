@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRC Military Power: A 25-Year Assessment Synthesis | DoD Reports 2000–2025</title>
+    
+    <!-- Chart.js only -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111820;
+            --bg-tertiary: #1a2332;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --accent-red: #f85149;
+            --accent-orange: #d29922;
+            --accent-blue: #58a6ff;
+            --accent-cyan: #39d353;
+            --accent-purple: #a371f7;
+            --border: #30363d;
+            --grid: rgba(48, 54, 61, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            background-image: 
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Layout utilities */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 1rem; }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .space-y-12 > * + * { margin-top: 3rem; }
+        
+        .grid { display: grid; }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        
+        @media (min-width: 768px) {
+            .md-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+            .md-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+            .md-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+            .md-col-span-2 { grid-column: span 2; }
+        }
+
+        /* Typography */
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-bold { font-weight: 700; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-wide { letter-spacing: 0.05em; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+
+        /* Colors */
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+        .text-red { color: var(--accent-red); }
+        .text-orange { color: var(--accent-orange); }
+        .text-blue { color: var(--accent-blue); }
+        .text-purple { color: var(--accent-purple); }
+        .text-cyan { color: var(--accent-cyan); }
+
+        .bg-secondary { background: var(--bg-secondary); }
+        .bg-red-subtle { background: rgba(248, 81, 73, 0.1); }
+        .bg-orange-subtle { background: rgba(210, 153, 34, 0.1); }
+        .bg-blue-subtle { background: rgba(88, 166, 255, 0.1); }
+        .bg-purple-subtle { background: rgba(163, 113, 247, 0.1); }
+
+        /* Borders */
+        .border { border: 1px solid var(--border); }
+        .border-b { border-bottom: 1px solid var(--border); }
+        .border-t { border-top: 1px solid var(--border); }
+        .border-l-4 { border-left: 4px solid; }
+        .border-red { border-color: var(--accent-red); }
+        .border-orange { border-color: var(--accent-orange); }
+        .border-blue { border-color: var(--accent-blue); }
+        .border-purple { border-color: var(--accent-purple); }
+        .rounded { border-radius: 4px; }
+
+        /* Spacing */
+        .p-4 { padding: 1rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-12 { margin-top: 3rem; }
+
+        /* Position */
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .z-50 { z-index: 50; }
+        .z-40 { z-index: 40; }
+        .relative { position: relative; }
+
+        /* Header */
+        header {
+            background: rgba(17, 24, 32, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+
+        /* Epoch nav */
+        .epoch-nav {
+            background: rgba(10, 14, 20, 0.95);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 56px;
+            z-index: 40;
+        }
+
+        .epoch-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Data cards */
+        .data-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+
+        .data-card h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .data-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        @media (max-width: 767px) {
+            .data-card .value { font-size: 1.75rem; }
+        }
+
+        /* Chart containers */
+        .chart-wrap {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.5rem;
+        }
+
+        .chart-wrap canvas {
+            max-height: 320px;
+        }
+
+        @media (max-width: 767px) {
+            .chart-wrap { padding: 1rem; }
+        }
+
+        /* Timeline nodes */
+        .timeline-node {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 2px solid var(--border);
+        }
+
+        .timeline-node::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            border: 2px solid currentColor;
+        }
+
+        .timeline-node.shock::before {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+            box-shadow: 0 0 12px var(--accent-red);
+        }
+
+        /* Discontinuity marker */
+        .discontinuity {
+            position: relative;
+            border-left: 3px dashed var(--accent-red);
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .discontinuity::before {
+            content: '⚠';
+            position: absolute;
+            left: -1rem;
+            top: 0;
+            color: var(--accent-red);
+        }
+
+        /* Section headers */
+        .section-bar {
+            width: 4px;
+            height: 2rem;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            border: 1px solid;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        .data-table th {
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .overflow-x-auto {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Animation */
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-warning { animation: pulse-red 2s ease-in-out infinite; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem 0;
+        }
+
+        /* Key Judgments section */
+        .key-judgments {
+            background: linear-gradient(135deg, rgba(248, 81, 73, 0.05) 0%, rgba(163, 113, 247, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2rem;
+        }
+
+        .kj-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .kj-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .kj-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .kj-card {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            border-left: 3px solid var(--accent-red);
+        }
+
+        .kj-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-red);
+            line-height: 1;
+            flex-shrink: 0;
+            width: 2rem;
+        }
+
+        .kj-content h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .kj-content p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .kj-content em {
+            color: var(--accent-orange);
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .kj-content .evidence-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .kj-content .kj-conclusion {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8125rem;
+        }
+
+        /* Lists */
+        ol, ul {
+            margin: 0;
+        }
+
+        ol li, ul li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Interstitial callout */
+        .interstitial {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .interstitial::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent-orange) 0%, var(--accent-red) 100%);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .interstitial-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-orange);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Watch indicators */
+        .watch-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .watch-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .watch-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1.25rem;
+            position: relative;
+        }
+
+        .watch-card::before {
+            content: '◉';
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            color: var(--accent-orange);
+            opacity: 0.5;
+        }
+
+        .watch-card h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .watch-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .watch-indicator { color: var(--accent-cyan); }
+        .watch-implication { color: var(--accent-orange); }
+
+        /* Assessment box styling */
+        .assessment {
+            background: linear-gradient(90deg, rgba(210, 153, 34, 0.1) 0%, rgba(248, 81, 73, 0.05) 100%);
+            border-left: 4px solid var(--accent-orange);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .assessment strong {
+            color: var(--accent-orange);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Mobile grid fix */
+        @media (max-width: 767px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        /* Epoch nav grid - 2x2 on mobile, 4-col on desktop */
+        .epoch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .epoch-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="container flex items-center justify-between py-4">
+            <div>
+                <p class="mono text-xs text-muted uppercase tracking-widest">DoD Annual Report Synthesis</p>
+                <h1>PRC Military Power <span class="text-secondary">2000–2025</span></h1>
+            </div>
+            <div class="mono text-xs text-right text-secondary">
+                <div>25 Years of Assessment</div>
+                <div class="text-red">UNCLASSIFIED</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- EPOCH LEGEND -->
+    <nav class="epoch-nav">
+        <div class="container py-3">
+            <div class="epoch-grid mono text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="epoch-dot" style="background: var(--accent-orange)"></span>
+                    <span>I: Asymmetric (00–09)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="epoch-dot" style="background: var(--accent-red)"></span>
+                    <span>II: Counter-Intv (10–15)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="epoch-dot" style="background: var(--accent-blue)"></span>
+                    <span>III: Global (16–20)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="epoch-dot" style="background: var(--accent-purple)"></span>
+                    <span>IV: Nuclear (21–Now)</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-8 space-y-12">
+
+        <!-- KEY JUDGMENTS -->
+        <section class="key-judgments">
+            <div class="kj-header">
+                <span class="mono text-xs uppercase tracking-widest text-muted">Bottom Line Up Front</span>
+                <h2 class="text-2xl font-bold mt-1">Key Judgments</h2>
+                <p class="text-secondary text-sm mt-2">
+                    Derived from longitudinal analysis of the <em>Annual Report to Congress: Military and Security Developments 
+                    Involving the People's Republic of China</em> (2000–2025). Each judgment is supported by 
+                    triangulating hardware evidence, doctrinal shifts, and organizational behavior.
+                </p>
+            </div>
+            
+            <div class="kj-grid">
+                <div class="kj-card">
+                    <div class="kj-number">1</div>
+                    <div class="kj-content">
+                        <h4>The PRC is now a nuclear peer competitor, not a regional power with minimum deterrence.</h4>
+                        <p>
+                            <span class="evidence-label">Hardware:</span> 300+ new ICBM silos constructed (2021–2024); 600+ warheads operational (2024). 
+                            <span class="evidence-label">Doctrine:</span> Shift from "No First Use" to "Early Warning Counterstrike" (Launch on Warning). 
+                            <span class="evidence-label">Operational Validation:</span> September 2024 ICBM Pacific launch—first since 1980—confirms LOW capability is no longer theoretical. 
+                            <span class="evidence-label">Triad Completion:</span> H-6N nuclear bomber + JL-3 SLBM + silo-based ICBMs = credible second-strike.
+                            <span class="evidence-label">Fissile Production:</span> CFR-600 fast breeder reactors enable weapons-grade plutonium at scale.
+                        </p>
+                        <p class="kj-conclusion">
+                            <em>Conclusion:</em> This is "Strategic Counterbalance"—creating a nuclear shield behind which China can fight a 
+                            <em>conventional war for Taiwan</em>. The triad deters U.S. nuclear coercion, enabling PLA escalation management in regional conflicts.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="kj-card">
+                    <div class="kj-number">2</div>
+                    <div class="kj-content">
+                        <h4>2027 is an "option generation" event—the year the PLA delivers the capability to deter U.S. intervention.</h4>
+                        <p>
+                            <span class="evidence-label">The Milestone:</span> PLA centennial goal to achieve "integrated mechanization, informatization, and intelligentization." 
+                            <span class="evidence-label">The Deliverables:</span> Three strategic capabilities—decisive victory, strategic counterbalance (nuclear parity), and escalation control. 
+                            <span class="evidence-label">Progress:</span> JOINT SWORD-2024A/B demonstrated full encirclement and blockade simulation, integrating CCG for first time.
+                        </p>
+                        <p class="kj-conclusion">
+                            <em>Conclusion:</em> The risk is not that Beijing <em>must</em> invade in 2027, but that for the first time, 
+                            the PLA will advise the CCP that "rapid resolution" is operationally feasible before effective U.S. intervention.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="kj-card">
+                    <div class="kj-number">3</div>
+                    <div class="kj-content">
+                        <h4>The Assess-Lag-Leap cycle is structural bias, not intelligence failure. Watch doctrine/organization, not just hardware.</h4>
+                        <p>
+                            <span class="evidence-label">Pattern:</span> J-20 flew years ahead of DoD timelines. Silo fields appeared with no warning. 
+                            Amphibious lift calculus missed civilian integration for 20 years. 
+                            <span class="evidence-label">Root Cause:</span> We watch <em>hardware</em> (lagging indicators), not <em>doctrine/organization</em> (leading indicators). 
+                            The 2015 Rocket Force elevation signaled the 2021 nuclear leap 6 years in advance.
+                        </p>
+                        <p class="kj-conclusion">
+                            <em>Conclusion:</em> Treat organizational restructuring (SSF 2015, JLSF 2016, SSF dissolution 2024) as "Start" signals 
+                            for capability jumps 5–7 years out. Current "Lag" items: H-20 bomber, autonomous swarms.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="kj-card">
+                    <div class="kj-number">4</div>
+                    <div class="kj-content">
+                        <h4>The "Invisible Fleet" bypasses traditional warning indicators. Watch civilian mobilization, not grey-hull buildup.</h4>
+                        <p>
+                            <span class="evidence-label">Negative Evidence:</span> The PLA <em>stopped</em> building traditional LSTs despite having the world's largest navy. 
+                            <span class="evidence-label">Solution:</span> 2016 National Defense Transportation Law + JLSF/MRO mechanism to commandeer civilian RORO ferries. 
+                            <span class="evidence-label">Validation:</span> 2022–2024 exercises used civilian ferries to launch amphibious vehicles at sea. 2023 report confirms PLA "mitigated shortfalls."
+                        </p>
+                        <p class="kj-conclusion">
+                            <em>Conclusion:</em> Traditional warning (grey-hull concentration) will miss the signal. Correct indicators: 
+                            civilian RORO diversion, CCG "law enforcement" escalation, JLSF activation.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="kj-card">
+                    <div class="kj-number">5</div>
+                    <div class="kj-content">
+                        <h4>System Destruction Warfare targets connections, not platforms. Measure "paralysis," not hull counts.</h4>
+                        <p>
+                            <span class="evidence-label">Concept:</span> MDPW uses AI to rapidly identify vulnerabilities in U.S. operational system. 
+                            <span class="evidence-label">Organizational Proof:</span> 2025 report cites "severely inefficient management" as SSF dissolution driver—
+                            new CSF/ASF/ISF structure targets Data/Connectivity/Network pillars. 
+                            <span class="evidence-label">Metric Shift:</span> Non-kinetic capabilities elevated to same status as kinetic services.
+                        </p>
+                        <p class="kj-conclusion">
+                            <em>Conclusion:</em> Don't count ships. The threat is soft-kill capability that blinds U.S. forces before kinetic engagement. 
+                            The 2024 reorganization makes "paralysis" a primary line of effort, not support function.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTEXT: FOUR EPOCHS WITH CAUSAL LOGIC -->
+        <section class="space-y-6">
+            <div class="grid md-grid-cols-3 gap-6">
+                <div class="md-col-span-2 space-y-4">
+                    <h2 class="text-2xl font-bold">The Four Strategic Epochs</h2>
+                    <p class="text-secondary">
+                        This synthesis organizes 25 years of DoD reporting into four phases, each defined by a shift in 
+                        the assessed character of the PLA threat. The transitions are not arbitrary—each epoch is validated by 
+                        correlating <strong>doctrinal shifts</strong> with <strong>organizational restructuring</strong> and <strong>hardware fielding</strong>.
+                    </p>
+                    <div class="flex flex-wrap gap-3 mono text-xs">
+                        <span class="tag border-orange text-orange">I: Taiwan-Centric Denial</span>
+                        <span class="tag border-red text-red">II: Counter-Intervention</span>
+                        <span class="tag border-blue text-blue">III: Global Projection</span>
+                        <span class="tag border-purple text-purple">IV: Strategic Parity Pursuit</span>
+                    </div>
+                </div>
+                <div class="data-card bg-purple-subtle border-l-4 border-purple">
+                    <h4>Current Pacing Threat</h4>
+                    <div class="value text-purple">2027</div>
+                    <p class="text-sm text-secondary mt-2">
+                        Centennial Goal: PLA capability deadline for Taiwan contingency (first assessed 2021)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Epoch Evidence Cards -->
+            <div class="grid md-grid-cols-2 gap-4">
+                <div class="data-card border-l-4 border-orange">
+                    <h4>Epoch I: Taiwan-Centric Denial (2000–2009)</h4>
+                    <p class="text-sm text-secondary mb-2">
+                        <span class="evidence-label">Doctrine:</span> "Active Defense" — geographically limited to border/coastal defense. 
+                        <span class="evidence-label">Hardware:</span> SRBM saturation (DF-11/15) targeting Taiwan; static coastal defense. 
+                        <span class="evidence-label">Assessment:</span> "Primary driver" was preventing Taiwan independence; force lacked cross-strait power projection.
+                    </p>
+                </div>
+
+                <div class="data-card border-l-4 border-red">
+                    <h4>Epoch II: Counter-Intervention (2010–2015)</h4>
+                    <p class="text-sm text-secondary mb-2">
+                        <span class="evidence-label">Doctrine:</span> "Counter-Intervention" (反介入) — prevent foreign forces from intervening. 
+                        <span class="evidence-label">Hardware:</span> DF-21D "Carrier Killer" IOC (2010); A2/AD extended to Second Island Chain. 
+                        <span class="evidence-label">Assessment:</span> Shift from "invading Taiwan" to "deterring U.S. intervention" in Taiwan conflict.
+                    </p>
+                </div>
+
+                <div class="data-card border-l-4 border-blue">
+                    <h4>Epoch III: Global Projection (2016–2020)</h4>
+                    <p class="text-sm text-secondary mb-2">
+                        <span class="evidence-label">Doctrine:</span> "Far Seas Protection" (远海护卫) — global operations authorized. 
+                        <span class="evidence-label">Organization:</span> Strategic Support Force created (2015) to centralize space/cyber/EW. 
+                        <span class="evidence-label">Hardware:</span> Djibouti base operational (2017); PLAN tasked to defend "overseas interests."
+                    </p>
+                </div>
+
+                <div class="data-card border-l-4 border-purple">
+                    <h4>Epoch IV: Strategic Parity Pursuit (2021–Present)</h4>
+                    <p class="text-sm text-secondary mb-2">
+                        <span class="evidence-label">Doctrine:</span> "Strategic Counterbalance" + "Early Warning Counterstrike" (LOW). 
+                        <span class="evidence-label">Organization:</span> SSF dissolved (2024) → Aerospace/Cyberspace/ISF directly under CMC. 
+                        <span class="evidence-label">Hardware:</span> 300+ silos (Hami/Yumen/Yulin); 1,000+ warheads by 2030. 
+                        <span class="evidence-label">Behavior:</span> Sept 2024 ICBM Pacific launch—first since 1980.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Theory of Victory Callout -->
+            <div class="interstitial" style="margin-top: 1.5rem;">
+                <div class="interstitial-title">Causal Logic: The "Theory of Victory" Evolution</div>
+                <h4 class="font-bold mb-3">From Attrition to System Destruction</h4>
+                <p class="text-secondary text-sm mb-4">
+                    The PLA has not just modernized hardware—it has fundamentally changed <em>how it intends to win</em>. 
+                    This is provable by correlating doctrinal phases with organizational restructuring:
+                </p>
+                <div class="grid md-grid-cols-3 gap-4">
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-orange mb-1">Phase 1: Informatized (2004–2015)</div>
+                        <p class="text-sm text-secondary">
+                            Goal: Integrate information technology into platforms. Focus on "local wars under informatization."
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-blue mb-1">Phase 2: System-of-Systems (2015–2020)</div>
+                        <p class="text-sm text-secondary">
+                            Goal: Dominate information domain. <strong>SSF created</strong> to centralize space/cyber/EW under one command.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-purple mb-1">Phase 3: Intelligentized (2021–Now)</div>
+                        <p class="text-sm text-secondary">
+                            Goal: AI-enabled "system destruction." <strong>SSF dissolved</strong> — forces elevated directly to CMC for faster kill chains.
+                        </p>
+                    </div>
+                </div>
+                <div class="assessment">
+                    <strong>Assessment:</strong> 
+                    <span class="text-secondary text-sm">The 2024 SSF dissolution was not failure—it was optimization for MDPW. 
+                    The PLA realized centralized support was insufficient; they need "intelligentized" C2 to execute precision strikes 
+                    against the U.S. operational system. We can prove intent by correlating organizational change with doctrinal shift.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 1: NUCLEAR PARADIGM SHIFT -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-red)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">Nuclear Paradigm Shift</h3>
+                    <p class="mono text-xs text-secondary">Branch A: The Most Significant Analytic Discontinuity</p>
+                </div>
+            </div>
+
+            <div class="grid md-grid-cols-4 gap-4">
+                <div class="data-card">
+                    <h4>2000–2019 Estimate</h4>
+                    <div class="value text-secondary">~200</div>
+                    <p class="text-xs text-muted mt-1">"Low 200s" — Stable for 19 years</p>
+                </div>
+                <div class="data-card">
+                    <h4>2021 Revision</h4>
+                    <div class="value text-orange">&gt;350</div>
+                    <p class="text-xs text-muted mt-1">Silo fields discovered</p>
+                </div>
+                <div class="data-card">
+                    <h4>2024 Assessment</h4>
+                    <div class="value text-red">&gt;600</div>
+                    <p class="text-xs text-muted mt-1">Tripled in 3 years of reporting</p>
+                </div>
+                <div class="data-card border-l-4 border-red">
+                    <h4>2030 Projection</h4>
+                    <div class="value text-red pulse-warning">&gt;1,000</div>
+                    <p class="text-xs text-muted mt-1">Launch on Warning posture confirmed</p>
+                </div>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="nuclearChart"></canvas>
+            </div>
+
+            <div class="discontinuity p-4 bg-secondary rounded text-sm">
+                <strong class="text-red">2021 Strategic Breakout:</strong> 
+                <span class="text-secondary">The inflection was not merely "silo discovery" but convergence of three enablers: (1) <strong>Infrastructure</strong>—300+ solid-propellant silos at Hami/Yumen/Yulin; 
+                (2) <strong>Fissile Production</strong>—CFR-600 fast breeder reactors (Russian HEU fuel delivered 2022) enabling weapons-grade plutonium; 
+                (3) <strong>Posture Shift</strong>—transition to "Early Warning Counterstrike" (Launch-on-Warning) requiring larger, alert force. 
+                This is triad expansion (DF-41 land, JL-3 sea, H-6N air), not just hole-filling.</span>
+            </div>
+
+            <!-- Silo Field Evidence Grid -->
+            <div class="grid grid-cols-3 gap-3 text-center mono text-sm mt-4">
+                <div class="p-3 bg-secondary border border-red rounded">
+                    <div class="text-red font-bold text-xl">110</div>
+                    <div class="text-xs text-muted">Hami Silo Field</div>
+                </div>
+                <div class="p-3 bg-secondary border border-red rounded">
+                    <div class="text-red font-bold text-xl">120</div>
+                    <div class="text-xs text-muted">Yumen Silo Field</div>
+                </div>
+                <div class="p-3 bg-secondary border border-red rounded">
+                    <div class="text-red font-bold text-xl">90</div>
+                    <div class="text-xs text-muted">Yulin Silo Field</div>
+                </div>
+            </div>
+            <p class="text-xs text-muted text-center mt-2 mono">Total: 320 silos (DoD: "at least 300") — capable of fielding DF-31 and DF-41 class ICBMs</p>
+
+            <!-- Chart Methodology Note -->
+            <div class="p-3 bg-secondary rounded text-xs text-muted mt-3 border-l-2" style="border-color: var(--accent-purple);">
+                <strong class="text-purple">Chart Assumptions:</strong> 
+                Solid line = DoD annual estimates (2000–2024); dashed line = theoretical capacity if all silos loaded with MIRVed DF-41s (3 warheads each) plus mobile/sea legs. 
+                Projections assume: (1) High MIRV utilization on DF-41/DF-5B/C; (2) Silos are active launch sites, not decoys; (3) CFR-600 reactors produce weapons-grade plutonium per design capacity.
+            </div>
+
+            <div class="assessment">
+                <strong>September 2024 Operational Validation:</strong> 
+                <span class="text-secondary text-sm">PLARF conducted its first ICBM launch into the Pacific Ocean since 1980. This was not R&D—it was operational validation 
+                of "Early Warning Counterstrike" (LOW) capability. Infrastructure (300+ silos) + behavior (ocean launch) = confirmed intent 
+                to hold U.S. homeland at risk to constrain intervention in regional conflicts.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 2: A2/AD & MISSILE REACH -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-orange)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">The Tyranny of Range: Concentric Circles of Risk</h3>
+                    <p class="mono text-xs text-secondary">Branch C: From Denial (Taiwan) to Punishment (Guam) to Global Reach</p>
+                </div>
+            </div>
+
+            <p class="text-secondary">
+                The PLA has systematically solved the physics of distance. We can map capability expansion as expanding 
+                concentric circles of risk that now encompass U.S. territories. The threat is not just range—it's <em>volume</em> 
+                and <em>multi-axis</em> capabilities moving from "denial" to "punishment."
+            </p>
+
+            <div class="grid md-grid-cols-2 gap-6">
+                <div class="chart-wrap">
+                    <canvas id="missileRangeChart"></canvas>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Concentric circles timeline -->
+                    <div class="timeline-node text-orange" style="padding-bottom: 1.5rem;">
+                        <div class="mono text-xs text-muted">Circle 1: First Island Chain (Saturated)</div>
+                        <div class="font-bold">SRBMs + DF-21D "Carrier Killer"</div>
+                        <p class="text-sm text-secondary">2000s: SRBM saturation (DF-11/15/16). 2010: DF-21D IOC extends to ~1,500km. Taiwan, Okinawa, Philippines at risk.</p>
+                    </div>
+                    <div class="timeline-node shock text-red" style="padding-bottom: 1.5rem;">
+                        <div class="mono text-xs text-muted">Circle 2: Second Island Chain (Contested)</div>
+                        <div class="font-bold">DF-26 "Guam Killer" + DF-17 HGV</div>
+                        <p class="text-sm text-secondary">2016: DF-26 fielded (~4,000km). <strong class="text-red">⚠ Dual-capable (rapid nuclear/conventional swap)—escalation ambiguity risk.</strong> 2019: DF-17 HGV defeats BMD. Both have anti-ship capability.</p>
+                    </div>
+                    <div class="timeline-node text-purple" style="padding-bottom: 1.5rem;">
+                        <div class="mono text-xs text-muted">Circle 3: Extended Range (Emerging / Limited Inventory)</div>
+                        <div class="font-bold">DF-27 + H-6N Nuclear Bomber</div>
+                        <p class="text-sm text-secondary">2024: DF-27 confirmed (5,000–8,000km); anti-ship capability. H-6N air-refuelable bomber completes triad. Diego Garcia, Hawaii at risk. <em class="text-muted">(DF-27 fielding assessed from 2021–2024 testing; lower density than DF-26).</em></p>
+                    </div>
+                    <div class="timeline-node text-blue">
+                        <div class="mono text-xs text-muted">Circle 4: Global Reach (Strategic Nuclear)</div>
+                        <div class="font-bold">DF-41 ICBM (Strategic Nuclear Only)</div>
+                        <p class="text-sm text-secondary">DF-41 ICBM (13,000km) with MIRVs—strictly nuclear deterrent, not conventional strike. H-20 stealth bomber (anticipated) may provide future conventional global strike option.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 text-center mono text-sm">
+                <div class="p-4 bg-secondary border border-red rounded">
+                    <div class="text-red font-bold">First Island Chain</div>
+                    <div class="text-xs text-secondary">Taiwan, Okinawa, Philippines</div>
+                    <div class="text-red mt-2 text-xl">SATURATED</div>
+                    <div class="text-xs text-muted">~1,000+ SRBMs/MRBMs</div>
+                    <div class="text-xs text-muted">Massed fires achievable</div>
+                </div>
+                <div class="p-4 bg-secondary border border-orange rounded">
+                    <div class="text-orange font-bold">Second Island Chain</div>
+                    <div class="text-xs text-secondary">Guam, Palau</div>
+                    <div class="text-orange mt-2 text-xl">PRECISION</div>
+                    <div class="text-xs text-muted">~250 IRBM launchers (DF-26)</div>
+                    <div class="text-xs text-muted">⚠ Dual-capable ambiguity</div>
+                </div>
+                <div class="p-4 bg-secondary border border-purple rounded">
+                    <div class="text-purple font-bold">Extended / Global</div>
+                    <div class="text-xs text-secondary">Hawaii, Diego Garcia, CONUS</div>
+                    <div class="text-purple mt-2 text-xl">LIMITED</div>
+                    <div class="text-xs text-muted">DF-27 (emerging); DF-41 (nuclear)</div>
+                    <div class="text-xs text-muted">Conventional reach developing</div>
+                </div>
+            </div>
+
+            <!-- Escalation Ambiguity Warning -->
+            <div class="p-3 bg-secondary rounded text-xs text-secondary border-l-4 mt-3" style="border-color: var(--accent-red);">
+                <strong class="text-red">⚠ Escalation Ambiguity (DF-26):</strong> 
+                The 2025 DoD report highlights the "multi-role" DF-26 as a risk to strategic stability. It can carry nuclear or conventional warheads and is 
+                "designed to rapidly swap" them. A DF-26 launch could be misinterpreted as a nuclear first strike. This ambiguity is a feature, not a bug—it complicates U.S. response calculus.
+            </div>
+
+            <div class="p-4 bg-secondary rounded text-sm border-l-4" style="border-color: var(--accent-orange);">
+                <strong class="text-orange">Assessment:</strong> 
+                The "Tyranny of Range" no longer protects U.S. forward bases. The 2025 report validates PLA precision strikes can range 
+                <strong>1,500–2,000 nautical miles</strong> (~2,800–3,700km), placing the entire Second Island Chain under threat. 
+                This A2/AD "shield" frees the PLAN to project power globally as the "sword" (see Naval Evolution below).
+            </div>
+        </section>
+
+        <!-- SECTION 3: NAVAL EVOLUTION -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-blue)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">Naval Evolution: From "Malacca Dilemma" to Global Projection</h3>
+                    <p class="mono text-xs text-secondary">Branch D: The "Shield and Sword" — PLARF enables PLAN projection</p>
+                </div>
+            </div>
+
+            <p class="text-secondary">
+                The PLAN's expansion is not prestige-seeking—it's a structural response to the <strong>"Malacca Dilemma"</strong> (2003): 
+                80% of China's oil imports pass through a strait controlled by foreign powers. The hardware built since then is the 
+                physical manifestation of this strategic anxiety. The key proof of "blue water" intent is not carriers—it's the 
+                <em>logistics architecture</em> that allows the PLAN to operate independent of Chinese ports.
+            </p>
+
+            <div class="grid md-grid-cols-2 gap-6">
+                <div class="chart-wrap">
+                    <canvas id="domainRadar"></canvas>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="data-card border-l-4 border-orange">
+                        <h4>2003: "Malacca Dilemma" Articulated</h4>
+                        <p class="text-sm text-secondary">
+                            <span class="evidence-label">Strategic Anxiety:</span> Hu Jintao identifies energy SLOC vulnerability. 
+                            <span class="evidence-label">Response:</span> 2004 "New Historic Missions" directs PLA to protect overseas interests.
+                        </p>
+                    </div>
+                    <div class="data-card border-l-4 border-blue">
+                        <h4>2015: "Far Seas Protection" Doctrine</h4>
+                        <p class="text-sm text-secondary">
+                            <span class="evidence-label">Doctrinal Shift:</span> White Paper authorizes "open seas protection" (远海护卫). 
+                            <span class="evidence-label">Rationale:</span> Belt and Road Initiative requires global SLOC security.
+                        </p>
+                    </div>
+                    <div class="data-card border-l-4 border-blue">
+                        <h4>2017–2023: Global Logistics Network</h4>
+                        <p class="text-sm text-secondary">
+                            <span class="evidence-label">Nodes:</span> Djibouti (2017), Ream Naval Base Cambodia (pier 2023). 
+                            <span class="evidence-label">Pursuing:</span> Equatorial Guinea (Atlantic), UAE, Pakistan. 
+                            <span class="evidence-label">Indicator:</span> Shift from "visiting" to "stationed" navy.
+                        </p>
+                    </div>
+                    <div class="data-card border-l-4 border-purple">
+                        <h4>2024: Force Structure Transformation</h4>
+                        <p class="text-sm text-secondary">
+                            <span class="evidence-label">Hull Count:</span> 370+ ships (world's largest). 
+                            <span class="evidence-label">Quality Shift:</span> Retiring coastal corvettes → fielding Type 055 cruisers (112 VLS cells). 
+                            <span class="evidence-label">Projection:</span> CV-18 Fujian (EMALS), Type 076 Yulan (amphibious + EMALS).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tonnage vs Hull Count Nuance -->
+            <div class="grid md-grid-cols-3 gap-4 text-center mono text-sm">
+                <div class="p-4 bg-secondary border border-muted rounded">
+                    <div class="text-muted font-bold">Hull Count Headline</div>
+                    <div class="text-2xl text-primary mt-1">370+</div>
+                    <div class="text-xs text-muted mt-1">Ships (includes coastal craft)</div>
+                </div>
+                <div class="p-4 bg-secondary border border-blue rounded">
+                    <div class="text-blue font-bold">The Real Metric</div>
+                    <div class="text-2xl text-blue mt-1">Tonnage</div>
+                    <div class="text-xs text-secondary mt-1">Large, multi-mission platforms replacing small, single-mission craft</div>
+                </div>
+                <div class="p-4 bg-secondary border border-purple rounded">
+                    <div class="text-purple font-bold">Lethality Indicator</div>
+                    <div class="text-2xl text-purple mt-1">VLS Cells</div>
+                    <div class="text-xs text-secondary mt-1">Type 055: 112 cells (more than Ticonderoga-class)</div>
+                </div>
+            </div>
+
+            <!-- The Logistics Tether Proof -->
+            <div class="interstitial" style="margin-top: 1.5rem;">
+                <div class="interstitial-title">Blue Water Proof: The Logistics Tether</div>
+                <h4 class="font-bold mb-3">Fuyu-Class AOE Ships — The Real Indicator</h4>
+                <p class="text-secondary text-sm mb-4">
+                    A large navy is not necessarily a global navy. The definitive proof of "blue water" capability is the 
+                    auxiliary fleet that allows the PLAN to sever its tether to mainland ports:
+                </p>
+                <div class="grid md-grid-cols-2 gap-4">
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-orange mb-1">2000 Baseline</div>
+                        <p class="text-sm text-secondary">
+                            Almost no ability to replenish at sea. Operations limited to ~1,000km from Chinese ports.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-blue mb-1">2023 Capability</div>
+                        <p class="text-sm text-secondary">
+                            <strong>Fuyu-class fast combat support ships (AOE)</strong> fielded—specifically designed to sustain carrier strike groups in distant waters.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shield and Sword Integration -->
+            <div class="p-4 bg-secondary rounded text-sm border-l-4 mt-4" style="border-color: var(--accent-red);">
+                <strong class="text-red">"Fortress vs. Projection" — PLARF Enables PLAN:</strong> 
+                <span class="text-secondary">The PLAN doesn't need to defend the Chinese coast because the PLARF has assumed that mission. 
+                The DF-21D and DF-26 create an A2/AD "shield" that transforms the Near Seas from contested zone to PLA bastion—
+                freeing the PLAN's carriers and Type 055 cruisers to project power outward as the "sword."</span>
+            </div>
+
+            <div class="assessment">
+                <strong>Assessment:</strong> 
+                <span class="text-secondary text-sm">The PLAN's expansion is fundamentally tied to CCP economic survival. 
+                As long as China relies on imported energy and global trade, the PLAN will seek far-seas basing and projection capabilities 
+                regardless of the Taiwan situation. The Fuyu-class AOEs and global logistics network (Djibouti → Cambodia → Atlantic) 
+                confirm the PLAN is building the sustainment architecture for permanent global power projection.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TAIWAN STRAIT BALANCE -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-cyan)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">Cross-Strait Balance: The "Invisible Fleet" Problem</h3>
+                    <p class="mono text-xs text-secondary">Branch B: Why Traditional Warning Indicators Will Fail</p>
+                </div>
+            </div>
+
+            <p class="text-secondary">
+                For two decades, DoD assessed invasion as unlikely because the PLAN lacked sufficient amphibious lift. 
+                This was a <strong>capabilities-based analysis</strong> that counted grey hulls. The correct framework is 
+                <strong>legal and mobilization-based analysis</strong>: the PLA solved its "hardware gap" with a "software solution"—
+                legal mobilization of the civilian fleet. This fundamentally changes what we should be watching for.
+            </p>
+
+            <div class="grid md-grid-cols-2 gap-4">
+                <div class="data-card">
+                    <h4>2000–2019 Assessment</h4>
+                    <div class="value text-secondary">~1 Division</div>
+                    <p class="text-xs text-muted mt-1">~10,000–20,000 troops via dedicated LSTs/LPDs. DoD: "China does not appear to be building the conventional amphibious lift required."</p>
+                </div>
+                <div class="data-card border-l-4 border-orange">
+                    <h4>2022 Exercise Observed</h4>
+                    <div class="value text-orange">~1 Group Army</div>
+                    <p class="text-xs text-muted mt-1">12 civilian ships (8 large RORO ferries) moved a full Group Army (~50,000 troops) for the first time. "Whole-of-society" concept validated.</p>
+                </div>
+            </div>
+
+            <!-- The Invisible Fleet Interstitial -->
+            <div class="interstitial">
+                <div class="interstitial-title">Reframing Warning Indications</div>
+                <h4 class="font-bold mb-3">The "Invisible Fleet" Hypothesis</h4>
+                <p class="text-secondary text-sm mb-4">
+                    We must stop assessing invasion timelines based on LST/LPD construction rates. The PLA has stopped building them 
+                    in mass quantities because <em>they don't intend to use them as primary lift</em>. The warning indicator is not 
+                    grey-hull deployment—it's the <strong>diversion of civilian dual-use shipping</strong> from commercial routes.
+                </p>
+                <div class="grid md-grid-cols-2 gap-4">
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-red mb-1">Traditional Indicator</div>
+                        <p class="text-sm text-secondary">
+                            Watch for: PLAN amphibious ship concentration in Eastern Theater; LST production rates; naval base activity.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-cyan mb-1">Alternative Indicator</div>
+                        <p class="text-sm text-secondary">
+                            Watch for: Commercial RORO diversion from regular routes; JLSF activation; civilian ship "maintenance" surges at military-capable ports.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Mobilization Mechanism -->
+            <div class="grid md-grid-cols-3 gap-4 text-center mono text-sm">
+                <div class="p-4 bg-secondary border border-orange rounded">
+                    <div class="text-orange font-bold">2016 Law</div>
+                    <div class="text-xs text-secondary mt-1">National Defense Transportation Law mandates civilian ships built to military spec</div>
+                </div>
+                <div class="p-4 bg-secondary border border-red rounded">
+                    <div class="text-red font-bold">JLSF + MROs</div>
+                    <div class="text-xs text-secondary mt-1">Joint Logistics Support Force with Military Representative Offices embedded in civilian companies</div>
+                </div>
+                <div class="p-4 bg-secondary border border-purple rounded">
+                    <div class="text-purple font-bold">"Just-in-Time" Fleet</div>
+                    <div class="text-xs text-secondary mt-1">Invasion fleet that doesn't sit in naval bases; commandeered on demand</div>
+                </div>
+            </div>
+
+            <!-- Logistics-as-a-Weapon -->
+            <div class="p-4 bg-secondary rounded text-sm border-l-4 mt-4" style="border-color: var(--accent-orange);">
+                <strong class="text-orange">"Logistics-as-a-Weapon" Insight:</strong> 
+                <span class="text-secondary">The lack of dedicated military lift is not a vulnerability—it's a feature. By relying on civilian assets, 
+                the PLA: (1) complicates U.S. targeting under Law of Armed Conflict; (2) expands lift capacity faster than any shipbuilding program; 
+                (3) creates strategic ambiguity until the moment of mobilization. This is "National Total War" (国家总体战) doctrine in action.</span>
+            </div>
+
+            <!-- Permissive Environment Requirement -->
+            <div class="p-4 bg-secondary rounded text-sm border-l-4 mt-4" style="border-color: var(--accent-red);">
+                <strong class="text-red">"Permissive Environment" Requirement:</strong> 
+                <span class="text-secondary">Civilian ROROs are soft targets. This strategy implies the PLA has high confidence it can achieve 
+                <strong>absolute air and maritime superiority</strong> before the crossing. The J-20/S-400 combination is the prerequisite "shield" 
+                required to allow the vulnerable ferry fleet to cross. The RORO strategy fails without air dominance first.</span>
+            </div>
+
+            <div class="chart-wrap">
+                <canvas id="airBalanceChart"></canvas>
+            </div>
+
+            <!-- Chart Methodology Box -->
+            <div class="p-4 bg-secondary rounded text-sm mt-4">
+                <div class="mono text-xs text-muted uppercase tracking-wide mb-2">Chart Methodology</div>
+                <p class="text-secondary text-sm mb-3">
+                    Synthesis of DoD assessments on 4th/5th-generation fighter inventory, integrated air defense system (IADS) capability, 
+                    and operational readiness. Taiwan's score includes asymmetric defenses (indigenous missiles, hardened shelters) that 
+                    partially offset platform disadvantage.
+                </p>
+                <div class="grid md-grid-cols-2 gap-3">
+                    <div>
+                        <div class="mono text-xs text-cyan mb-1">Key PLAAF Milestones</div>
+                        <ul class="text-xs text-secondary space-y-1" style="list-style: disc; padding-left: 1rem;">
+                            <li><strong>2003:</strong> Taiwan held 2× 4th-gen advantage (DoD 2003)</li>
+                            <li><strong>2017:</strong> J-20 IOC; "closing the gap" language appears</li>
+                            <li><strong>2018:</strong> S-400 delivery begins; IADS extends over Taiwan</li>
+                            <li><strong>2024:</strong> 1,300+ 4th-gen fighters; J-20 operational</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="mono text-xs text-cyan mb-1">Key Taiwan Responses</div>
+                        <ul class="text-xs text-secondary space-y-1" style="list-style: disc; padding-left: 1rem;">
+                            <li><strong>F-16V:</strong> 140+ upgrade program underway</li>
+                            <li><strong>Indigenous:</strong> Hsiung Feng, Tien Kung SAMs</li>
+                            <li><strong>Asymmetric:</strong> Mobile launchers, hardened facilities</li>
+                            <li><strong>2021+:</strong> DoD notes "widening capability gap"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-sm text-secondary mt-4">
+                <strong>Permissive Environment Implication:</strong> The RORO-based invasion strategy requires absolute air superiority before crossing. 
+                The J-20/S-400 combination provides the prerequisite "shield" — JOINT SWORD-2024A/B practiced "seizing multi-domain control" 
+                as the first phase of any Taiwan operation.
+            </p>
+
+            <!-- Blockade-to-Invasion Continuum -->
+            <div class="interstitial" style="margin-top: 1.5rem;">
+                <div class="interstitial-title">Phase 1 Indicator</div>
+                <h4 class="font-bold mb-3">The "Blockade-to-Invasion" Continuum</h4>
+                <p class="text-secondary text-sm mb-4">
+                    The integration of the <strong>China Coast Guard (CCG)</strong> into JOINT SWORD-2024A/B signals that a quarantine or blockade 
+                    is the likely Phase 1 of any invasion scenario—designed to weaken defenses and test international response before the 
+                    "invisible fleet" crosses.
+                </p>
+                <div class="grid md-grid-cols-2 gap-4">
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-blue mb-1">JOINT SWORD-2024A (May)</div>
+                        <p class="text-sm text-secondary">
+                            "Punishment" exercise following Lai inauguration. CCG operated <em>inside</em> blockade formations for the first time—blurring law enforcement and combat operations.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-purple mb-1">JOINT SWORD-2024B (October)</div>
+                        <p class="text-sm text-secondary">
+                            Practiced "seizing multi-domain control" and full encirclement. Demonstrated integration of PLARF, PLAAF, PLAN, and CCG in unified operation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assessment">
+                <strong>Assessment:</strong> 
+                <span class="text-secondary text-sm">The PLA has solved its amphibious lift "gap" with legal mobilization, not shipbuilding. 
+                We should not wait for grey-hull buildup to warn of invasion. The correct indicators are: (1) civilian RORO diversion from commercial routes; 
+                (2) CCG "law enforcement" escalation as Phase 1 blockade; (3) JLSF activation and MRO activity. 
+                The "invisible fleet" creates a just-in-time invasion capability that bypasses traditional warning systems.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 5: TERMINOLOGY EVOLUTION -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--text-secondary)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">Strategic Terminology Evolution: The Doctrinal Lead-Time Indicator</h3>
+                    <p class="mono text-xs text-secondary">Doctrine predicts hardware fielding 5–10 years in advance</p>
+                </div>
+            </div>
+
+            <p class="text-secondary">
+                The PLA does not build weapons randomly—they build to a specific theory of victory. By tracking doctrinal shifts, 
+                we can <strong>predict future hardware fielding</strong>. The pattern: <span class="mono text-cyan">Doctrine → Organization → Capability</span>.
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Doctrine Period</th>
+                            <th>DoD Term</th>
+                            <th>PLA Term</th>
+                            <th>Hardware Outcome (5–10 yr lag)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-orange-subtle">
+                            <td class="text-orange">2000–2004</td>
+                            <td>Asymmetric Warfare</td>
+                            <td>杀手锏 (Assassin's Mace)</td>
+                            <td class="text-secondary">→ DF-21D "Carrier Killer" (2010)</td>
+                        </tr>
+                        <tr class="bg-orange-subtle">
+                            <td class="text-orange">2004–2010</td>
+                            <td>String of Pearls</td>
+                            <td>马六甲困局 (Malacca Dilemma)</td>
+                            <td class="text-secondary">→ Djibouti Base (2017); Fuyu-class AOE (2023)</td>
+                        </tr>
+                        <tr class="bg-red-subtle">
+                            <td class="text-red">2010–2015</td>
+                            <td>A2/AD</td>
+                            <td>反介入 (Counter-Intervention)</td>
+                            <td class="text-secondary">→ DF-26 "Guam Killer" (2016); S-400 (2018)</td>
+                        </tr>
+                        <tr class="bg-blue-subtle">
+                            <td class="text-blue">2015–2019</td>
+                            <td>System-of-Systems</td>
+                            <td>信息化战争 (Informatized Warfare)</td>
+                            <td class="text-secondary">→ SSF Created (2015); ISF/Aerospace/Cyber Forces (2024)</td>
+                        </tr>
+                        <tr class="bg-purple-subtle">
+                            <td class="text-purple">2019–2024</td>
+                            <td>System Warfare</td>
+                            <td>智能化战争 (Intelligentized Warfare)</td>
+                            <td class="text-secondary">→ <em class="text-orange">Autonomous swarms, AI C2 (2030 predicted)</em></td>
+                        </tr>
+                        <tr class="bg-purple-subtle">
+                            <td class="text-purple">2025</td>
+                            <td>Total War</td>
+                            <td>国家总体战 (National Total War)</td>
+                            <td class="text-secondary">→ "Invisible Fleet" mobilization architecture (operational)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Anticipatory Framework Box -->
+            <div class="interstitial" style="margin-top: 1.5rem;">
+                <div class="interstitial-title">Anticipatory Framework</div>
+                <h4 class="font-bold mb-3">The Doctrine → Organization → Capability Cycle</h4>
+                <div class="grid md-grid-cols-3 gap-4">
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-orange mb-1">Example 1: Assassin's Mace</div>
+                        <p class="text-sm text-secondary">
+                            <strong>2000–04:</strong> Doctrine focused on asymmetric attacks against superior foes. 
+                            <strong>Result:</strong> DF-21D fielded 2010 — exactly as predicted.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-blue mb-1">Example 2: SSF "Failed Experiment" (8 Years)</div>
+                        <p class="text-sm text-secondary">
+                            <strong>2015:</strong> SSF created to centralize information warfare. 
+                            <strong>2024:</strong> SSF dissolved after only 8 years — cited "severely inefficient management." 
+                            PLA willing to break "rice bowls" (bureaucratic fiefdoms) to optimize kill chain speed.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-purple mb-1">Example 3: Intelligentized (Current)</div>
+                        <p class="text-sm text-secondary">
+                            <strong>2019–24:</strong> Doctrine emphasizes AI, autonomy, decision-speed. 
+                            <strong>Anticipated:</strong> Autonomous swarms + AI-driven C2 systems by <strong>~2030</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assessment">
+                <strong>Anticipatory Assessment (~2030):</strong> 
+                <span class="text-secondary text-sm">The current "Intelligentized Warfare" doctrine (2019–2024) predicts the fielding of 
+                autonomous weapons systems and AI-accelerated command architectures by approximately 2030. 
+                The 2024 SSF dissolution was the organizational precursor — stripping bureaucratic layers to enable 
+                machine-speed kill chains. Watch for: autonomous maritime/aerial swarms, AI-enabled targeting, 
+                and "System Destruction Warfare" that paralyzes U.S. C4ISR before kinetic engagement.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 6: KEY SYSTEM MILESTONES -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-cyan)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">Key System Milestones</h3>
+                    <p class="mono text-xs text-secondary">IOC/Fielding assessments from DoD reports — validates Doctrine → Capability lag</p>
+                </div>
+            </div>
+
+            <p class="text-secondary text-sm">
+                This table validates the <strong>Doctrinal Lead-Time</strong> pattern: hardware fielding consistently follows 
+                doctrinal articulation by 5–10 years. The "First Mentioned" column shows when DoD first reported development; 
+                "Operational" shows fielding date. <em class="text-cyan">Correction applied:</em> Type 003 operational status updated per 2025 report.
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>System</th>
+                            <th>Type</th>
+                            <th>First Mentioned</th>
+                            <th>Operational</th>
+                            <th>Strategic Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-bold text-red">DF-21D</td>
+                            <td>ASBM</td>
+                            <td>2005–2008</td>
+                            <td>2010/2011</td>
+                            <td class="text-secondary">"Carrier Killer" — anti-ship ballistic missile; denies carrier access to First Island Chain. ~300 MRBM launchers.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue">J-20</td>
+                            <td>Stealth Fighter</td>
+                            <td>2010</td>
+                            <td>2019</td>
+                            <td class="text-secondary">Ends U.S. stealth monopoly (first flight contradicted DoD timeline)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-orange">DF-26</td>
+                            <td>IRBM</td>
+                            <td>2014</td>
+                            <td>2016</td>
+                            <td class="text-secondary">"Guam Killer" — <strong class="text-red">dual-capable (rapid nuke/conv swap) + anti-ship</strong>. ~250 launchers. ⚠ Escalation ambiguity risk.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-purple">DF-17</td>
+                            <td>HGV</td>
+                            <td>2014 (WU-14)</td>
+                            <td>2019/2020</td>
+                            <td class="text-secondary">Hypersonic capability defeats traditional BMD</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue">Type 003</td>
+                            <td>Carrier</td>
+                            <td>2018</td>
+                            <td>2025 (Expected)</td>
+                            <td class="text-secondary">CV-18 Fujian launched 2022; sea trials 2024; EMALS catapult enables heavy aircraft ops</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-red">H-6N</td>
+                            <td>Bomber</td>
+                            <td>2018</td>
+                            <td>2019</td>
+                            <td class="text-secondary">Air-refuelable nuclear bomber completes triad</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-purple">DF-27</td>
+                            <td>Extended-Range</td>
+                            <td>~2021</td>
+                            <td>2024 (Deployed)</td>
+                            <td class="text-secondary">5,000–8,000km range; conv/nuke + anti-ship capable; fills gap between IRBM and ICBM. <em>(Assessed from 2021–2024 testing; lower fielding density than DF-26)</em></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue">Type 055</td>
+                            <td>Cruiser</td>
+                            <td>2014</td>
+                            <td>2020</td>
+                            <td class="text-secondary">Renhai-class: 112 VLS cells; larger than Ticonderoga; blue-water air defense</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue">Fuyu-class</td>
+                            <td>AOE</td>
+                            <td>2017</td>
+                            <td>2023</td>
+                            <td class="text-secondary">Fast combat support ship; enables carrier ops in distant waters (blue-water proof)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-cyan">JLSF</td>
+                            <td>Organization</td>
+                            <td>2016</td>
+                            <td>2016</td>
+                            <td class="text-secondary">Joint Logistics Support Force; MROs enable civilian fleet commandeering ("Invisible Fleet" mechanism)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-red">S-400</td>
+                            <td>SAM</td>
+                            <td>2014 (contract)</td>
+                            <td>2018</td>
+                            <td class="text-secondary">Extended IADS coverage over Taiwan Strait; enables "permissive environment" for RORO crossing</td>
+                        </tr>
+                        <tr class="bg-orange-subtle">
+                            <td class="font-bold text-orange">H-20</td>
+                            <td>Stealth Bomber</td>
+                            <td>2016–2018</td>
+                            <td class="text-orange">LAG PHASE</td>
+                            <td class="text-secondary"><em>Expect J-20-pattern "Leap":</em> surprise unveiling followed by rapid fielding. Completes strategic bomber triad.</td>
+                        </tr>
+                        <tr class="bg-orange-subtle">
+                            <td class="font-bold text-orange">Autonomous Swarms</td>
+                            <td>AI/UAS</td>
+                            <td>2020–2024</td>
+                            <td class="text-orange">~2030 (Predicted)</td>
+                            <td class="text-secondary"><em>Doctrinal precursor:</em> 2024 SSF dissolution (organizational); "Intelligentized Warfare" doctrine (2019).</td>
+                        </tr>
+                        <tr class="bg-purple-subtle">
+                            <td class="font-bold text-purple">ISF/ASF/CSF</td>
+                            <td>Organization</td>
+                            <td>2024 (SSF dissolved)</td>
+                            <td>2024</td>
+                            <td class="text-secondary">Information Support Force + Aerospace Force + Cyberspace Force. Targets Data/Connectivity/Network pillars. CSF is "deputy-theater grade" but reports to CMC.</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-red">H-6N</td>
+                            <td>Nuclear Bomber</td>
+                            <td>2019 (debut)</td>
+                            <td>2022–2024</td>
+                            <td class="text-secondary">China's first nuclear-capable air-refuelable bomber. Completes air leg of triad. Enables "Strategic Counterbalance."</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-red">JL-3 SLBM</td>
+                            <td>SLBM</td>
+                            <td>~2018 (testing)</td>
+                            <td>2024+</td>
+                            <td class="text-secondary">Extended-range SLBM for Type 096 SSBNs. Enables continuous at-sea deterrence patrols. Sea leg of triad.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- INTERSTITIAL: THE ASSESS-LAG-LEAP PATTERN -->
+        <section class="interstitial">
+            <div class="interstitial-title">The Meta-Lesson</div>
+            <h3 class="text-xl font-bold mb-4">The Assess-Lag-Leap Cycle: Structural Bias, Not Intelligence Failure</h3>
+            
+            <p class="text-secondary mb-4">
+                The most important finding in this 25-year archive isn't any single data point—it's the recurring pattern 
+                of how the assessment itself evolves. This is not a series of intelligence failures; it is a 
+                <strong class="text-orange">structural bias in indicator analysis</strong>. We watch <em>hardware</em> (lagging indicators) 
+                instead of <em>doctrine and organization</em> (leading indicators).
+            </p>
+
+            <div class="grid md-grid-cols-3 gap-4 mb-6">
+                <div class="p-4 bg-secondary rounded text-center">
+                    <div class="text-3xl font-bold text-orange">1</div>
+                    <div class="mono text-xs text-muted mt-1">ASSESS</div>
+                    <p class="text-sm text-secondary mt-2">Capability assessed as distant or theoretical based on observable hardware</p>
+                </div>
+                <div class="p-4 bg-secondary rounded text-center">
+                    <div class="text-3xl font-bold text-muted">2</div>
+                    <div class="mono text-xs text-muted mt-1">LAG</div>
+                    <p class="text-sm text-secondary mt-2">Indigenous innovation outpaces collection; we mistake fielding phase for decision phase</p>
+                </div>
+                <div class="p-4 bg-secondary rounded text-center">
+                    <div class="text-3xl font-bold text-red">3</div>
+                    <div class="mono text-xs text-muted mt-1">LEAP</div>
+                    <p class="text-sm text-secondary mt-2">Physical revelation forces radical revision in a single reporting cycle</p>
+                </div>
+            </div>
+
+            <!-- The Core Insight -->
+            <div class="p-4 bg-secondary rounded border-l-4 mb-6" style="border-color: var(--accent-orange);">
+                <strong class="text-orange">"Hardware Lag" Hypothesis:</strong> 
+                <span class="text-secondary text-sm">Our analytical cycle is systematically delayed because we wait for physical hardware 
+                verification before adjusting the threat baseline. The Nuclear Leap of 2021 (300+ silos) was not a sudden decision—
+                the decision was likely made in the mid-2010s, coincident with the Rocket Force elevation to full service in 2015. 
+                <em>We tracked the silos (lagging), but missed the organizational intent (leading).</em></span>
+            </div>
+
+            <div class="grid md-grid-cols-2 gap-6">
+                <div class="space-y-3">
+                    <div class="mono text-xs text-muted uppercase tracking-wide mb-2">Historical Examples (Validated)</div>
+                    
+                    <div class="p-3 bg-secondary rounded border-l-2" style="border-color: var(--accent-orange);">
+                        <div class="mono text-xs text-orange">J-20 Stealth Fighter</div>
+                        <p class="text-sm text-secondary mt-1">
+                            <strong>Lag:</strong> DoD assessed 5th-gen "years away" (2009–2010), citing engine/radar difficulties. 
+                            <strong>Leap:</strong> First flight January 2011, during Sec. Gates' Beijing visit. 2012 report forced to acknowledge 
+                            "China's ambition to produce a fighter aircraft that incorporates stealth attributes... and super-cruise capable engines." 
+                            <strong>Pattern:</strong> Now seeing similar lag with H-20 bomber—expect similar leap.
+                        </p>
+                    </div>
+                    
+                    <div class="p-3 bg-secondary rounded border-l-2" style="border-color: var(--accent-red);">
+                        <div class="mono text-xs text-red">Nuclear Silo Fields</div>
+                        <p class="text-sm text-secondary mt-1">
+                            <strong>Lag:</strong> 19 years of "low 200s" estimates (2000–2020). 
+                            <strong>Leap:</strong> 300+ silos discovered 2021; projection jumped to 1,000 by 2030. 
+                            <strong>Missed Signal:</strong> 2015 Rocket Force elevation was the decision indicator.
+                        </p>
+                    </div>
+                    
+                    <div class="p-3 bg-secondary rounded border-l-2" style="border-color: var(--accent-blue);">
+                        <div class="mono text-xs text-blue">"Invisible Fleet" (Mirror-Imaging)</div>
+                        <p class="text-sm text-secondary mt-1">
+                            <strong>Lag:</strong> "One division" assessment held ~20 years; looked for U.S.-style LSTs. 
+                            <strong>Leap:</strong> 2022 exercise revealed civilian RORO solution. 
+                            <strong>Missed Signal:</strong> 2016 National Defense Transportation Law was the start signal. 
+                            2023 report confirms PLA "mitigated shortfalls" through civilian lift.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="mono text-xs text-muted uppercase tracking-wide mb-2">Structural Biases Identified</div>
+                    
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-red mb-1">"Mirror-Imaging" Trap</div>
+                        <p class="text-sm text-secondary">
+                            We looked for U.S.-style solutions (dedicated amphibious ships). The PLA solved problems with 
+                            "People's War" solutions (Civil-Military Fusion). Assessment based on U.S. doctrine misses PLA strategy.
+                        </p>
+                    </div>
+                    
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-purple mb-1">"Non-Linear Breakout" Model</div>
+                        <p class="text-sm text-secondary">
+                            DoD forecasts rely on linear extrapolation. The PLA operates on <em>step-functions</em>: 
+                            slow prototype development (Lag), then rapid mass production once technology matures (Leap). 
+                            When production pauses, assume retooling for generational jump—not a ceiling.
+                        </p>
+                    </div>
+                    
+                    <div class="p-3 bg-secondary rounded">
+                        <div class="mono text-xs text-cyan mb-1">"Negative Evidence" Signal</div>
+                        <p class="text-sm text-secondary">
+                            When the PLA stops doing something expected (e.g., not building LSTs), it signals a hidden strategy. 
+                            The absence of grey-hull buildup was not a failure—it was a design choice (civilian fleet mobilization).
+                        </p>
+                    </div>
+                    
+                    <div class="p-3 bg-secondary rounded border-l-2" style="border-color: var(--accent-red);">
+                        <div class="mono text-xs text-red mb-1">"Strategic Discontinuity" Warning ⚠</div>
+                        <p class="text-sm text-secondary">
+                            When <strong>hardware + doctrine lines converge</strong>, threat profile spikes vertically. 
+                            The PLA builds capabilities before doctrine, or changes doctrine before hardware—when both arrive simultaneously, 
+                            we face a step-change in strategic posture, not incremental modernization.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategic Discontinuity Proof Box -->
+            <div class="p-4 bg-secondary rounded border-l-4 mt-6" style="border-color: var(--accent-red);">
+                <div class="mono text-xs text-red uppercase tracking-wide mb-2">Active Strategic Discontinuity: Nuclear Posture</div>
+                <div class="grid md-grid-cols-2 gap-4">
+                    <div>
+                        <div class="mono text-xs text-muted mb-1">Hardware Line</div>
+                        <p class="text-sm text-secondary">
+                            <strong>2021:</strong> 300+ silos discovered (Hami, Yumen, Yulin). 
+                            <strong>2024:</strong> 600+ operational warheads; September ICBM Pacific launch (first since 1980).
+                        </p>
+                    </div>
+                    <div>
+                        <div class="mono text-xs text-muted mb-1">Doctrine Line</div>
+                        <p class="text-sm text-secondary">
+                            <strong>2023–2025:</strong> "Early Warning Counterstrike" (LOW) posture confirmed. 
+                            TJS/Huoyan-1 satellites + LPARs enable launch-on-warning capability.
+                        </p>
+                    </div>
+                </div>
+                <p class="text-sm mt-3 text-orange">
+                    <strong>Convergence Assessment:</strong> We are no longer facing a coercive regional power with minimum deterrence. 
+                    We are facing a <em>nuclear peer competitor</em> capable of rapid escalation management and holding the U.S. homeland at risk 
+                    to constrain intervention in regional conflicts.
+                </p>
+            </div>
+
+            <!-- The Fix -->
+            <div class="assessment" style="margin-top: 1.5rem;">
+                <strong>Analyst Corrective:</strong> 
+                <span class="text-secondary text-sm">Treat major organizational restructuring (SSF creation 2015, JLSF creation 2016, SSF dissolution 2024) 
+                as the definitive "Start" signal for capability jumps that will manifest physically 5–7 years later. 
+                Do not assess capability based solely on military inventory—assess based on "National Total War" mobilization potential. 
+                <em class="text-orange">Current prediction:</em> H-20 bomber and autonomous swarms are in the "Lag" phase; 
+                expect "Leap" when prototypes are unveiled. <em class="text-red">Current discontinuity:</em> Nuclear hardware + LOW doctrine 
+                have converged—assess China as nuclear peer competitor, not regional spoiler.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 7: INTELLIGENTIZED WARFARE -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-purple)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">Intelligentized Warfare: System Destruction, Not Attrition</h3>
+                    <p class="mono text-xs text-secondary">The 2024 reorganization is the physical manifestation of MDPW doctrine</p>
+                </div>
+            </div>
+
+            <p class="text-secondary">
+                The goal of Multi-Domain Precision Warfare (MDPW) is not to destroy enemy forces (attrition) but to 
+                <strong class="text-purple">paralyze the enemy's ability to operate</strong> (system destruction). 
+                The 2024 SSF dissolution is not a retreat—it is organizational optimization to remove bureaucratic friction from the kill chain.
+            </p>
+
+            <!-- Three Pillars Framework -->
+            <div class="interstitial" style="margin-top: 1rem;">
+                <div class="interstitial-title">System Destruction Framework</div>
+                <h4 class="font-bold mb-3">Targeting the Three Pillars of U.S. Operational System</h4>
+                <p class="text-secondary text-sm mb-4">
+                    The 2024 reorganization aligns specific forces to attack specific vulnerabilities in U.S. C4ISR:
+                </p>
+                <div class="grid md-grid-cols-3 gap-4">
+                    <div class="p-3 bg-secondary rounded text-center">
+                        <div class="text-2xl font-bold text-red">CSF</div>
+                        <div class="mono text-xs text-muted mt-1">Cyberspace Force</div>
+                        <p class="text-sm text-secondary mt-2"><strong>Target: DATA</strong><br>
+                        Psychological warfare, technical reconnaissance, network intrusion. Responsible for "Three Warfares" execution.</p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded text-center">
+                        <div class="text-2xl font-bold text-blue">ASF</div>
+                        <div class="mono text-xs text-muted mt-1">Aerospace Force</div>
+                        <p class="text-sm text-secondary mt-2"><strong>Target: CONNECTIVITY</strong><br>
+                        Space-based ISR, navigation denial, ASAT capability. Blind sensors before kinetic engagement.</p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded text-center">
+                        <div class="text-2xl font-bold text-purple">ISF</div>
+                        <div class="mono text-xs text-muted mt-1">Information Support Force</div>
+                        <p class="text-sm text-secondary mt-2"><strong>Target: NETWORK INTEGRITY</strong><br>
+                        AI-driven "nervous system" coordinating development and application of network information system.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md-grid-cols-2 gap-6 mt-6">
+                <div class="space-y-4">
+                    <div class="data-card">
+                        <h4>Military-Civil Fusion (MCF): The Supply Chain</h4>
+                        <p class="text-sm text-secondary">
+                            Elevated to national strategy in 2015. MCF is the <em>supply chain</em>; Intelligentized Warfare is the <em>product</em>. 
+                            Eliminates barriers between civilian R&D and military application. Key enabler for AI, quantum, and biotech acquisition. 
+                            The SSF was an <strong>obstacle</strong> to integrating these technologies at machine speed.
+                        </p>
+                    </div>
+                    <div class="data-card border-l-4 border-red">
+                        <h4>2024 Reorganization: The "Bureaucratic Latency" Fix</h4>
+                        <p class="text-sm text-secondary">
+                            The SSF (est. late 2015) was built for <em>Informatized Warfare</em>—connecting systems. It failed to support 
+                            <em>Intelligentized Warfare</em> because it created a bottleneck. After only <strong class="text-red">8 years</strong>, 
+                            the 2025 report cites <strong class="text-red">"severely inefficient management"</strong> and concerns over 
+                            <strong>"joint operational effectiveness"</strong> as dissolution drivers. The new structure places 
+                            cyber and space assets directly under CMC to accelerate sensor-to-shooter loop.
+                        </p>
+                    </div>
+                    <div class="data-card border-l-4 border-purple">
+                        <h4>Multi-Domain Precision Warfare (MDPW)</h4>
+                        <p class="text-sm text-secondary">
+                            Core concept: Use AI and Big Data to <strong>rapidly identify key vulnerabilities</strong> in the U.S. operational system. 
+                            The 2023 report identifies MDPW as PLA's "core operational concept." The goal is destruction of <em>connections</em> 
+                            between U.S. forces, not attrition of the forces themselves. 2024 restructuring creates dedicated forces (CSF, ASF, ISF) 
+                            to attack specific C4ISR nodes rather than engaging kinetic targets.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="chart-wrap">
+                        <canvas id="techMaturityChart"></canvas>
+                    </div>
+                    
+                    <!-- Chart Methodology -->
+                    <div class="p-3 bg-secondary rounded text-xs">
+                        <div class="mono text-muted uppercase tracking-wide mb-2">Chart Methodology: "Point-to-System" Progression</div>
+                        <div class="grid grid-cols-3 gap-2 text-secondary">
+                            <div><span class="text-orange">●</span> <strong>Point</strong> (2007): Isolated kinetic capability (ASAT debris cloud)</div>
+                            <div><span class="text-blue">●</span> <strong>Domain</strong> (2015): Centralized integration attempt (SSF)</div>
+                            <div><span class="text-red">●</span> <strong>System</strong> (2024): Flattened kill chain (ISF/ASF/CSF)</div>
+                        </div>
+                        <p class="text-secondary mt-2">
+                            <strong class="text-orange">Key Insight:</strong> SSF lasted only 8 years (2015–2024). The PLA acknowledges failure and adapts quickly—
+                            willing to dissolve institutional structures to optimize for combat effectiveness. 
+                            View 2024 reorganization as <em>purposeful optimization</em>, not turmoil.
+                        </p>
+                    </div>
+                    
+                    <!-- The Paralysis Metric -->
+                    <div class="p-4 bg-secondary rounded border-l-4" style="border-color: var(--accent-purple);">
+                        <div class="mono text-xs text-purple uppercase tracking-wide mb-2">The "Paralysis" Metric</div>
+                        <p class="text-sm text-secondary">
+                            <strong>Don't count ships. Measure soft-kill capability.</strong> The 2024 reorganization elevates non-kinetic 
+                            capabilities (psychological warfare, technical reconnaissance) to the <em>same status</em> as kinetic services 
+                            (Army, Navy, Air Force). "Blinding and deafening" the enemy is now a <strong>primary line of effort</strong>, 
+                            not a support function. Success = U.S. forces unable to coordinate, not U.S. platforms destroyed.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2030 Intelligentized Projection -->
+            <div class="p-4 bg-secondary rounded border-l-4 mt-4" style="border-color: var(--accent-purple);">
+                <div class="mono text-xs text-purple uppercase tracking-wide mb-2">2030 Projection: Doctrinal, Not Speculative</div>
+                <p class="text-sm text-secondary">
+                    The 2025 report highlights the PLA is exploring <strong>"attrition warfare by intelligent swarms"</strong> and 
+                    <strong>"cognitive control operations."</strong> The ISF was created specifically to manage the network and data 
+                    infrastructure required to feed AI models. The 2027 goal is "integrated mechanization, informatization, and intelligentization." 
+                    The 2030 endpoint is not a guess—it is the doctrinal deadline for AI-driven warfare capability.
+                </p>
+            </div>
+
+            <div class="assessment">
+                <strong>Assessment:</strong> 
+                <span class="text-secondary text-sm">The 2024 SSF dissolution was not failure—it was <em>dangerous optimization</em> for MDPW. 
+                The SSF lasted only 8 years (2015–2024), demonstrating the PLA's institutional agility and willingness to break 
+                bureaucratic "rice bowls" to optimize combat effectiveness. The threat is not individual platforms (J-20, DF-26)—
+                it is the flattened C4ISR architecture that enables machine-speed "blind and deafen" tactics. 
+                The ISF serves as the AI-driven nervous system; CSF and ASF are independent strike arms directly under CMC. 
+                Measure PLA success by sensor-to-shooter latency reduction, not hull counts.</span>
+            </div>
+        </section>
+
+        <!-- SECTION 8: WHAT TO WATCH -->
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: var(--accent-cyan)"></div>
+                <div>
+                    <h3 class="text-xl font-bold">What to Watch: Leading Indicators</h3>
+                    <p class="mono text-xs text-secondary">Include "negative evidence"—what they stop doing may signal hidden strategies</p>
+                </div>
+            </div>
+
+            <p class="text-secondary">
+                If the Assess-Lag-Leap pattern holds, certain unresolved trajectories are candidates for the next discontinuity. 
+                These are not aspirations—they are <strong>observable commitments</strong>. The PLA has already engaged the gears 
+                (organizational changes, hull construction, legal frameworks) that make these capabilities inevitable unless disrupted.
+            </p>
+
+            <!-- CATEGORY: FORCE PROJECTION & CONVENTIONAL -->
+            <div class="mono text-xs text-cyan uppercase tracking-wide mt-6 mb-3">Force Projection & Conventional</div>
+            <div class="watch-grid">
+                <div class="watch-card">
+                    <h4>Intelligentized Kill Chains (~2030): The "Algorithmic Command" Thesis</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>AI decision aids</strong> deployed to theater commanders; autonomous swarm coordination in exercises; 
+                        reduced sensor-to-shooter timelines; machine-speed targeting. 
+                        <strong>The "Five Incapables" Fix:</strong> PLA commanders self-assessed inability to make decisions in complex environments—
+                        AI is the solution to this human bottleneck.
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        The 2024 SSF dissolution removed the bureaucratic middleman. The ISF now coordinates networks directly for the CMC, 
+                        allowing AI-driven C2 to flow directly to shooters (ASF/CSF). 
+                        We are watching transition from "Informatized" (humans using computers) to "Intelligentized" (computers advising humans). 
+                        The leading indicator is not "more AI" but <strong>AI decision aids solving the 'Five Incapables'</strong>.
+                    </p>
+                </div>
+
+                <div class="watch-card">
+                    <h4>Global Logistics Network: The "Atlantic Threshold" Warning</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>Atlantic access:</strong> Equatorial Guinea/Gabon basing agreements (2025 report corroborates ongoing overtures). 
+                        <strong>Fuyu-class AOE:</strong> Fast combat support ships sever the shore-based logistics tether. 
+                        <strong>Ream Progression:</strong> Denial → PLAN corvettes docked (Dec 2023) → "Joint Logistics and Training Center" inaugurated (April 2025).
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        Atlantic basing is a <strong>strategic checkmate</strong>: forces U.S. to divert assets from Pacific to defend Atlantic coast, 
+                        breaking single-theater focus. If confirmed, validates structural commitment to hold U.S. homeland at risk from the east, 
+                        forcing Navy to split fleets in a Taiwan scenario. <em>Ream proves they can build covertly despite denials.</em>
+                    </p>
+                </div>
+            </div>
+
+            <!-- CATEGORY: NUCLEAR & STRATEGIC -->
+            <div class="mono text-xs text-red uppercase tracking-wide mt-6 mb-3">Nuclear & Strategic</div>
+            <div class="watch-grid">
+                <div class="watch-card">
+                    <h4>Nuclear Posture: The "Closed Loop" Firing Circuit</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>Critical link:</strong> High-frequency data link tests between TJS/Huoyan-1 satellites and PLARF bases. 
+                        The 2025 report confirms two additional TJS satellites launched with infrared sensors—alerts reach command 
+                        <strong>"within minutes, probably enabling counterstrike before inbound detonation."</strong>
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        The TJS/Huoyan-1 constellation is not just ISR—it is the <strong>essential firing circuit</strong> for the silo fields. 
+                        A solid-fueled silo-based ICBM force is vulnerable to first strike unless it launches <em>before</em> impact. 
+                        Without these sensors, 300+ silos are strategically vulnerable targets. 
+                        If we see successful networking of space-based IR sensors → LPARs → PLARF command posts, <strong>Launch-on-Warning is live</strong>.
+                    </p>
+                </div>
+
+                <div class="watch-card">
+                    <h4>Nuclear Triad: "Strategic Counterbalance" Completion</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>Triad maturation:</strong> H-6N nuclear bomber patrols; JL-3 SLBM test launches from operational SSBNs; 
+                        DF-41 mobile ICBM deployment beyond garrison positions. 
+                        <strong>2025 report confirms:</strong> H-6N is "China's first nuclear-capable air-refuelable bomber."
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        This is not about nuclear survival—it is about <strong>"Strategic Counterbalance"</strong>: 
+                        creating a nuclear shield behind which China can fight a <em>conventional war for Taiwan</em>. 
+                        A credible triad deters U.S. nuclear coercion, enabling escalation management. 
+                        The triad is the <em>prerequisite</em> for high-intensity conventional conflict—watch for operational exercises integrating all three legs.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CATEGORY: NON-KINETIC & GRAY ZONE -->
+            <div class="mono text-xs text-purple uppercase tracking-wide mt-6 mb-3">Non-Kinetic & Gray Zone</div>
+            <div class="watch-grid">
+                <div class="watch-card">
+                    <h4>"Invisible Fleet": The Logistics Singularity</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>Primary trigger:</strong> JLSF <strong>Military Representative Offices (MROs)</strong> assuming control of civilian shipping routing. 
+                        <strong>Secondary:</strong> Civilian RORO schedule deviations; "maintenance" surges at military-capable ports; 
+                        2023 report confirms ROROs modified with new ramps to launch amphibious vehicles at sea.
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        <strong>Negative Evidence is dispositive:</strong> PLAN is NOT building LSTs—yet conducting battalion-sized amphibious drops with civilian ROROs. 
+                        The leading indicator is not ship construction (takes years) but <strong>MRO activation within civilian firms</strong> (takes weeks). 
+                        Once MROs assume routing control, the civilian fleet <em>is</em> the invasion fleet. 
+                        <em>We are tracking a "capability gap" that doesn't exist because we're counting the wrong hulls.</em>
+                    </p>
+                </div>
+
+                <div class="watch-card">
+                    <h4>"Phase Zero" Blockade: CCG Lawfare Indicator</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>2024 CCG detention regulation:</strong> Authority to apprehend foreigners in "jurisdictional waters" provides 
+                        <strong>legal pretext for quarantine/blockade without declaring war</strong>. 
+                        Watch for: CCG "law enforcement" zones around key ports; detention of Philippine/Vietnamese vessels under new authorities.
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        CCG is no longer law enforcement—it is the <strong>picket line for blockade</strong>. In JOINT SWORD-2024B, CCG <em>encircled</em> Taiwan 
+                        and conducted joint patrols with PLA for first time. The leading indicator of blockade is not PLAN destroyers, 
+                        but establishment of CCG "law enforcement" zones. <em>This is "Legal Warfare" operationalized—framing acts of war as domestic enforcement.</em>
+                    </p>
+                </div>
+
+                <div class="watch-card">
+                    <h4>"Cognitive Kill Chain": Three Warfares + Cyber Fusion</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        CSF-attributed psychological operations using <strong>stolen data to feed precision influence campaigns</strong>; 
+                        "Cognitive Domain Operations" (CDO) blending psychological warfare with cyber-attack to achieve "mind dominance." 
+                        2025 report: CSF is the <strong>only PLA organization</strong> that performs psychological warfare.
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        The PLA has <strong>physically fused "influence" and "cyber-attack"</strong> in the same command. 
+                        By co-locating Three Warfares with network attack/technical reconnaissance, they've engineered a "Cognitive Kill Chain." 
+                        <em>Nuance:</em> CSF is "deputy-theater grade" (below Army/Navy), but reports directly to CMC—validating strategic importance. 
+                        Watch for cognitive preparation of battlespace <em>before</em> physical preparation.
+                    </p>
+                </div>
+
+                <div class="watch-card">
+                    <h4>H-20 Bomber: The "Invisible Buildup"</h4>
+                    <div class="watch-label watch-indicator">Key Indicator</div>
+                    <p class="text-sm text-secondary mb-3">
+                        <strong>Organizational precursor exists:</strong> PLAAF leaders publicly announced H-20 program in 2016; 
+                        2025 report indicates "new generation of long-range bombers, likely named H-20" will debut "sometime in the next decade." 
+                        <strong>Pattern match:</strong> J-20 announced → prototype surprise (2011) → rapid fielding.
+                    </p>
+                    <div class="watch-label watch-implication">If Confirmed</div>
+                    <p class="text-sm text-secondary">
+                        We are in a <strong>"danger zone"</strong> where organizational structures exist but hardware remains unseen. 
+                        The absence of H-20 on the ramp does not mean absence of capability. 
+                        The 2025 report confirms nuclear mission for H-20—completing the bomber leg of the triad. 
+                        Expect <strong>J-20-pattern "Leap":</strong> sudden unveiling followed by rapid mass production.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CONSOLIDATED ANALYST GUIDANCE -->
+            <div class="interstitial" style="margin-top: 1.5rem;">
+                <div class="interstitial-title">Analyst Guidance</div>
+                <h4 class="font-bold mb-4">Framework for Indicator Analysis</h4>
+                
+                <div class="grid md-grid-cols-3 gap-4 mb-4">
+                    <div class="p-3 bg-secondary rounded border-l-4" style="border-color: var(--accent-red);">
+                        <div class="mono text-xs text-red mb-2">2027 Imperative</div>
+                        <p class="text-xs text-secondary">
+                            The SSF dissolution validates the PLA is optimizing for <em>war</em>, not bureaucracy. 
+                            Willingness to fire generals and disband commands (SSF lasted 8 years) to meet the 2027 deadline 
+                            indicates a force serious about combat readiness. Interpret rapid organizational changes as 
+                            optimization signals, not turmoil.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded border-l-4" style="border-color: var(--accent-orange);">
+                        <div class="mono text-xs text-orange mb-2">Dual-Use Paradox</div>
+                        <p class="text-xs text-secondary">
+                            Military-Civil Fusion erases the civilian/military line. Civilian indicators are now military warning signals. 
+                            A "maintenance" surge at a civilian port or RORO schedule deviation is not an economic anomaly—
+                            it is a <em>mobilization signature</em>. Weight commercial asset movements like armored division movements.
+                        </p>
+                    </div>
+                    <div class="p-3 bg-secondary rounded border-l-4" style="border-color: var(--text-muted);">
+                        <div class="mono text-xs text-muted mb-2">Hardware Lag Hypothesis</div>
+                        <p class="text-xs text-secondary">
+                            Absence of hardware ≠ absence of capability. We may be in "Lag" phase where organizational decisions 
+                            are made but physical manifestation is 5–7 years out. Current "Lag" items: H-20 bomber, autonomous swarms, Atlantic basing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW SECTION: THREE ADDITIONAL ANALYTICAL CONSIDERATIONS -->
+            <div class="space-y-4 mt-6">
+                <h4 class="mono text-sm text-muted uppercase tracking-wide">Additional Analytical Considerations</h4>
+                
+                <!-- Cyber/Critical Infrastructure -->
+                <div class="data-card border-l-4" style="border-color: var(--accent-purple);">
+                    <h4 class="text-purple">Cyber/Critical Infrastructure: "Homeland is the Theater"</h4>
+                    <p class="text-sm text-secondary mt-2">
+                        <strong>Reframe:</strong> PRC cyber capabilities are not merely "espionage" but <strong>Operational Preparation of the Environment (OPE)</strong> 
+                        for kinetic conflict. Chinese state-sponsored actors (Volt Typhoon) have pre-positioned within U.S. critical infrastructure—
+                        communications, energy, transportation, water—to enable disruption in the event of conflict.
+                    </p>
+                    <p class="text-sm text-secondary mt-2">
+                        <strong>Assessment:</strong> The 2025 report states the goal is to "disrupt the U.S. military in a conflict" and "harm American interests" 
+                        by impeding decision-making and inducing societal panic. The capability is deployed, not theoretical: 
+                        PRC can cause localized disruptions (e.g., natural gas pipelines) for days to weeks. 
+                        <em class="text-purple">The U.S. homeland is a target for System Destruction Warfare—not a sanctuary.</em>
+                    </p>
+                </div>
+
+                <!-- Taiwan's Response -->
+                <div class="data-card border-l-4" style="border-color: var(--accent-cyan);">
+                    <h4 class="text-cyan">Taiwan's Response: The "Closing Window" Counter-Narrative</h4>
+                    <p class="text-sm text-secondary mt-2">
+                        <strong>Reframe:</strong> Taiwan's defensive shift may be <strong>accelerating</strong> the PLA timeline. 
+                        The emergence of "Whole-of-Society Defense Resilience" (WoSDR) suggests Taiwan is moving toward a "porcupine" strategy 
+                        that raises the cost of invasion, potentially forcing the PLA to act before defenses mature.
+                    </p>
+                    <p class="text-sm text-secondary mt-2">
+                        <strong>Assessment:</strong> The 2025 report documents the WoSDR Committee aiming to train 400,000 citizens, stockpile critical materials, 
+                        and extend conscription to one year. Taiwan is fielding asymmetric capabilities: high-speed stealth vessels, shore-based mobile missiles, 
+                        rapid mining, and unmanned systems. <em class="text-cyan">The PLA's 2027 goal is driven partly by the need to preempt Taiwan's defensive maturation.</em>
+                    </p>
+                </div>
+
+                <!-- PLARF Corruption -->
+                <div class="data-card border-l-4" style="border-color: var(--accent-red);">
+                    <h4 class="text-red">PLARF Corruption Purges: "Reliability vs. Inventory"</h4>
+                    <p class="text-sm text-secondary mt-2">
+                        <strong>Reframe:</strong> Do not interpret corruption purges as neutralizing the nuclear threat. 
+                        Frame them as <strong>ruthless optimization</strong> by the CMC. Xi discovered defects (e.g., silo construction issues) 
+                        that undermined coercive leverage and is purging leadership to ensure the force is <em>usable</em> for Strategic Counterbalance.
+                    </p>
+                    <p class="text-sm text-secondary mt-2">
+                        <strong>Assessment:</strong> The 2025 report links removal of PLARF Commander Li Yuchao to "fraud cases involving underground silo construction." 
+                        Crucially, the investigation resulted in <strong>"repairing of the silos,"</strong> which "increased overall operational readiness." 
+                        Despite purges, the PLA continues arming solid-propellant silo fields and remains on track for 1,000+ warheads by 2030. 
+                        <em class="text-red">The CCP will decapitate its own leadership to guarantee nuclear deterrent veracity.</em>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONCLUSION: THE CENTRAL PARADOX -->
+        <section class="space-y-6" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+            <div class="flex items-center gap-4">
+                <div class="section-bar" style="background: linear-gradient(180deg, var(--accent-red), var(--accent-orange))"></div>
+                <div>
+                    <h3 class="text-xl font-bold">The Central Paradox</h3>
+                    <p class="mono text-xs text-secondary">Synthesis: What 25 Years of Assessment Reveals</p>
+                </div>
+            </div>
+
+            <div class="text-secondary space-y-4">
+                <p>
+                    This 25-year record reveals a paradox: <strong class="text-primary">the more we know, the less time we have to act on it.</strong>
+                </p>
+                
+                <p>
+                    The Assess-Lag-Leap cycle means that by the time hardware validates doctrinal intent, the window for shaping outcomes 
+                    has closed. The 2021 silo fields were not a surprise in hindsight — the doctrine preceded them by a decade. 
+                    The 2024 SSF dissolution was not chaos — it was optimization for a doctrine articulated in 2019. 
+                    The Invisible Fleet is not a future threat — the legal framework was enacted in 2016.
+                </p>
+                
+                <p>
+                    The implication is uncomfortable: traditional warning indicators (ship movements, missile counts, exercise patterns) 
+                    are <em>lagging</em> indicators. By the time they flash red, the organizational and legal preconditions for action 
+                    are already in place. The leading indicators — doctrinal shifts, legal frameworks, organizational restructuring — 
+                    require a different kind of attention.
+                </p>
+                
+                <p>
+                    <strong class="text-orange">The 2027 clock is not a prediction. It is a planning assumption we should take as seriously as Beijing does.</strong>
+                </p>
+            </div>
+
+            <!-- The Bottom Line -->
+            <div class="p-6 rounded text-center" style="background: linear-gradient(135deg, rgba(248, 81, 73, 0.15) 0%, rgba(210, 153, 34, 0.1) 100%); border: 1px solid var(--accent-red);">
+                <div class="mono text-xs text-muted uppercase tracking-widest mb-3">Bottom Line</div>
+                <p class="text-xl text-primary font-bold" style="line-height: 1.4;">
+                    The PLA is not preparing to fight the U.S. military — <br class="hidden md-block">
+                    <span class="text-red">it is preparing to <em>prevent</em> the U.S. military from fighting.</span>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container text-center text-sm text-muted">
+            <p class="mono">Source: <em>Annual Report to Congress: Military and Security Developments Involving the People's Republic of China</em> (2000–2025)</p>
+            <p class="mt-2">Key judgments derived from longitudinal analysis of 25 years of DoD assessments. All source material unclassified.</p>
+            <p class="mt-3 text-xs">
+                Watch the leading indicators: doctrine before hardware, organization before capability, legal frameworks before operations.
+            </p>
+        </div>
+    </footer>
+
+    <!-- CHART SCRIPTS -->
+    <script>
+        // Common chart configuration
+        Chart.defaults.color = '#8b949e';
+        Chart.defaults.borderColor = '#30363d';
+        Chart.defaults.font.family = "'JetBrains Mono', monospace";
+        Chart.defaults.font.size = 11;
+
+        const colors = {
+            orange: '#d29922',
+            red: '#f85149',
+            blue: '#58a6ff',
+            purple: '#a371f7',
+            cyan: '#39d353',
+            muted: '#484f58'
+        };
+
+        // 1. NUCLEAR WARHEAD CHART
+        const nuclearCtx = document.getElementById('nuclearChart').getContext('2d');
+        new Chart(nuclearCtx, {
+            type: 'line',
+            data: {
+                labels: ['2000', '2005', '2010', '2015', '2019', '2020', '2021', '2022', '2023', '2024', '2027P', '2030P', '2035P'],
+                datasets: [{
+                    label: 'DoD Estimated Warheads',
+                    data: [200, 200, 200, 200, 200, 200, 350, 400, 500, 600, 700, 1000, 1500],
+                    borderColor: colors.red,
+                    backgroundColor: 'rgba(248, 81, 73, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: function(ctx) {
+                        const index = ctx.dataIndex;
+                        return [6, 10, 11, 12].includes(index) ? 6 : 3;
+                    },
+                    pointBackgroundColor: function(ctx) {
+                        const index = ctx.dataIndex;
+                        if (index >= 10) return colors.purple;
+                        if (index >= 6) return colors.red;
+                        return colors.muted;
+                    }
+                },
+                {
+                    // Capacity ceiling line (theoretical max if all silos MIRVed)
+                    label: 'Theoretical Capacity',
+                    data: [null, null, null, null, null, null, null, null, null, null, 1200, 1800, 2000],
+                    borderColor: 'rgba(163, 113, 247, 0.4)',
+                    borderWidth: 1,
+                    borderDash: [3, 3],
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Nuclear Stockpile: Minimum Deterrence → Strategic Breakout',
+                        color: '#e6edf3',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    subtitle: {
+                        display: true,
+                        text: 'DoD estimates (solid) vs. theoretical capacity if silos fully MIRVed (dashed)',
+                        color: '#8b949e',
+                        font: { size: 10 }
+                    },
+                    annotation: {
+                        annotations: {
+                            // 2021 Strategic Breakout Line
+                            line1: {
+                                type: 'line',
+                                xMin: '2021',
+                                xMax: '2021',
+                                borderColor: colors.red,
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    display: true,
+                                    content: 'Strategic Breakout',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(248, 81, 73, 0.9)',
+                                    color: '#fff',
+                                    font: { size: 9 }
+                                }
+                            },
+                            // Minimum Deterrence Era Box
+                            box1: {
+                                type: 'box',
+                                xMin: '2000',
+                                xMax: '2019',
+                                yMin: 0,
+                                yMax: 250,
+                                backgroundColor: 'rgba(72, 79, 88, 0.1)',
+                                borderColor: 'transparent',
+                                label: {
+                                    display: true,
+                                    content: 'Minimum Deterrence Era',
+                                    position: { x: 'center', y: 'start' },
+                                    color: colors.muted,
+                                    font: { size: 9 }
+                                }
+                            },
+                            // Launch-on-Warning Posture Box
+                            box2: {
+                                type: 'box',
+                                xMin: '2021',
+                                xMax: '2035P',
+                                yMin: 0,
+                                yMax: 1600,
+                                backgroundColor: 'rgba(248, 81, 73, 0.05)',
+                                borderColor: 'transparent',
+                                label: {
+                                    display: true,
+                                    content: 'Early Warning Counterstrike (LOW) Posture',
+                                    position: { x: 'center', y: 'end' },
+                                    color: 'rgba(248, 81, 73, 0.6)',
+                                    font: { size: 9 }
+                                }
+                            },
+                            // H-6N Triad marker (2020)
+                            point1: {
+                                type: 'point',
+                                xValue: '2020',
+                                yValue: 200,
+                                backgroundColor: colors.cyan,
+                                radius: 4,
+                                borderColor: '#fff',
+                                borderWidth: 1
+                            },
+                            // H-6N Label
+                            label1: {
+                                type: 'label',
+                                xValue: '2020',
+                                yValue: 320,
+                                content: ['H-6N', '(Air Leg)'],
+                                color: colors.cyan,
+                                font: { size: 8 }
+                            },
+                            // CFR-600 Fissile Production indicator
+                            label2: {
+                                type: 'label',
+                                xValue: '2022',
+                                yValue: 150,
+                                content: ['CFR-600', 'Fissile Prod.'],
+                                color: colors.orange,
+                                font: { size: 8 }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1600,
+                        title: { display: true, text: 'Operational Warheads', color: '#8b949e' },
+                        grid: { color: 'rgba(48, 54, 61, 0.5)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. MISSILE RANGE CHART - Optimized per ICD-203 standards
+        const missileCtx = document.getElementById('missileRangeChart').getContext('2d');
+        new Chart(missileCtx, {
+            type: 'bar',
+            indexAxis: 'y',
+            data: {
+                // Labels reflect role and capability accurately
+                labels: [
+                    'DF-11/15 (SRBM) — Taiwan Saturation',
+                    'DF-21D (ASBM) — Anti-Ship ⚓',
+                    'DF-17 (HGV) — BMD Evasion',
+                    'DF-26 (IRBM) — Dual-Capable ⚓ ⚠',
+                    'DF-27 (Extended) — Conv/Nuke ⚓',
+                    'DF-41 (Strategic Nuclear)'
+                ],
+                datasets: [{
+                    label: 'Max Range (km)',
+                    data: [600, 1500, 2000, 4000, 8000, 13000],
+                    backgroundColor: [
+                        'rgba(72, 79, 88, 0.8)',      // DF-11/15: muted (saturation inventory)
+                        'rgba(210, 153, 34, 0.8)',   // DF-21D: orange (established anti-ship)
+                        'rgba(163, 113, 247, 0.6)',  // DF-17: purple lighter (emerging)
+                        'rgba(248, 81, 73, 0.9)',    // DF-26: red (dual-capable warning)
+                        'rgba(163, 113, 247, 0.5)',  // DF-27: purple faded (limited inventory)
+                        'rgba(248, 81, 73, 0.6)'     // DF-41: red faded (nuclear only)
+                    ],
+                    borderColor: [
+                        colors.muted,
+                        colors.orange,
+                        colors.purple,
+                        colors.red,
+                        colors.purple,
+                        colors.red
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'PLARF Counter-Intervention Architecture',
+                        color: '#e6edf3',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    subtitle: {
+                        display: true,
+                        text: '⚓ = Anti-ship capable | ⚠ = Escalation ambiguity (rapid nuclear/conventional swap)',
+                        color: '#8b949e',
+                        font: { size: 9 }
+                    },
+                    annotation: {
+                        annotations: {
+                            // First Island Chain - Saturation Zone
+                            line1: {
+                                type: 'line',
+                                xMin: 1500,
+                                xMax: 1500,
+                                borderColor: colors.orange,
+                                borderWidth: 2,
+                                borderDash: [3, 3],
+                                label: {
+                                    display: true,
+                                    content: 'First Island Chain',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(210, 153, 34, 0.8)',
+                                    color: '#fff',
+                                    font: { size: 8 }
+                                }
+                            },
+                            // Guam - Precision Strike Zone
+                            line2: {
+                                type: 'line',
+                                xMin: 4000,
+                                xMax: 4000,
+                                borderColor: colors.red,
+                                borderWidth: 2,
+                                borderDash: [3, 3],
+                                label: {
+                                    display: true,
+                                    content: 'Guam (DF-26)',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(248, 81, 73, 0.8)',
+                                    color: '#fff',
+                                    font: { size: 8 }
+                                }
+                            },
+                            // Hawaii - Emerging Threat
+                            line3: {
+                                type: 'line',
+                                xMin: 8000,
+                                xMax: 8000,
+                                borderColor: colors.purple,
+                                borderWidth: 1,
+                                borderDash: [5, 5],
+                                label: {
+                                    display: true,
+                                    content: 'Hawaii (DF-27)',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(163, 113, 247, 0.7)',
+                                    color: '#fff',
+                                    font: { size: 8 }
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'Range (km) - Log Scale', color: '#8b949e' },
+                        grid: { color: 'rgba(48, 54, 61, 0.5)' }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+
+        // 3. DOMAIN CAPABILITY RADAR
+        const radarCtx = document.getElementById('domainRadar').getContext('2d');
+        new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Ground Force', 'Naval Surface', 'Subsurface', 'Air Defense', 'Space/Cyber', 'Long-Range Strike'],
+                datasets: [
+                    {
+                        label: '2000 Assessment',
+                        data: [8, 3, 4, 3, 1, 2],
+                        borderColor: colors.muted,
+                        backgroundColor: 'rgba(72, 79, 88, 0.1)',
+                        borderWidth: 1,
+                        pointRadius: 2
+                    },
+                    {
+                        label: '2024 Assessment',
+                        data: [7, 8, 7, 9, 9, 10],
+                        borderColor: colors.blue,
+                        backgroundColor: 'rgba(88, 166, 255, 0.15)',
+                        borderWidth: 2,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'PLA Domain Capabilities (Relative Scale 1-10)',
+                        color: '#e6edf3',
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                        angleLines: { color: 'rgba(48, 54, 61, 0.5)' },
+                        pointLabels: { 
+                            color: '#8b949e',
+                            font: { size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 4. AIR BALANCE CHART - Redesigned with source-backed methodology
+        const airCtx = document.getElementById('airBalanceChart').getContext('2d');
+        new Chart(airCtx, {
+            type: 'line',
+            data: {
+                labels: ['2000', '2003', '2008', '2013', '2017', '2019', '2024'],
+                datasets: [
+                    {
+                        label: 'PLAAF 4th/5th Gen Capability',
+                        data: [2, 3, 4, 5, 7, 8, 9],
+                        borderColor: colors.red,
+                        backgroundColor: colors.red,
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: function(ctx) {
+                            const index = ctx.dataIndex;
+                            return [1, 4, 6].includes(index) ? 6 : 3; // Highlight 2003, 2017, 2024
+                        }
+                    },
+                    {
+                        label: 'Taiwan Air Defense Capacity',
+                        data: [7, 8, 7, 6, 5, 4, 3],
+                        borderColor: colors.cyan,
+                        backgroundColor: colors.cyan,
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Cross-Strait Air Balance (DoD Assessment Synthesis)',
+                        color: '#e6edf3',
+                        font: { size: 14, weight: 'bold' }
+                    },
+                    subtitle: {
+                        display: true,
+                        text: 'Based on 4th/5th-gen inventory, IADS integration, and operational capability assessments',
+                        color: '#8b949e',
+                        font: { size: 10 }
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: '2017',
+                                xMax: '2017',
+                                borderColor: colors.red,
+                                borderWidth: 1,
+                                borderDash: [3, 3],
+                                label: {
+                                    display: true,
+                                    content: 'J-20 IOC',
+                                    position: 'start',
+                                    backgroundColor: 'rgba(248, 81, 73, 0.8)',
+                                    color: '#fff',
+                                    font: { size: 8 }
+                                }
+                            },
+                            line2: {
+                                type: 'line',
+                                xMin: '2013',
+                                xMax: '2013',
+                                borderColor: colors.muted,
+                                borderWidth: 1,
+                                borderDash: [3, 3],
+                                label: {
+                                    display: true,
+                                    content: 'Parity',
+                                    position: 'end',
+                                    backgroundColor: 'transparent',
+                                    color: colors.muted,
+                                    font: { size: 9 }
+                                }
+                            },
+                            box1: {
+                                type: 'box',
+                                xMin: '2017',
+                                xMax: '2024',
+                                backgroundColor: 'rgba(248, 81, 73, 0.05)',
+                                borderWidth: 0,
+                                label: {
+                                    display: true,
+                                    content: 'PLA Advantage',
+                                    position: { x: 'center', y: 'start' },
+                                    color: 'rgba(248, 81, 73, 0.5)',
+                                    font: { size: 9 }
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        title: { display: true, text: 'Relative Combat Effectiveness', color: '#8b949e' },
+                        grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                        ticks: { stepSize: 2 }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 5. TECH MATURITY BUBBLE CHART - Measures Kill Chain Integration, Not Weapon Quantity
+        const techCtx = document.getElementById('techMaturityChart').getContext('2d');
+        new Chart(techCtx, {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: 'Kill Chain Integration',
+                    data: [
+                        { x: 2007, y: 2, r: 8, label: 'ASAT Test' },
+                        { x: 2011, y: 4, r: 10, label: 'J-20 First Flight' },
+                        { x: 2015, y: 5, r: 12, label: 'SSF Established' },
+                        { x: 2019, y: 7, r: 14, label: 'DF-17 HGV Fielded' },
+                        { x: 2024, y: 8, r: 16, label: 'SSF Dissolved → MDPW' },
+                        { x: 2030, y: 10, r: 20, label: 'Intelligentized Warfare' }
+                    ],
+                    backgroundColor: function(ctx) {
+                        const x = ctx.raw ? ctx.raw.x : 0;
+                        if (x >= 2030) return 'rgba(163, 113, 247, 0.4)';
+                        if (x >= 2019) return 'rgba(248, 81, 73, 0.6)';
+                        if (x >= 2015) return 'rgba(88, 166, 255, 0.6)';
+                        return 'rgba(210, 153, 34, 0.6)';
+                    },
+                    borderColor: colors.purple
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Kill Chain Integration Timeline (Point → System)',
+                        color: '#e6edf3',
+                        font: { size: 13, weight: 'bold' }
+                    },
+                    subtitle: {
+                        display: true,
+                        text: 'Measures sensor-to-shooter latency reduction, not weapon quantity',
+                        color: '#8b949e',
+                        font: { size: 9 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                const stages = [
+                                    'Point Capability (kinetic, isolated)',
+                                    'Platform Advance (mechanization)',
+                                    'Domain Centralization (informatized)',
+                                    'System Penetrator (BMD defeat)',
+                                    'System Destroyer (MDPW structure)',
+                                    'AI-Driven Warfare (intelligentized)'
+                                ];
+                                return ctx.raw.label + ' — ' + stages[ctx.dataIndex];
+                            }
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            box1: {
+                                type: 'box',
+                                xMin: 2015,
+                                xMax: 2024,
+                                backgroundColor: 'rgba(88, 166, 255, 0.05)',
+                                borderWidth: 0,
+                                label: {
+                                    display: true,
+                                    content: 'SSF Era (8 yrs)',
+                                    position: { x: 'center', y: 'end' },
+                                    color: 'rgba(88, 166, 255, 0.5)',
+                                    font: { size: 8 }
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        min: 2005,
+                        max: 2035,
+                        title: { display: true, text: 'Year', color: '#8b949e' },
+                        grid: { color: 'rgba(48, 54, 61, 0.5)' }
+                    },
+                    y: {
+                        min: 0,
+                        max: 10,
+                        title: { display: true, text: 'Kill Chain Integration (1-10)', color: '#8b949e' },
+                        grid: { color: 'rgba(48, 54, 61, 0.5)' },
+                        ticks: {
+                            callback: function(value) {
+                                if (value === 2) return 'Point';
+                                if (value === 5) return 'Domain';
+                                if (value === 8) return 'System';
+                                if (value === 10) return 'AI';
+                                return '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
