@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Davidson Window: 2027 Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --slate-950: #020617;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-600: #475569;
+            --slate-500: #64748b;
+            --slate-400: #94a3b8;
+            --slate-300: #cbd5e1;
+            --slate-200: #e2e8f0;
+            --slate-100: #f1f5f9;
+            --amber-500: #f59e0b;
+            --amber-400: #fbbf24;
+            --red-500: #ef4444;
+            --red-400: #f87171;
+            --blue-500: #3b82f6;
+            --blue-400: #60a5fa;
+            --emerald-500: #10b981;
+            --emerald-400: #34d399;
+            --purple-500: #a855f7;
+            --purple-400: #c084fc;
+            --cyan-500: #06b6d4;
+            --cyan-400: #22d3ee;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background-color: var(--slate-950);
+            color: var(--slate-200);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .serif { font-family: 'IBM Plex Serif', Georgia, serif; }
+        .mono { font-family: 'IBM Plex Mono', monospace; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--slate-800);
+        }
+
+        .section:last-of-type { border-bottom: none; }
+
+        /* Hero */
+        .hero {
+            min-height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 1.5rem;
+            background: 
+                radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+                var(--slate-950);
+            border-bottom: 1px solid var(--slate-800);
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.375rem 1rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--slate-300);
+            border: 1px solid var(--slate-600);
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-badge.updated {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--red-500);
+            color: var(--red-400);
+        }
+
+        .hero h1 {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--slate-100);
+            margin: 0 0 1.5rem 0;
+            line-height: 1.1;
+        }
+
+        .hero h1 span { color: var(--blue-400); }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--slate-300);
+            max-width: 720px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .hero-subtitle em {
+            color: var(--slate-100);
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        /* Section Headers */
+        .section-header { margin-bottom: 2rem; }
+
+        .section-header h2 {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: var(--slate-100);
+            margin: 0 0 0.75rem 0;
+        }
+
+        .section-header p {
+            font-size: 1rem;
+            color: var(--slate-400);
+            max-width: 800px;
+            margin: 0;
+        }
+
+        .updated-tag {
+            display: inline-block;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.5rem;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--red-400);
+            border-radius: 2px;
+            margin-left: 0.75rem;
+            vertical-align: middle;
+        }
+
+        /* Lift Card - Base Styles */
+        .lift-card {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-700);
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .lift-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(148, 163, 184, 0.1);
+            border-color: var(--slate-600);
+        }
+
+        /* Expandable Card */
+        .expandable-card {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-700);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .expandable-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+            border-color: var(--slate-600);
+        }
+
+        .expandable-card-header {
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .expandable-card-header:hover {
+            background: rgba(51, 65, 85, 0.3);
+        }
+
+        .expand-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--slate-800);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            color: var(--slate-400);
+            font-size: 0.875rem;
+        }
+
+        .expandable-card.expanded .expand-icon {
+            transform: rotate(180deg);
+            background: var(--blue-500);
+            color: white;
+        }
+
+        .expandable-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .expandable-card.expanded .expandable-card-content {
+            max-height: 1000px;
+        }
+
+        .expandable-card-inner {
+            padding: 0 1.5rem 1.5rem;
+            border-top: 1px solid var(--slate-700);
+        }
+
+        /* Executive Cards */
+        .exec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .exec-card {
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .exec-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .exec-card.ongoing::before { background: var(--amber-500); }
+        .exec-card.elevated::before { background: var(--red-400); }
+        .exec-card.constrained::before { background: var(--blue-400); }
+
+        .exec-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .exec-card.ongoing .exec-label { color: var(--amber-400); }
+        .exec-card.elevated .exec-label { color: var(--red-400); }
+        .exec-card.constrained .exec-label { color: var(--blue-400); }
+
+        .exec-title {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--slate-100);
+            margin-bottom: 0.5rem;
+        }
+
+        .exec-desc {
+            font-size: 0.875rem;
+            color: var(--slate-400);
+            line-height: 1.6;
+        }
+
+        /* Scenario Matrix */
+        .scenario-matrix {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            background: var(--slate-700);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .scenario-row {
+            display: grid;
+            grid-template-columns: 1fr 180px 120px;
+            background: var(--slate-900);
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .scenario-row:not(.header):hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .scenario-row {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                padding: 1rem;
+            }
+        }
+
+        .scenario-row.header {
+            background: var(--slate-800);
+        }
+
+        .scenario-row.header > div {
+            padding: 0.875rem 1.25rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--slate-400);
+        }
+
+        .scenario-info { padding: 1.25rem; }
+
+        .scenario-name {
+            font-weight: 600;
+            color: var(--slate-100);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .scenario-status {
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.125rem 0.5rem;
+            border-radius: 2px;
+        }
+
+        .status-ongoing {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--amber-400);
+        }
+
+        .status-phase1 {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--purple-400);
+        }
+
+        .status-updated {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--red-400);
+        }
+
+        .scenario-desc {
+            font-size: 0.8125rem;
+            color: var(--slate-400);
+            line-height: 1.5;
+        }
+
+        .scenario-probability {
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .scenario-probability { padding: 0; text-align: left; }
+        }
+
+        .prob-range {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--slate-100);
+            margin-bottom: 0.25rem;
+        }
+
+        .prob-change {
+            font-size: 0.6875rem;
+            color: var(--red-400);
+            font-weight: 600;
+        }
+
+        .prob-timeframe {
+            font-size: 0.6875rem;
+            color: var(--slate-500);
+        }
+
+        .prob-bar {
+            height: 6px;
+            background: var(--slate-700);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .prob-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .fill-high { background: linear-gradient(90deg, var(--amber-500), var(--amber-400)); width: 90%; }
+        .fill-medium-high { background: linear-gradient(90deg, var(--red-500), var(--red-400)); width: 47%; }
+        .fill-medium { background: linear-gradient(90deg, var(--purple-500), var(--purple-400)); width: 40%; }
+        .fill-low { background: linear-gradient(90deg, var(--blue-500), var(--blue-400)); width: 23%; }
+
+        .scenario-confidence {
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .scenario-confidence { padding: 0; text-align: left; }
+        }
+
+        .confidence-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+        }
+
+        @media (max-width: 768px) {
+            .confidence-indicator { justify-content: flex-start; }
+        }
+
+        .conf-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--slate-600);
+        }
+
+        .conf-dot.filled { background: var(--emerald-400); }
+        .conf-dot.half { background: linear-gradient(90deg, var(--emerald-400) 50%, var(--slate-600) 50%); }
+
+        .conf-label {
+            font-size: 0.75rem;
+            color: var(--slate-400);
+            margin-left: 0.25rem;
+        }
+
+        .matrix-note {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            text-align: right;
+            font-style: italic;
+        }
+
+        /* Cabbage Strategy Diagram */
+        .cabbage-diagram {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-700);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .cabbage-visual {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto;
+            aspect-ratio: 1;
+        }
+
+        .cabbage-layer {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .cabbage-layer:hover {
+            transform: scale(1.02);
+        }
+
+        .layer-outer {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px dashed var(--red-400);
+        }
+
+        .layer-inner {
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            background: rgba(168, 85, 247, 0.15);
+            border: 2px solid var(--purple-400);
+        }
+
+        .layer-target {
+            width: 25%;
+            height: 25%;
+            top: 37.5%;
+            left: 37.5%;
+            background: var(--slate-700);
+            border: 2px solid var(--slate-400);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--slate-100);
+        }
+
+        .layer-label {
+            position: absolute;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.5rem;
+            border-radius: 2px;
+            white-space: nowrap;
+        }
+
+        .label-outer {
+            top: 5%;
+            right: 5%;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--red-400);
+        }
+
+        .label-inner {
+            bottom: 20%;
+            left: 5%;
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--purple-400);
+        }
+
+        .cabbage-legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .cabbage-legend { grid-template-columns: 1fr; }
+        }
+
+        .legend-item {
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--slate-700);
+        }
+
+        .legend-item.outer {
+            background: rgba(239, 68, 68, 0.05);
+            border-color: var(--red-500);
+        }
+
+        .legend-item.inner {
+            background: rgba(168, 85, 247, 0.05);
+            border-color: var(--purple-500);
+        }
+
+        .legend-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-item.outer .legend-title { color: var(--red-400); }
+        .legend-item.inner .legend-title { color: var(--purple-400); }
+
+        .legend-forces {
+            font-size: 0.8125rem;
+            color: var(--slate-300);
+            line-height: 1.6;
+        }
+
+        /* Exercise Ladder */
+        .exercise-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+
+        .exercise-table th,
+        .exercise-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--slate-700);
+        }
+
+        .exercise-table th {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate-400);
+            background: var(--slate-800);
+        }
+
+        .exercise-table tr:hover td {
+            background: rgba(51, 65, 85, 0.3);
+        }
+
+        .exercise-table td {
+            color: var(--slate-300);
+        }
+
+        .exercise-name {
+            font-weight: 600;
+            color: var(--slate-100);
+        }
+
+        .new-cap {
+            font-size: 0.6875rem;
+            padding: 0.125rem 0.5rem;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--red-400);
+            border-radius: 2px;
+            display: inline-block;
+            margin-top: 0.25rem;
+        }
+
+        /* Warning Indicators */
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .indicators-grid { grid-template-columns: 1fr; }
+        }
+
+        .indicator-column {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-700);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-column:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .indicator-header {
+            padding: 1rem 1.25rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .indicator-header.lagging {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--slate-400);
+            border-bottom: 1px solid var(--slate-700);
+        }
+
+        .indicator-header.leading {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald-400);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .indicator-list { padding: 0.5rem 0; }
+
+        .indicator-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            transition: background 0.2s ease;
+        }
+
+        .indicator-item:hover {
+            background: rgba(51, 65, 85, 0.3);
+        }
+
+        .indicator-item.new {
+            background: rgba(239, 68, 68, 0.05);
+            border-left: 2px solid var(--red-400);
+        }
+
+        .indicator-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            border-radius: 50%;
+        }
+
+        .indicator-column:first-child .indicator-icon {
+            background: var(--slate-700);
+            color: var(--slate-400);
+        }
+
+        .indicator-column:last-child .indicator-icon {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--emerald-400);
+        }
+
+        .indicator-text {
+            font-size: 0.875rem;
+            color: var(--slate-300);
+            line-height: 1.5;
+        }
+
+        .indicator-text strong {
+            color: var(--slate-100);
+        }
+
+        /* Intel Update Box */
+        .intel-update {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border: 1px solid var(--red-500);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .intel-update-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .intel-update-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.25rem 0.5rem;
+            background: var(--red-500);
+            color: white;
+            border-radius: 2px;
+        }
+
+        .intel-update-date {
+            font-size: 0.75rem;
+            color: var(--slate-400);
+        }
+
+        .intel-update h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--slate-100);
+            margin: 0 0 0.75rem 0;
+        }
+
+        .intel-update p {
+            font-size: 0.875rem;
+            color: var(--slate-300);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* Invisible Fleet Section */
+        .invisible-fleet {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-700);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .invisible-fleet-header {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--slate-700);
+        }
+
+        .invisible-fleet-header h3 {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--slate-100);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .invisible-fleet-header p {
+            font-size: 0.875rem;
+            color: var(--slate-400);
+            margin: 0;
+        }
+
+        .invisible-fleet-body { padding: 1.5rem; }
+
+        .fleet-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .fleet-comparison { grid-template-columns: 1fr; }
+        }
+
+        .fleet-card {
+            padding: 1.25rem;
+            border-radius: 6px;
+            border: 1px solid var(--slate-700);
+            transition: all 0.3s ease;
+        }
+
+        .fleet-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+        }
+
+        .fleet-card.old { background: var(--slate-800); }
+
+        .fleet-card.new {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, var(--slate-800) 100%);
+            border-color: var(--red-500);
+        }
+
+        .fleet-card-label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .fleet-card.old .fleet-card-label { color: var(--slate-500); }
+        .fleet-card.new .fleet-card-label { color: var(--red-400); }
+
+        .fleet-card-value {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .fleet-card.old .fleet-card-value { color: var(--slate-400); }
+        .fleet-card.new .fleet-card-value { color: var(--slate-100); }
+
+        .fleet-card-desc {
+            font-size: 0.8125rem;
+            color: var(--slate-400);
+            line-height: 1.5;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 2rem 0;
+        }
+
+        .chart-note {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+
+        /* Vulnerability Grid */
+        .vuln-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .vuln-card {
+            background: var(--slate-900);
+            border: 1px solid var(--slate-700);
+            border-radius: 6px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .vuln-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+            border-color: var(--slate-600);
+        }
+
+        .vuln-metric {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate-400);
+            margin-bottom: 0.5rem;
+        }
+
+        .vuln-value {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--slate-100);
+            margin-bottom: 0.25rem;
+        }
+
+        .vuln-value.critical { color: var(--red-400); }
+        .vuln-value.warning { color: var(--amber-400); }
+
+        .vuln-context {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+        }
+
+        .vuln-source {
+            font-size: 0.6875rem;
+            color: var(--slate-600);
+            margin-top: 0.5rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--slate-700);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .timeline { grid-template-columns: 1fr; }
+        }
+
+        .timeline-item {
+            background: var(--slate-900);
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .timeline-item.highlight {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .timeline-item.current {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .timeline-year {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--slate-100);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-item.highlight .timeline-year { color: var(--blue-400); }
+        .timeline-item.current .timeline-year { color: var(--red-400); }
+
+        .timeline-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate-400);
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.8125rem;
+            color: var(--slate-400);
+            line-height: 1.5;
+        }
+
+        /* Implication Box */
+        .implication-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border: 1px solid var(--blue-500);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .implication-box h4 {
+            font-family: 'IBM Plex Serif', Georgia, serif;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--slate-100);
+            margin: 0 0 1rem 0;
+        }
+
+        .implication-box p {
+            font-size: 0.9375rem;
+            color: var(--slate-300);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 3rem 0;
+            text-align: center;
+            border-top: 1px solid var(--slate-800);
+        }
+
+        .footer-sources {
+            font-size: 0.75rem;
+            color: var(--slate-500);
+            max-width: 800px;
+            margin: 0 auto 1rem;
+            line-height: 1.6;
+        }
+
+        .footer-methodology {
+            font-size: 0.6875rem;
+            color: var(--slate-600);
+        }
+
+        /* Continuum Flow */
+        .continuum-flow {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--slate-800);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-2px);
+        }
+
+        .flow-step.active { background: var(--amber-500); color: var(--slate-900); }
+        .flow-step.phase1 { background: rgba(168, 85, 247, 0.3); color: var(--purple-300); }
+        .flow-step.phase2 { background: rgba(239, 68, 68, 0.3); color: var(--red-300); }
+        .flow-step.blurred { 
+            background: linear-gradient(90deg, rgba(168, 85, 247, 0.3), rgba(239, 68, 68, 0.3)); 
+            color: var(--slate-100);
+            border: 1px dashed var(--red-400);
+        }
+
+        .flow-arrow {
+            color: var(--slate-500);
+            font-size: 1rem;
+        }
+
+        /* Card content styling */
+        .card-content-section {
+            padding-top: 1rem;
+        }
+
+        .card-content-section h5 {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--slate-200);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .card-content-section p {
+            font-size: 0.8125rem;
+            color: var(--slate-400);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .card-content-section + .card-content-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--slate-700);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <header class="hero">
+        <div>
+            <div class="hero-badge">Strategic Assessment • January 2026</div>
+            <div class="hero-badge updated" style="margin-left: 0.5rem;">Updated with 2025 Exercise Intelligence</div>
+            <h1>The Davidson <span>Window</span></h1>
+            <p class="hero-subtitle">
+                2027 marks a <em>capability threshold</em>, not an invasion deadline.<br>
+                The primary risk is <em>coercion</em>—not conquest.<br>
+                But <em>Strait Thunder-2025A</em> and <em>Justice Mission 2025</em> show the PLA is blurring the line.
+            </p>
+        </div>
+    </header>
+
+    <main>
+        <!-- Executive Assessment -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Executive Assessment</h2>
+                    <p>The "Davidson Window" refers to U.S. assessments that the PLA could be capable of Taiwan contingencies by 2027. Two major exercises in 2025—Strait Thunder-2025A (April) and Justice Mission 2025 (December)—validate this timeline and reveal doctrinal evolution.</p>
+                </div>
+
+                <div class="exec-grid">
+                    <div class="lift-card exec-card ongoing">
+                        <div class="exec-label">Primary Risk</div>
+                        <div class="exec-title">Gray Zone Coercion</div>
+                        <div class="exec-desc">Daily ADIZ incursions, median line erosion, cyber operations, and disinformation. This is the current baseline—and it's accelerating. Exercise tempo in 2025 (two major drills) confirms normalization.</div>
+                    </div>
+                    <div class="lift-card exec-card elevated">
+                        <div class="exec-label">Elevated Risk <span class="updated-tag">↑ Updated</span></div>
+                        <div class="exec-title">Blockade / Quarantine</div>
+                        <div class="exec-desc">CCG "law enforcement" plus PLAN encirclement. Justice Mission 2025 deployed 15 CCG vessels—a record—and practiced "interception and detention." Probability estimate raised to <strong style="color: var(--red-400);">15–40%</strong> by 2027.</div>
+                    </div>
+                    <div class="lift-card exec-card constrained">
+                        <div class="exec-label">Constrained Risk <span class="updated-tag">⚠ Blurring</span></div>
+                        <div class="exec-title">Full Invasion</div>
+                        <div class="exec-desc">Still lowest probability (15–23%)—but Justice Mission 2025 included Type 075 LHD for the first time, practicing "long-range rapid assaults." The blockade-invasion distinction is blurring.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exercise Escalation Ladder -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Exercise Escalation Ladder <span class="updated-tag">New</span></h2>
+                    <p>The PLA has conducted blockade exercises with increasing frequency since May 2024. Each iteration adds new capabilities and tightens the encirclement geometry.</p>
+                </div>
+
+                <div class="lift-card" style="overflow-x: auto;">
+                    <table class="exercise-table">
+                        <thead>
+                            <tr>
+                                <th>Exercise</th>
+                                <th>Date</th>
+                                <th>Sorties</th>
+                                <th>PLAN</th>
+                                <th>CCG</th>
+                                <th>New Capability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="exercise-name">Joint Sword 2023</span></td>
+                                <td>Apr 2023</td>
+                                <td>232</td>
+                                <td>18</td>
+                                <td>—</td>
+                                <td>Baseline encirclement</td>
+                            </tr>
+                            <tr>
+                                <td><span class="exercise-name">Joint Sword 2024A</span></td>
+                                <td>May 2024</td>
+                                <td>111</td>
+                                <td>27</td>
+                                <td>7</td>
+                                <td><span class="new-cap">CCG Integration</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="exercise-name">Joint Sword 2024B</span></td>
+                                <td>Oct 2024</td>
+                                <td>153</td>
+                                <td>14</td>
+                                <td>12</td>
+                                <td>Port blockade focus</td>
+                            </tr>
+                            <tr>
+                                <td><span class="exercise-name">Strait Thunder 2025A</span></td>
+                                <td>Apr 2025</td>
+                                <td>135</td>
+                                <td>38</td>
+                                <td>12</td>
+                                <td><span class="new-cap">Dual-Layer Cabbage</span> <span class="new-cap">Chokepoint Control</span></td>
+                            </tr>
+                            <tr style="background: rgba(239, 68, 68, 0.05);">
+                                <td><span class="exercise-name" style="color: var(--red-400);">Justice Mission 2025</span></td>
+                                <td>Dec 2025</td>
+                                <td>201</td>
+                                <td>18</td>
+                                <td>15</td>
+                                <td><span class="new-cap">Type 075 LHD</span> <span class="new-cap">Missiles in Contiguous Zone</span> <span class="new-cap">Pratas Patrols</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="intel-update">
+                    <div class="intel-update-header">
+                        <span class="intel-update-badge">Intel Update</span>
+                        <span class="intel-update-date">December 2025</span>
+                    </div>
+                    <h4>Key Analytic Finding: Blockade-Invasion Distinction is Blurring</h4>
+                    <p>Justice Mission 2025 included the Type 075 LHD <em>Hainan</em> for the first time, practicing "long-range rapid assaults" alongside blockade operations. This suggests the PLA is rehearsing <strong>rapid transition from blockade to assault</strong>. If a blockade is underway, assume amphibious forces are already positioned. The decision window for intervention is shorter than previously assessed.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scenario Matrix -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Scenario Probability Matrix <span class="updated-tag">Revised</span></h2>
+                    <p>Probabilities updated based on 2025 exercise intelligence. The blockade estimate has been raised; confidence increased. Note: these scenarios form a continuum, not independent alternatives.</p>
+                </div>
+
+                <div class="scenario-matrix">
+                    <div class="scenario-row header">
+                        <div>Scenario</div>
+                        <div>Probability</div>
+                        <div>Confidence</div>
+                    </div>
+
+                    <div class="scenario-row">
+                        <div class="scenario-info">
+                            <div class="scenario-name">
+                                Gray Zone Coercion
+                                <span class="scenario-status status-ongoing">Ongoing</span>
+                            </div>
+                            <div class="scenario-desc">ADIZ incursions, cyber attacks, disinformation, median line erosion. Two major exercises in 2025 confirm this is the permanent baseline.</div>
+                        </div>
+                        <div class="scenario-probability">
+                            <div class="prob-range">Baseline</div>
+                            <div class="prob-bar"><div class="prob-fill fill-high"></div></div>
+                        </div>
+                        <div class="scenario-confidence">
+                            <div class="confidence-indicator">
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-label">High</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-row">
+                        <div class="scenario-info">
+                            <div class="scenario-name">
+                                CCG Quarantine / Blockade
+                                <span class="scenario-status status-phase1">Likely Phase 1</span>
+                                <span class="scenario-status status-updated">↑ Raised</span>
+                            </div>
+                            <div class="scenario-desc">15 CCG vessels in Justice Mission 2025—a record. First patrols around Pratas Island. CCG entered prohibited waters around Wuqiu/Matsu. Practiced "interception and detention operations."</div>
+                        </div>
+                        <div class="scenario-probability">
+                            <div class="prob-range">15–40%</div>
+                            <div class="prob-change">↑ from 9–35%</div>
+                            <div class="prob-timeframe">by 2027</div>
+                            <div class="prob-bar"><div class="prob-fill fill-medium"></div></div>
+                        </div>
+                        <div class="scenario-confidence">
+                            <div class="confidence-indicator">
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-dot"></span>
+                                <span class="conf-label">Medium-High</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-row">
+                        <div class="scenario-info">
+                            <div class="scenario-name">
+                                Kinetic Coercion / Island Seizure
+                            </div>
+                            <div class="scenario-desc">Joint Firepower Strike Campaign. Missiles landed in Taiwan's contiguous zone during Justice Mission 2025—closest live fire to date. PHL-16 MLRS practiced strikes on Taipei/Kaohsiung approaches.</div>
+                        </div>
+                        <div class="scenario-probability">
+                            <div class="prob-range">40–47%</div>
+                            <div class="prob-timeframe">by 2030</div>
+                            <div class="prob-bar"><div class="prob-fill fill-medium-high"></div></div>
+                        </div>
+                        <div class="scenario-confidence">
+                            <div class="confidence-indicator">
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-dot half"></span>
+                                <span class="conf-dot"></span>
+                                <span class="conf-label">Medium</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-row">
+                        <div class="scenario-info">
+                            <div class="scenario-name">
+                                Full Amphibious Invasion
+                                <span class="scenario-status status-updated">⚠ Blurring</span>
+                            </div>
+                            <div class="scenario-desc">Type 075 LHD <em>Hainan</em> participated in Justice Mission 2025 for the first time, practicing "long-range rapid assaults." The blockade-invasion distinction is eroding.</div>
+                        </div>
+                        <div class="scenario-probability">
+                            <div class="prob-range">15–23%</div>
+                            <div class="prob-timeframe">by 2027</div>
+                            <div class="prob-bar"><div class="prob-fill fill-low"></div></div>
+                        </div>
+                        <div class="scenario-confidence">
+                            <div class="confidence-indicator">
+                                <span class="conf-dot filled"></span>
+                                <span class="conf-dot"></span>
+                                <span class="conf-dot"></span>
+                                <span class="conf-label">Low</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="matrix-note">
+                    Sources: Swift Centre, Manifold, CSIS, DoD, Jamestown Foundation, ISW/AEI Coalition for Defense of Taiwan
+                </div>
+
+                <!-- Escalation Continuum -->
+                <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%); border: 1px solid var(--purple-500); border-radius: 8px; padding: 1.25rem 1.5rem; margin-top: 1.5rem;">
+                    <h4 style="font-size: 0.8125rem; font-weight: 600; color: var(--purple-400); margin: 0 0 0.5rem 0; text-transform: uppercase; letter-spacing: 0.05em;">⚠ The Escalation Continuum</h4>
+                    <p style="font-size: 0.875rem; color: var(--slate-300); margin: 0 0 1rem 0; line-height: 1.6;">These scenarios are sequential phases, not independent alternatives. Justice Mission 2025 showed the PLA integrating amphibious assault elements into blockade exercises—the distinction is blurring.</p>
+                    <div class="continuum-flow">
+                        <div class="flow-step active">Gray Zone</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step phase1">CCG Blockade</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step blurred">Blockade + Assault Prep</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step phase2">Invasion</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dual-Layer Cabbage Strategy -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Dual-Layer "Cabbage Strategy" <span class="updated-tag">New Doctrinal Concept</span></h2>
+                    <p>Strait Thunder-2025A revealed a new operational model: concentric layers of encirclement that simultaneously isolate Taiwan AND deny foreign intervention. Validated by Jamestown Foundation analysis.</p>
+                </div>
+
+                <div class="cabbage-diagram">
+                    <div class="cabbage-visual">
+                        <div class="cabbage-layer layer-outer">
+                            <span class="layer-label label-outer">Outer Layer: Counter-Intervention</span>
+                        </div>
+                        <div class="cabbage-layer layer-inner">
+                            <span class="layer-label label-inner">Inner Layer: Taiwan Isolation</span>
+                        </div>
+                        <div class="cabbage-layer layer-target">Taiwan</div>
+                    </div>
+
+                    <div class="cabbage-legend">
+                        <div class="legend-item outer">
+                            <div class="legend-title">Outer Layer: Counter-Intervention</div>
+                            <div class="legend-forces">
+                                <strong>Forces:</strong> Carrier Strike Groups • H-6 Bombers • Maritime Militia (outer)<br>
+                                <strong>Mission:</strong> Harass/delay foreign military forces approaching Taiwan. Create ASW barrier. Threaten US SLOCs.<br>
+                                <strong>Validated:</strong> Shandong CSG positioned 160-170nm east of Taiwan during Justice Mission 2025.
+                            </div>
+                        </div>
+                        <div class="legend-item inner">
+                            <div class="legend-title">Inner Layer: Taiwan Isolation</div>
+                            <div class="legend-forces">
+                                <strong>Forces:</strong> Maritime Militia → CCG → PLAN (from center outward)<br>
+                                <strong>Mission:</strong> Blockade ports, interdict shipping, exhaust Taiwan's defenders. CCG provides "law enforcement" cover.<br>
+                                <strong>Validated:</strong> CCG practiced "interception and detention" within Taiwan's contiguous zone.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Warning Indicators (Expandable) -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Warning Indicators <span class="updated-tag">Expanded</span></h2>
+                    <p>Traditional indicators (lagging) watch hardware that takes years to build. Alternative indicators (leading) watch decisions that can execute in weeks. Click to expand for details.</p>
+                </div>
+
+                <div class="indicators-grid">
+                    <div class="expandable-card" onclick="toggleCard(this)">
+                        <div class="expandable-card-header">
+                            <div>
+                                <div style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate-400); margin-bottom: 0.5rem;">⏱ Traditional Indicators</div>
+                                <div style="font-size: 1rem; color: var(--slate-200);">Lagging — Hardware-based</div>
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="expandable-card-content">
+                            <div class="expandable-card-inner">
+                                <div class="indicator-list">
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: var(--slate-700); color: var(--slate-400);">1</div>
+                                        <div class="indicator-text"><strong>PLAN amphibious ship concentration</strong> in Eastern Theater Command</div>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: var(--slate-700); color: var(--slate-400);">2</div>
+                                        <div class="indicator-text"><strong>LST/LPD production rates</strong> at major shipyards</div>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: var(--slate-700); color: var(--slate-400);">3</div>
+                                        <div class="indicator-text"><strong>Naval base activity</strong> at Ningbo, Zhoushan, Xiamen</div>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: var(--slate-700); color: var(--slate-400);">4</div>
+                                        <div class="indicator-text"><strong>Exercise tempo increases</strong> beyond seasonal norms</div>
+                                    </div>
+                                </div>
+                                <div class="card-content-section">
+                                    <h5>Why These Lag</h5>
+                                    <p>These indicators track observable hardware that takes years to build. By the time grey-hull concentration is visible, the mobilization decision was made months earlier. The "Invisible Fleet" (civilian ROROs) bypasses these entirely.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="expandable-card" onclick="toggleCard(this)">
+                        <div class="expandable-card-header">
+                            <div>
+                                <div style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--emerald-400); margin-bottom: 0.5rem;">⚡ Alternative Indicators</div>
+                                <div style="font-size: 1rem; color: var(--slate-200);">Leading — Mobilization-based</div>
+                            </div>
+                            <div class="expand-icon">▼</div>
+                        </div>
+                        <div class="expandable-card-content">
+                            <div class="expandable-card-inner">
+                                <div class="indicator-list">
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--emerald-400);">1</div>
+                                        <div class="indicator-text"><strong>Commercial RORO schedule deviations</strong> from regular shipping routes</div>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--emerald-400);">2</div>
+                                        <div class="indicator-text"><strong>JLSF/MRO activation</strong> within civilian shipping companies</div>
+                                    </div>
+                                    <div class="indicator-item">
+                                        <div class="indicator-icon" style="background: rgba(16, 185, 129, 0.2); color: var(--emerald-400);">3</div>
+                                        <div class="indicator-text"><strong>CCG "law enforcement" zones</strong> established around Taiwan ports</div>
+                                    </div>
+                                    <div class="indicator-item new">
+                                        <div class="indicator-icon" style="background: rgba(239, 68, 68, 0.2); color: var(--red-400);">★</div>
+                                        <div class="indicator-text"><strong>Type 075 LHD deployment</strong> to Taiwan exercise area <em>(amphibious intent)</em></div>
+                                    </div>
+                                    <div class="indicator-item new">
+                                        <div class="indicator-icon" style="background: rgba(239, 68, 68, 0.2); color: var(--red-400);">★</div>
+                                        <div class="indicator-text"><strong>CCG entering prohibited waters</strong> around outlying islands</div>
+                                    </div>
+                                    <div class="indicator-item new">
+                                        <div class="indicator-icon" style="background: rgba(239, 68, 68, 0.2); color: var(--red-400);">★</div>
+                                        <div class="indicator-text"><strong>Live-fire impacts in contiguous zone</strong> (escalation normalization)</div>
+                                    </div>
+                                    <div class="indicator-item new">
+                                        <div class="indicator-icon" style="background: rgba(239, 68, 68, 0.2); color: var(--red-400);">★</div>
+                                        <div class="indicator-text"><strong>Pratas Island CCG patrols</strong> (southern flank encirclement)</div>
+                                    </div>
+                                </div>
+                                <div class="card-content-section">
+                                    <h5>Why These Lead</h5>
+                                    <p>These indicators track decisions and legal/organizational mechanisms that can execute in weeks, not years. Justice Mission 2025 validated all four new indicators (★) simultaneously—the first time all were observed in a single exercise.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CCG Intel Update -->
+                <div class="intel-update">
+                    <div class="intel-update-header">
+                        <span class="intel-update-badge">Intel Update</span>
+                        <span class="intel-update-date">Justice Mission 2025 (Dec 29-30)</span>
+                    </div>
+                    <h4>🛡️ CCG as Blockade Enforcement Mechanism</h4>
+                    <p>Justice Mission 2025 deployed <strong>15 CCG vessels</strong>—a record. For the <strong>first time</strong>, CCG patrolled around Pratas Island during a blockade exercise. CCG ships entered Taiwan's prohibited waters around Wuqiu (within 1.6nm) and Matsu (within 1.3nm). CCG practiced "interception and detention operations"—the enforcement mechanism for a legal-warfare blockade. The CCG operated together with PLAN ships, suggesting coordination for a two-tier blockade: CCG interdicts civilian vessels (under "law enforcement" pretext) while PLAN enforces anti-access against military forces.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Invisible Fleet -->
+        <section class="section">
+            <div class="container">
+                <div class="invisible-fleet">
+                    <div class="invisible-fleet-header">
+                        <h3>🚢 The "Invisible Fleet" Problem</h3>
+                        <p>Why traditional warning indicators will miss the signal</p>
+                    </div>
+                    <div class="invisible-fleet-body">
+                        <p style="color: var(--slate-300); margin-bottom: 1.5rem; line-height: 1.7;">
+                            For two decades, DoD assessed invasion as unlikely because the PLAN lacked sufficient amphibious lift. This was a <strong style="color: var(--slate-100);">capabilities-based analysis</strong> that counted grey hulls. The correct framework is <strong style="color: var(--slate-100);">legal and mobilization-based analysis</strong>: the PLA solved its "hardware gap" with a "software solution"—legal mobilization of the civilian fleet.
+                        </p>
+
+                        <div class="fleet-comparison">
+                            <div class="fleet-card old">
+                                <div class="fleet-card-label">2000–2019 Assessment</div>
+                                <div class="fleet-card-value">~1 Division</div>
+                                <div class="fleet-card-desc">~10,000–20,000 troops via dedicated LSTs/LPDs. DoD: "China does not appear to be building the conventional amphibious lift required."</div>
+                            </div>
+                            <div class="fleet-card new">
+                                <div class="fleet-card-label">2022 Exercise Observed</div>
+                                <div class="fleet-card-value">~1 Group Army</div>
+                                <div class="fleet-card-desc">12 civilian ships (8 large RORO ferries) moved a full Group Army (~50,000 troops) for the first time. "Whole-of-society" concept validated.</div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div class="lift-card" style="padding: 1rem; text-align: center; border-top: 3px solid var(--amber-500);">
+                                <div style="font-size: 0.6875rem; color: var(--amber-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">2016 Law</div>
+                                <div style="font-size: 0.8125rem; color: var(--slate-300);">National Defense Transportation Law mandates civilian ships built to military spec</div>
+                            </div>
+                            <div class="lift-card" style="padding: 1rem; text-align: center; border-top: 3px solid var(--red-500);">
+                                <div style="font-size: 0.6875rem; color: var(--red-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">JLSF + MROs</div>
+                                <div style="font-size: 0.8125rem; color: var(--slate-300);">Joint Logistics Support Force with Military Representative Offices embedded in civilian companies</div>
+                            </div>
+                            <div class="lift-card" style="padding: 1rem; text-align: center; border-top: 3px solid var(--purple-500);">
+                                <div style="font-size: 0.6875rem; color: var(--purple-400); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">"Just-in-Time" Fleet</div>
+                                <div style="font-size: 0.8125rem; color: var(--slate-300);">Invasion fleet that doesn't sit in naval bases; commandeered on demand</div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--slate-800); border-left: 3px solid var(--amber-500); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0;">
+                            <p style="font-size: 0.875rem; color: var(--slate-300); margin: 0; line-height: 1.6;"><strong style="color: var(--amber-400);">Implication:</strong> Traditional warning (grey-hull concentration at naval bases) will miss the signal. The invasion fleet doesn't exist until the mobilization decision is made. Watch for RORO schedule deviations and JLSF/MRO activation instead.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Taiwan Vulnerability -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Taiwan Vulnerability Profile</h2>
+                    <p>A blockade would not require kinetic action to impose severe costs. Taiwan's energy dependence creates acute vulnerability—explaining why CCG "customs enforcement" is a viable Phase 1 strategy.</p>
+                </div>
+
+                <div class="vuln-grid">
+                    <div class="vuln-card">
+                        <div class="vuln-metric">Energy Import Dependence</div>
+                        <div class="vuln-value critical">97%</div>
+                        <div class="vuln-context">Of total energy supply</div>
+                        <div class="vuln-source">Source: CRS</div>
+                    </div>
+                    <div class="vuln-card">
+                        <div class="vuln-metric">LNG Reserves</div>
+                        <div class="vuln-value critical">10–11</div>
+                        <div class="vuln-context">Days of supply</div>
+                        <div class="vuln-source">Source: Swift Centre</div>
+                    </div>
+                    <div class="vuln-card">
+                        <div class="vuln-metric">Coal Reserves</div>
+                        <div class="vuln-value warning">39</div>
+                        <div class="vuln-context">Days of supply</div>
+                        <div class="vuln-source">Source: Swift Centre</div>
+                    </div>
+                    <div class="vuln-card">
+                        <div class="vuln-metric">Oil Reserves</div>
+                        <div class="vuln-value">146</div>
+                        <div class="vuln-context">Days of supply</div>
+                        <div class="vuln-source">Source: Swift Centre</div>
+                    </div>
+                    <div class="vuln-card">
+                        <div class="vuln-metric">Global Semiconductor Share</div>
+                        <div class="vuln-value">63%</div>
+                        <div class="vuln-context">Total production</div>
+                        <div class="vuln-source">Source: Industry data</div>
+                    </div>
+                    <div class="vuln-card">
+                        <div class="vuln-metric">TSMC Fab Risk (if blockade)</div>
+                        <div class="vuln-value warning">59%</div>
+                        <div class="vuln-context">Chance of ≥90-day inoperability</div>
+                        <div class="vuln-source">Source: Swift Centre</div>
+                    </div>
+                </div>
+
+                <div class="intel-update" style="margin-top: 1.5rem;">
+                    <div class="intel-update-header">
+                        <span class="intel-update-badge">Justice Mission 2025</span>
+                        <span class="intel-update-date">Target Profile</span>
+                    </div>
+                    <h4>Blockade Target Selection</h4>
+                    <p>Justice Mission 2025 positioned forces at Taiwan's key ports: <strong>Keelung</strong> (north, adjacent to Taipei), <strong>Kaohsiung</strong> (south, largest port, energy imports), and <strong>Hualien</strong> (east, intervention blocking). PRC state media explicitly mentioned "cutting off power" as an exercise objective. The exercise zones covered Taiwan Strait approaches, cutting routes to Kinmen and Matsu.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline & Implications -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Strategic Timeline <span class="updated-tag">2025 Added</span></h2>
+                    <p>2027 is one point on a continuum. The 2025 exercise tempo confirms the Davidson Window is not a future concern—it's the current operating environment.</p>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item current">
+                        <div class="timeline-year">2025</div>
+                        <div class="timeline-label">Exercise Acceleration</div>
+                        <div class="timeline-desc">Two major blockade exercises (Strait Thunder-2025A, Justice Mission 2025). Serial designations confirm routine rehearsal. Type 075 LHD first participation.</div>
+                    </div>
+                    <div class="timeline-item highlight">
+                        <div class="timeline-year">2027</div>
+                        <div class="timeline-label">Capability Milestone</div>
+                        <div class="timeline-desc">PLA Centennial Goal. Readiness benchmark for Taiwan contingency. Xi's probable 4th term. Nuclear triad matures.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2030s</div>
+                        <div class="timeline-label">Sustained Pressure</div>
+                        <div class="timeline-desc">1,000+ nuclear warheads. PLA advantage may widen if US modernization stalls. "Intelligentization" matures.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2049</div>
+                        <div class="timeline-label">Political End-State</div>
+                        <div class="timeline-desc">CCP centennial. "National rejuvenation" goal. A political aspiration, not a war plan.</div>
+                    </div>
+                </div>
+
+                <div class="implication-box">
+                    <h4>Policy Implication</h4>
+                    <p>Deterrence requires denying PLA confidence in a quick, low-cost victory. The most likely failure mode is not a bolt-from-the-blue invasion, but a <strong>slow squeeze</strong>—gray zone to CCG blockade to kinetic coercion to fait accompli—where each step is calibrated to stay below the threshold of U.S. kinetic response. <strong>Justice Mission 2025 showed the PLA is now practicing the transition from blockade to assault</strong>—the squeeze may be faster than previously assessed. Watch for CCG "law enforcement" escalation, Type 075 deployment, and civilian RORO diversions.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-sources">
+                <strong>Sources:</strong> DoD China Military Power Reports (2000–2025), CRS, Swift Centre, Manifold, CSIS, Jamestown Foundation, ISW/AEI Coalition for Defense of Taiwan, Taiwan Ministry of National Defense, PRC Maritime Safety Administration.
+            </p>
+            <p class="footer-methodology">
+                Assessment methodology separates capability, intent, and opportunity. Probabilities are conditional estimates, not predictions. Updated January 2026 with Strait Thunder-2025A and Justice Mission 2025 intelligence.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Expandable card functionality
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }
+
+        // Naval Balance Chart
+        const ctx = document.getElementById('navalChart');
+        if (ctx) {
+            new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Current (2024)', 'Projected 2030'],
+                    datasets: [
+                        {
+                            label: 'US Navy',
+                            data: [296, 294],
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'PLA Navy',
+                            data: [370, 435],
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#94a3b8' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 500,
+                            grid: { color: 'rgba(51, 65, 85, 0.5)' },
+                            ticks: { color: '#64748b' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
