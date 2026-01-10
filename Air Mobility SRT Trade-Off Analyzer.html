@@ -521,6 +521,7 @@
             font-size: 0.6rem;
             cursor: help;
             transition: all 0.2s;
+            margin-left: 4px;
         }
 
         .tooltip-icon:hover {
@@ -541,6 +542,10 @@
             border-radius: var(--radius-sm);
             padding: 12px;
             font-size: 0.75rem;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            text-align: left;
             color: var(--muted);
             line-height: 1.5;
             z-index: 1000;
@@ -562,6 +567,27 @@
         .tooltip-content.open {
             visibility: visible;
             opacity: 1;
+        }
+
+        /* Tooltip positioning adjustments for table headers */
+        .results-table th .tooltip-content {
+            left: 0;
+            transform: none;
+        }
+
+        .results-table th .tooltip-content::before {
+            left: 20px;
+        }
+
+        /* KPI tooltips - position to not overflow */
+        .kpi-label .tooltip-content {
+            left: 0;
+            transform: none;
+            width: 240px;
+        }
+
+        .kpi-label .tooltip-content::before {
+            left: 20px;
         }
 
         /* === Help Drawer === */
@@ -672,7 +698,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid var(--border);
             font-size: 0.8rem;
         }
@@ -683,10 +709,15 @@
 
         .sensitivity-lever {
             color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .sensitivity-impact {
             font-weight: 600;
+            font-family: monospace;
+            font-size: 0.85rem;
         }
 
         .sensitivity-impact.positive { color: var(--ok); }
@@ -847,16 +878,29 @@
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>Acceptable shortage probability</strong><br>
-                                        5% = ~18 shortage days/year<br>
-                                        10% = ~37 shortage days/year
+                                        <strong>Maximum acceptable shortage probability</strong><br><br>
+                                        What % of days are you willing to be short-crewed?<br><br>
+                                        • 5% = ~18 shortage days/year<br>
+                                        • 10% = ~37 shortage days/year<br>
+                                        • 2% = ~7 shortage days/year<br><br>
+                                        SRTs with shortage below this threshold are marked "Within Threshold."
                                     </span>
                                 </span>
                             </label>
                             <input type="number" id="riskTolerance" value="5" min="1" max="30" step="1">
                         </div>
                         <div class="input-group">
-                            <label>SRT Range</label>
+                            <label>
+                                SRT Range (days)
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Scheduled Return Time range to analyze</strong><br><br>
+                                        The tool will simulate each SRT value from min to max and show which ones meet your risk threshold.<br><br>
+                                        Typical range: 10-21 days.
+                                    </span>
+                                </span>
+                            </label>
                             <div style="display: flex; gap: 8px;">
                                 <input type="number" id="srtMin" value="10" min="5" max="30" style="width: 50%;" placeholder="Min">
                                 <input type="number" id="srtMax" value="21" min="5" max="30" style="width: 50%;" placeholder="Max">
@@ -874,15 +918,47 @@
                     <div class="collapsible-content" id="advancedContent">
                         <div class="input-grid">
                             <div class="input-group">
-                                <label>Utilization Std Dev (%)</label>
+                                <label>
+                                    Utilization Std Dev (%)
+                                    <span class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-content">
+                                            <strong>How much does daily utilization fluctuate?</strong><br><br>
+                                            Standard deviation around the mean utilization rate.<br><br>
+                                            • 5-8%: Steady ops tempo<br>
+                                            • 10-12%: Normal fluctuation<br>
+                                            • 15%+: High variability
+                                        </span>
+                                    </span>
+                                </label>
                                 <input type="number" id="utilStdPct" value="10" min="0" max="30" step="1">
                             </div>
                             <div class="input-group">
-                                <label>Utilization Min (%)</label>
+                                <label>
+                                    Utilization Min (%)
+                                    <span class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-content">
+                                            <strong>Floor for daily utilization</strong><br><br>
+                                            On the lowest-demand days, what's the minimum % of allocated tails flying?<br><br>
+                                            Example: 50% means even on slow days, at least half your tails are employed.
+                                        </span>
+                                    </span>
+                                </label>
                                 <input type="number" id="utilMinPct" value="50" min="10" max="100" step="5">
                             </div>
                             <div class="input-group">
-                                <label>Utilization Max (%)</label>
+                                <label>
+                                    Utilization Max (%)
+                                    <span class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-content">
+                                            <strong>Ceiling for daily utilization</strong><br><br>
+                                            On peak-demand days, what's the maximum % of allocated tails flying?<br><br>
+                                            100% = all allocated tails employed simultaneously.
+                                        </span>
+                                    </span>
+                                </label>
                                 <input type="number" id="utilMaxPct" value="100" min="10" max="100" step="5">
                             </div>
                             <div class="input-group">
@@ -891,22 +967,47 @@
                                     <span class="tooltip-container">
                                         <span class="tooltip-icon">?</span>
                                         <span class="tooltip-content">
-                                            <strong>Post-Mission Crew Rest cap</strong><br>
-                                            PMCR = min(cap, 0.4 × mission days)
+                                            <strong>Post-Mission Crew Rest maximum</strong><br><br>
+                                            Crews get 40% of mission length as rest, but capped at this value.<br><br>
+                                            • 4 days (96 hrs): Standard<br>
+                                            • Reached at ~10-day SRT
                                         </span>
                                     </span>
                                 </label>
                                 <input type="number" id="maxRest" value="4" min="1" max="14">
                             </div>
                             <div class="input-group">
-                                <label>Mission Delay Variance</label>
+                                <label>
+                                    Mission Delay Variance
+                                    <span class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-content">
+                                            <strong>Do missions sometimes run longer than SRT?</strong><br><br>
+                                            • Off: All missions complete exactly at SRT<br>
+                                            • On: 70% on-time, 20% +1 day, 8% +2 days, 2% +3 days<br><br>
+                                            Delays extend both mission and PMCR, reducing crew availability.
+                                        </span>
+                                    </span>
+                                </label>
                                 <select id="useDelayVariance">
                                     <option value="false" selected>Off (steady-state)</option>
                                     <option value="true">On (realistic)</option>
                                 </select>
                             </div>
                             <div class="input-group">
-                                <label>Iterations</label>
+                                <label>
+                                    Iterations
+                                    <span class="tooltip-container">
+                                        <span class="tooltip-icon">?</span>
+                                        <span class="tooltip-content">
+                                            <strong>Monte Carlo sample size</strong><br><br>
+                                            How many simulated years to run. More = more stable results, slower runtime.<br><br>
+                                            • 100-150: Quick estimates<br>
+                                            • 200-300: Standard<br>
+                                            • 500+: High confidence
+                                        </span>
+                                    </span>
+                                </label>
                                 <input type="number" id="iterations" value="200" min="50" max="2000" step="50">
                             </div>
                         </div>
@@ -957,23 +1058,63 @@
 
                     <!-- KPI Strip -->
                     <div class="kpi-strip" id="kpiStrip">
-                        <div class="kpi-card">
-                            <div class="kpi-label">Shortage Probability</div>
+                        <div class="kpi-card tooltip-hover">
+                            <div class="kpi-label">
+                                Shortage Probability
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>% of days you can't crew all tails</strong><br><br>
+                                        If this is 5%, then roughly 1 in 20 days you won't have enough available crews to meet the demand.<br><br>
+                                        Lower is better. Your threshold sets what's acceptable.
+                                    </span>
+                                </span>
+                            </div>
                             <div class="kpi-value" id="kpiShortage">—</div>
                             <div class="kpi-unit">of days</div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-label">Shortage Days/Yr</div>
+                            <div class="kpi-label">
+                                Shortage Days/Yr
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Expected days short per year</strong><br><br>
+                                        Shortage probability × 365 days.<br><br>
+                                        Example: 5% probability = ~18 days/year where you can't fully crew all tasked tails.
+                                    </span>
+                                </span>
+                            </div>
                             <div class="kpi-value" id="kpiDays">—</div>
                             <div class="kpi-unit">expected</div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-label">P95 Shortfall</div>
+                            <div class="kpi-label">
+                                P95 Shortfall
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Worst-case crews short (95th percentile)</strong><br><br>
+                                        On the worst 5% of shortage days, how many crews were you short?<br><br>
+                                        Example: P95 = 3 means on bad days, you're typically 3 crews short of full coverage.
+                                    </span>
+                                </span>
+                            </div>
                             <div class="kpi-value" id="kpiP95">—</div>
                             <div class="kpi-unit">crews short</div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-label">Concurrent Tails</div>
+                            <div class="kpi-label">
+                                Concurrent Tails
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Tails actually flying at any moment</strong><br><br>
+                                        Calculated from: Allocated tails × Utilization rate.<br><br>
+                                        This is the demand your crew pool must support — not the total allocation, but what's actually employed.
+                                    </span>
+                                </span>
+                            </div>
                             <div class="kpi-value" id="kpiConcurrent">—</div>
                             <div class="kpi-unit">mean</div>
                         </div>
@@ -994,7 +1135,17 @@
                     <!-- Sensitivity Analysis -->
                     <div class="card" id="sensitivityCard">
                         <div class="collapsible-header" onclick="toggleSection('sensitivity')">
-                            <span class="card-title">Sensitivity Analysis</span>
+                            <span class="card-title">
+                                Sensitivity Analysis
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>What levers reduce shortage the most?</strong><br><br>
+                                        Shows how much shortage probability drops when you change each input. Sorted by impact — the biggest lever is listed first.<br><br>
+                                        <strong>Example:</strong> "-2.2 ppts" means shortage probability drops by 2.2 percentage points (e.g., from 8% to 5.8%).
+                                    </span>
+                                </span>
+                            </span>
                             <span class="toggle-icon" id="sensitivityToggle">▼</span>
                         </div>
                         <div class="collapsible-content" id="sensitivityContent">
@@ -1013,13 +1164,69 @@
                                 <table class="results-table" id="resultsTable">
                                     <thead>
                                         <tr>
-                                            <th>SRT</th>
+                                            <th>
+                                                SRT
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Scheduled Return Time</strong><br><br>
+                                                        Maximum days a crew can be away on a mission before returning home.
+                                                    </span>
+                                                </span>
+                                            </th>
                                             <th>Status</th>
-                                            <th>Shortage %</th>
-                                            <th>Days/Yr</th>
-                                            <th>P95 Shortfall</th>
-                                            <th>Utilization</th>
-                                            <th>Efficiency</th>
+                                            <th>
+                                                Shortage %
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Shortage Probability</strong><br><br>
+                                                        % of days where available crews couldn't meet demand. Lower is better.
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Days/Yr
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Shortage Days per Year</strong><br><br>
+                                                        Expected number of days per year you'll be short-crewed. (Shortage % × 365)
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                P95
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>95th Percentile Shortfall</strong><br><br>
+                                                        On the worst 5% of shortage days, how many crews short? Measures severity, not frequency.
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Utilization
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Crew Pool Utilization</strong><br><br>
+                                                        Average % of your crew pool that's on-mission at any time. Very high (>85%) means no buffer.
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Efficiency
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Crew Cycle Efficiency</strong><br><br>
+                                                        % of the crew cycle spent on-mission vs. resting.<br><br>
+                                                        Formula: SRT / (SRT + PMCR)<br><br>
+                                                        Higher efficiency = more flying time per crew, but PMCR caps limit gains above ~10-day SRT.
+                                                    </span>
+                                                </span>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody id="resultsBody"></tbody>
@@ -1040,10 +1247,46 @@
                                     <thead>
                                         <tr>
                                             <th>SRT</th>
-                                            <th>PMCR</th>
-                                            <th>Efficiency</th>
-                                            <th>Crews Needed</th>
-                                            <th>Current Δ</th>
+                                            <th>
+                                                PMCR
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Post-Mission Crew Rest</strong><br><br>
+                                                        Required rest days after returning from mission. Calculated as 40% of mission length, capped at your PMCR cap (default 4 days).
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Efficiency
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>SRT / (SRT + PMCR)</strong><br><br>
+                                                        What % of the crew cycle is productive flying time vs. mandatory rest.
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Crews Needed
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Minimum crew pool for steady-state</strong><br><br>
+                                                        Theoretical minimum crews to sustain this SRT with zero variance. Real-world needs a buffer above this.
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Current Δ
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Your crews minus crews needed</strong><br><br>
+                                                        Positive = you have margin. Negative = you're below the theoretical minimum.
+                                                    </span>
+                                                </span>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody id="crewsNeededBody"></tbody>
@@ -1627,7 +1870,8 @@
             const moreCrews = runMonteCarloSync({ ...quickParams, crewPool: quickParams.crewPool + 5 }, targetSRT);
             sensitivities.push({
                 lever: '+5 crews',
-                impact: baseline.shortageProbability - moreCrews.shortageProbability
+                impact: baseline.shortageProbability - moreCrews.shortageProbability,
+                explanation: 'Adding 5 more crews to your pool increases available capacity'
             });
 
             // -10% utilization
@@ -1636,7 +1880,8 @@
             const lessUtil = runMonteCarloSync({ ...quickParams, demandMean: lowerUtil }, targetSRT);
             sensitivities.push({
                 lever: '-10% utilization',
-                impact: baseline.shortageProbability - lessUtil.shortageProbability
+                impact: baseline.shortageProbability - lessUtil.shortageProbability,
+                explanation: 'Flying fewer tails simultaneously (lower ops tempo) reduces crew demand'
             });
 
             // +2 SRT days
@@ -1644,7 +1889,8 @@
             const longerSRT = runMonteCarloSync(quickParams, targetSRT + 2);
             sensitivities.push({
                 lever: '+2 SRT days',
-                impact: baseline.shortageProbability - longerSRT.shortageProbability
+                impact: baseline.shortageProbability - longerSRT.shortageProbability,
+                explanation: 'Longer missions mean crews stay out longer, improving efficiency'
             });
 
             // Lower variance
@@ -1653,7 +1899,8 @@
                 const lessVar = runMonteCarloSync({ ...quickParams, demandStd: Math.max(0, quickParams.demandStd - 3) }, targetSRT);
                 sensitivities.push({
                     lever: 'Lower util variance',
-                    impact: baseline.shortageProbability - lessVar.shortageProbability
+                    impact: baseline.shortageProbability - lessVar.shortageProbability,
+                    explanation: 'Steadier day-to-day demand reduces shortage spikes'
                 });
             }
 
@@ -1665,9 +1912,20 @@
                 item.className = 'sensitivity-item';
                 const impactPct = (s.impact * 100).toFixed(1);
                 const impactClass = s.impact > 0 ? 'positive' : 'negative';
+                const impactSign = s.impact > 0 ? '−' : '+';
                 item.innerHTML = `
-                    <span class="sensitivity-lever">${s.lever}</span>
-                    <span class="sensitivity-impact ${impactClass}">${s.impact > 0 ? '-' : '+'}${Math.abs(impactPct)} ppts</span>
+                    <span class="sensitivity-lever">
+                        ${s.lever}
+                        <span class="tooltip-container">
+                            <span class="tooltip-icon">?</span>
+                            <span class="tooltip-content">
+                                <strong>${s.lever}</strong><br><br>
+                                ${s.explanation}<br><br>
+                                <strong>Impact:</strong> ${impactSign}${Math.abs(impactPct)} percentage points means shortage probability ${s.impact > 0 ? 'decreases' : 'increases'} from ${(baseline.shortageProbability * 100).toFixed(1)}% to ${((baseline.shortageProbability - s.impact) * 100).toFixed(1)}%.
+                            </span>
+                        </span>
+                    </span>
+                    <span class="sensitivity-impact ${impactClass}">${impactSign}${Math.abs(impactPct)} ppts</span>
                 `;
                 list.appendChild(item);
             });
