@@ -1011,6 +1011,70 @@
                                 <input type="number" id="iterations" value="200" min="50" max="2000" step="50">
                             </div>
                         </div>
+
+                        <!-- Variable Mission Length Section -->
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; color: var(--muted);">
+                                    <input type="checkbox" id="useVariableMissionLength" onchange="toggleMissionLengthInputs()" style="width: 16px; height: 16px;">
+                                    <span>Variable Mission Lengths (Operational Mode)</span>
+                                </label>
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Model missions shorter than SRT</strong><br><br>
+                                        <strong>Default (off):</strong> Every mission uses the full SRT. Conservative planning assumption — good for policy decisions.<br><br>
+                                        <strong>Enabled:</strong> Missions vary in length (capped at SRT). Shorter missions = shorter PMCR = crews available sooner.<br><br>
+                                        Use this when you have operational data on actual mission durations.
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="input-grid" id="missionLengthInputs" style="display: none;">
+                                <div class="input-group">
+                                    <label>
+                                        Avg Mission Length (days)
+                                        <span class="tooltip-container">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-content">
+                                                <strong>Typical mission duration</strong><br><br>
+                                                Average days per mission. Must be ≤ SRT (the cap).<br><br>
+                                                Example: If SRT is 14 but most missions are 7-10 days, set this to 8-9.
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="avgMissionLength" value="7" min="3" max="21" step="1">
+                                </div>
+                                <div class="input-group">
+                                    <label>
+                                        Mission Length Std Dev (days)
+                                        <span class="tooltip-container">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-content">
+                                                <strong>Variation in mission duration</strong><br><br>
+                                                How much do mission lengths vary around the average?<br><br>
+                                                • 1-2 days: Fairly consistent<br>
+                                                • 3-4 days: Moderate variation<br>
+                                                • 5+ days: High variation
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="missionLengthStd" value="2" min="0" max="7" step="0.5">
+                                </div>
+                                <div class="input-group">
+                                    <label>
+                                        Min Mission Length (days)
+                                        <span class="tooltip-container">
+                                            <span class="tooltip-icon">?</span>
+                                            <span class="tooltip-content">
+                                                <strong>Shortest possible mission</strong><br><br>
+                                                No mission will be shorter than this. Prevents unrealistic 1-2 day missions.
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="minMissionLength" value="3" min="1" max="14" step="1">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1087,6 +1151,23 @@
                             </div>
                             <div class="kpi-value" id="kpiDays">—</div>
                             <div class="kpi-unit">expected</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">
+                                Avg Cycle
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Average days per crew rotation</strong><br><br>
+                                        Mission + PMCR = one complete cycle.<br><br>
+                                        <strong>Planning Mode:</strong> Cycle = SRT + PMCR<br>
+                                        <strong>Operational Mode:</strong> Cycle = Actual mission + proportional PMCR<br><br>
+                                        Shorter cycles = faster crew turnover = more capacity from same pool.
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="kpi-value" id="kpiCycle">—</div>
+                            <div class="kpi-unit" id="kpiCycleUnit">days</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-label">
@@ -1196,34 +1277,34 @@
                                                 </span>
                                             </th>
                                             <th>
+                                                Avg Msn
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Average Mission Length</strong><br><br>
+                                                        Actual average days per mission in the simulation.<br><br>
+                                                        <strong>Planning Mode:</strong> Always = SRT<br>
+                                                        <strong>Operational Mode:</strong> Based on your mission mix inputs
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
+                                                Avg Cycle
+                                                <span class="tooltip-container">
+                                                    <span class="tooltip-icon">?</span>
+                                                    <span class="tooltip-content">
+                                                        <strong>Average Crew Cycle</strong><br><br>
+                                                        Mission + PMCR = one rotation. Shorter cycles mean faster crew turnover and more effective capacity.
+                                                    </span>
+                                                </span>
+                                            </th>
+                                            <th>
                                                 P95
                                                 <span class="tooltip-container">
                                                     <span class="tooltip-icon">?</span>
                                                     <span class="tooltip-content">
                                                         <strong>95th Percentile Shortfall</strong><br><br>
                                                         On the worst 5% of shortage days, how many crews short? Measures severity, not frequency.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Utilization
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Crew Pool Utilization</strong><br><br>
-                                                        Average % of your crew pool that's on-mission at any time. Very high (>85%) means no buffer.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Efficiency
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Crew Cycle Efficiency</strong><br><br>
-                                                        % of the crew cycle spent on-mission vs. resting.<br><br>
-                                                        Formula: SRT / (SRT + PMCR)<br><br>
-                                                        Higher efficiency = more flying time per crew, but PMCR caps limit gains above ~10-day SRT.
                                                     </span>
                                                 </span>
                                             </th>
@@ -1320,14 +1401,18 @@
                         <p>C-6 "tails" = capacity, not employment. The utilization rate bridges the gap.</p>
                         
                         <h4>Crew State Machine</h4>
-                        <div class="formula">AVAILABLE → ON_MISSION (S days) → PMCR (R days) → AVAILABLE</div>
+                        <div class="formula">AVAILABLE → ON_MISSION (M days) → PMCR (R days) → AVAILABLE</div>
                         <p>PMCR = min(cap, floor(0.4 × mission days)). With 4-day cap, reached at ~10-day SRT.</p>
+                        
+                        <h4>Mission Length</h4>
+                        <p><strong>Default (Planning Mode):</strong> Every mission = full SRT. Conservative assumption for policy decisions.</p>
+                        <p><strong>Operational Mode:</strong> Enable "Variable Mission Lengths" in Advanced Options to model shorter missions. Shorter missions = shorter PMCR = faster crew turnover = better efficiency.</p>
                         
                         <h4>Steady-State Formula</h4>
                         <div class="formula">Crew_pool = Concurrent × Factor / Efficiency<br>where Efficiency = SRT / (SRT + PMCR)</div>
                         
                         <h4>Why Monte Carlo?</h4>
-                        <p>Handles variance in utilization and mission delays. Runs 200+ simulated years, each 365 days, with 60-day warmup excluded.</p>
+                        <p>Handles variance in utilization, mission lengths, and delays. Runs 200+ simulated years, each 365 days, with 60-day warmup excluded.</p>
                     </div>
                     <div class="help-content" id="helpValidate">
                         <h4>1. Zero-Variance Sanity Check</h4>
@@ -1400,6 +1485,12 @@
             document.getElementById('help' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
         }
 
+        function toggleMissionLengthInputs() {
+            const checkbox = document.getElementById('useVariableMissionLength');
+            const inputs = document.getElementById('missionLengthInputs');
+            inputs.style.display = checkbox.checked ? 'grid' : 'none';
+        }
+
         // === Simulation Engine ===
         const CREW_STATE = { AVAILABLE: 0, ON_MISSION: 1, RECOVERY: 2 };
         let seed = 12345;
@@ -1435,6 +1526,35 @@
             return 3;
         }
 
+        function sampleMissionLength(srtDays, params) {
+            // If variable mission length is disabled, use full SRT
+            if (!params.useVariableMissionLength) {
+                return srtDays;
+            }
+            
+            // Generate mission length from truncated normal distribution
+            // Mean = avgMissionLength, capped at SRT
+            const mean = Math.min(params.avgMissionLength, srtDays);
+            const std = params.missionLengthStd;
+            const min = params.minMissionLength;
+            const max = srtDays; // SRT is the cap
+            
+            if (std === 0) return mean;
+            
+            // Box-Muller for normal distribution
+            let u, v, s;
+            do {
+                u = seededRandom() * 2 - 1;
+                v = seededRandom() * 2 - 1;
+                s = u * u + v * v;
+            } while (s >= 1 || s === 0);
+            const z = u * Math.sqrt(-2 * Math.log(s) / s);
+            const raw = mean + z * std;
+            
+            // Clamp to valid range and round
+            return Math.round(Math.max(min, Math.min(max, raw)));
+        }
+
         function recoveryDaysFromMission(missionDays, maxRest) {
             const accrued = Math.floor(missionDays * 0.4);
             return Math.min(maxRest, Math.max(1, accrued));
@@ -1451,11 +1571,14 @@
                 if (r < 0.70) {
                     crews[i] = { state: CREW_STATE.AVAILABLE, daysRemaining: 0, lastMissionDays: 0 };
                 } else if (r < 0.90) {
-                    const missionDays = srtDays + sampleDelayDays(useDelayVariance);
+                    // Use variable mission length for initialization too
+                    const baseMission = sampleMissionLength(srtDays, params);
+                    const missionDays = baseMission + sampleDelayDays(useDelayVariance);
                     const remaining = 1 + Math.floor(seededRandom() * missionDays);
                     crews[i] = { state: CREW_STATE.ON_MISSION, daysRemaining: remaining, lastMissionDays: missionDays };
                 } else {
-                    const remaining = 1 + Math.floor(seededRandom() * baseRecoveryDays);
+                    const initRest = calculateRest(sampleMissionLength(srtDays, params), maxRest);
+                    const remaining = 1 + Math.floor(seededRandom() * initRest);
                     crews[i] = { state: CREW_STATE.RECOVERY, daysRemaining: remaining, lastMissionDays: srtDays };
                 }
             }
@@ -1465,6 +1588,11 @@
             let totalUtilized = 0;
             let assignStart = 0;
             const totalDaysToSim = simDays + warmupDays;
+            
+            // Track actual mission and cycle lengths
+            let totalMissionDays = 0;
+            let totalCycleDays = 0;
+            let completedCycles = 0;
 
             for (let day = 0; day < totalDaysToSim; day++) {
                 const clampedMean = Math.max(demandMin, Math.min(demandMax, demandMean));
@@ -1485,7 +1613,9 @@
                     for (let j = 0; j < crewPool && assigned < toAssign; j++) {
                         const i = (assignStart + j) % crewPool;
                         if (crews[i].state === CREW_STATE.AVAILABLE) {
-                            const missionDays = srtDays + sampleDelayDays(useDelayVariance);
+                            // Use variable mission length + delays
+                            const baseMission = sampleMissionLength(srtDays, params);
+                            const missionDays = baseMission + sampleDelayDays(useDelayVariance);
                             crews[i].state = CREW_STATE.ON_MISSION;
                             crews[i].daysRemaining = missionDays;
                             crews[i].lastMissionDays = missionDays;
@@ -1512,7 +1642,15 @@
                     if (c.daysRemaining <= 0) {
                         if (c.state === CREW_STATE.ON_MISSION) {
                             c.state = CREW_STATE.RECOVERY;
-                            c.daysRemaining = recoveryDaysFromMission(c.lastMissionDays, maxRest);
+                            const pmcrDays = recoveryDaysFromMission(c.lastMissionDays, maxRest);
+                            c.daysRemaining = pmcrDays;
+                            
+                            // Track cycle completion (after warmup)
+                            if (day >= warmupDays) {
+                                totalMissionDays += c.lastMissionDays;
+                                totalCycleDays += c.lastMissionDays + pmcrDays;
+                                completedCycles++;
+                            }
                         } else if (c.state === CREW_STATE.RECOVERY) {
                             c.state = CREW_STATE.AVAILABLE;
                             c.daysRemaining = 0;
@@ -1524,7 +1662,9 @@
             return {
                 shortageDays,
                 shortfalls,
-                avgUtilization: totalUtilized / (simDays * crewPool)
+                avgUtilization: totalUtilized / (simDays * crewPool),
+                avgMissionDays: completedCycles > 0 ? totalMissionDays / completedCycles : srtDays,
+                avgCycleDays: completedCycles > 0 ? totalCycleDays / completedCycles : srtDays + baseRecoveryDays
             };
         }
 
@@ -1532,11 +1672,15 @@
             const allShortfalls = [];
             let totalShortageDays = 0;
             let totalUtilization = 0;
+            let totalMissionDays = 0;
+            let totalCycleDays = 0;
 
             for (let iter = 0; iter < params.iterations; iter++) {
                 const result = simulateOnce(params, srtDays);
                 totalShortageDays += result.shortageDays;
                 totalUtilization += result.avgUtilization;
+                totalMissionDays += result.avgMissionDays;
+                totalCycleDays += result.avgCycleDays;
                 allShortfalls.push(...result.shortfalls);
             }
 
@@ -1548,7 +1692,9 @@
                 shortageProbability: totalShortageDays / totalDays,
                 shortageDaysPerYear: (totalShortageDays / totalDays) * 365,
                 p95Shortfall: allShortfalls.length > 0 ? allShortfalls[Math.min(p95Index, allShortfalls.length - 1)] : 0,
-                avgUtilization: totalUtilization / params.iterations
+                avgUtilization: totalUtilization / params.iterations,
+                avgMissionDays: totalMissionDays / params.iterations,
+                avgCycleDays: totalCycleDays / params.iterations
             };
         }
 
@@ -1583,7 +1729,12 @@
                 demandStd: concurrentTailsStd,
                 useDelayVariance: document.getElementById('useDelayVariance').value === 'true',
                 allocatedTails: allocatedTails,
-                utilizationRate: utilizationRate
+                utilizationRate: utilizationRate,
+                // Variable mission length parameters
+                useVariableMissionLength: document.getElementById('useVariableMissionLength').checked,
+                avgMissionLength: parseInt(document.getElementById('avgMissionLength').value),
+                missionLengthStd: parseFloat(document.getElementById('missionLengthStd').value),
+                minMissionLength: parseInt(document.getElementById('minMissionLength').value)
             };
 
             const riskTolerance = parseFloat(document.getElementById('riskTolerance').value) / 100;
@@ -1600,6 +1751,9 @@
             }
             if (utilStdPct > (utilMaxPct - utilMinPct) / 2) {
                 warnings.push(`High utilization variance relative to range.`);
+            }
+            if (params.useVariableMissionLength && params.avgMissionLength > srtMin) {
+                warnings.push(`Avg mission length (${params.avgMissionLength}d) exceeds min SRT (${srtMin}d). Some SRTs will cap mission length.`);
             }
 
             const warningBanner = document.getElementById('warningBanner');
@@ -1665,7 +1819,10 @@
                 recTitle.classList.add('feasible');
                 recTitle.textContent = 'Recommended SRT:';
                 recSRT.textContent = bestResult.srt + ' days';
-                recBody.textContent = `At ${(params.utilizationRate * 100).toFixed(0)}% utilization, ${bestResult.srt}-day SRT yields ${(bestResult.shortageProbability * 100).toFixed(1)}% shortage probability (${Math.round(bestResult.shortageDaysPerYear)} days/year), within your ${(riskTolerance * 100).toFixed(0)}% threshold.`;
+                const modeNote = params.useVariableMissionLength 
+                    ? ` (with variable mission lengths averaging ${params.avgMissionLength} days)` 
+                    : '';
+                recBody.textContent = `At ${(params.utilizationRate * 100).toFixed(0)}% utilization, ${bestResult.srt}-day SRT yields ${(bestResult.shortageProbability * 100).toFixed(1)}% shortage probability (${Math.round(bestResult.shortageDaysPerYear)} days/year), within your ${(riskTolerance * 100).toFixed(0)}% threshold${modeNote}.`;
             } else {
                 recBox.classList.add('infeasible');
                 recTitle.classList.add('infeasible');
@@ -1682,6 +1839,8 @@
             const kpiDays = document.getElementById('kpiDays');
             const kpiP95 = document.getElementById('kpiP95');
             const kpiConcurrent = document.getElementById('kpiConcurrent');
+            const kpiCycle = document.getElementById('kpiCycle');
+            const kpiCycleUnit = document.getElementById('kpiCycleUnit');
 
             kpiShortage.textContent = (displayResult.shortageProbability * 100).toFixed(1) + '%';
             kpiShortage.className = 'kpi-value ' + (displayResult.feasible ? 'ok' : 'bad');
@@ -1694,6 +1853,20 @@
 
             kpiConcurrent.textContent = params.demandMean;
             kpiConcurrent.className = 'kpi-value';
+            
+            // Cycle metrics - show actual vs theoretical
+            const theoreticalCycle = displayResult.srt + displayResult.rest;
+            const actualCycle = displayResult.avgCycleDays;
+            kpiCycle.textContent = actualCycle.toFixed(1);
+            
+            // Color code: green if operational mode is giving efficiency gains
+            if (params.useVariableMissionLength && actualCycle < theoreticalCycle * 0.9) {
+                kpiCycle.className = 'kpi-value ok';
+                kpiCycleUnit.textContent = `days (vs ${theoreticalCycle}d planning)`;
+            } else {
+                kpiCycle.className = 'kpi-value';
+                kpiCycleUnit.textContent = 'days';
+            }
 
             // Chart
             renderChart(results, riskTolerance, bestResult);
@@ -1792,9 +1965,9 @@
                     <td>${statusBadge}</td>
                     <td>${(r.shortageProbability * 100).toFixed(1)}%</td>
                     <td>${Math.round(r.shortageDaysPerYear)}</td>
+                    <td>${r.avgMissionDays.toFixed(1)}</td>
+                    <td>${r.avgCycleDays.toFixed(1)}</td>
                     <td>${r.p95Shortfall}</td>
-                    <td>${(r.avgUtilization * 100).toFixed(0)}%</td>
-                    <td>${(r.efficiency * 100).toFixed(1)}%</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -1851,8 +2024,12 @@
             const crewsOnMission = Math.ceil(params.demandMean * params.crewsPerTail);
             const theoreticalPool = Math.ceil(crewsOnMission / efficiency);
             const sufficient = params.crewPool >= theoreticalPool;
+            
+            const modeIndicator = params.useVariableMissionLength 
+                ? `<span style="background: var(--accent-dim); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">OPERATIONAL MODE: Avg ${params.avgMissionLength}d missions</span>` 
+                : '';
 
-            note.innerHTML = `<strong style="color: var(--accent);">Validation:</strong> ${params.allocatedTails} allocated × ${(params.utilizationRate * 100).toFixed(0)}% = ${params.demandMean} concurrent × ${params.crewsPerTail} = ${crewsOnMission} on-mission. At ${result.srt}-day SRT (${(efficiency * 100).toFixed(0)}% eff.), steady-state needs ${theoreticalPool} crews. Pool of ${params.crewPool} is <span style="color: var(${sufficient ? '--ok' : '--bad'});">${sufficient ? 'sufficient' : 'below minimum'}</span>.`;
+            note.innerHTML = `<strong style="color: var(--accent);">Validation:</strong> ${params.allocatedTails} allocated × ${(params.utilizationRate * 100).toFixed(0)}% = ${params.demandMean} concurrent × ${params.crewsPerTail} = ${crewsOnMission} on-mission. At ${result.srt}-day SRT (${(efficiency * 100).toFixed(0)}% eff.), steady-state needs ${theoreticalPool} crews. Pool of ${params.crewPool} is <span style="color: var(${sufficient ? '--ok' : '--bad'});">${sufficient ? 'sufficient' : 'below minimum'}</span>.${modeIndicator}`;
         }
 
         function runSensitivityAnalysis(params, targetSRT, riskTolerance) {
