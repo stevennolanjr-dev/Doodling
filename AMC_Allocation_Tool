@@ -313,11 +313,30 @@ const getAllocationTailsCrews = (alloc) => { if (alloc.customTails !== null) ret
 const getAllocationTotals = (allocations) => allocations.reduce((acc, a) => { const tc = getAllocationTailsCrews(a); return { tails: acc.tails + tc.tails, crews: acc.crews + tc.crews }; }, { tails: 0, crews: 0 });
 const extractNumber = (str) => { const m = str.match(/\d+/); return m ? parseInt(m[0], 10) : 0; };
 
+// Configuration - set to true for viewer version
+const READ_ONLY = false;
+const STORAGE_KEY = 'mobility-allocation-data';
+const DATA_VERSION = '1.0';
+
 export default function MobilityAllocationTool() {
-  const [units, setUnits] = useState(initialUnits);
-  const [commitments, setCommitments] = useState(initialCommitments);
-  const [tdgEntries, setTdgEntries] = useState(initialTDG);
-  const [wingInventory, setWingInventory] = useState(initialWingInventory);
+  // Initialize state from localStorage if available
+  const loadInitialState = (key, fallback) => {
+    if (READ_ONLY) return fallback; // Viewer loads from props/fetch
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed[key]) return parsed[key];
+      }
+    } catch (e) { console.warn('Failed to load from localStorage:', e); }
+    return fallback;
+  };
+
+  const [units, setUnits] = useState(() => loadInitialState('units', initialUnits));
+  const [commitments, setCommitments] = useState(() => loadInitialState('commitments', initialCommitments));
+  const [tdgEntries, setTdgEntries] = useState(() => loadInitialState('tdgEntries', initialTDG));
+  const [wingInventory, setWingInventory] = useState(() => loadInitialState('wingInventory', initialWingInventory));
+  const [afforgenOverrides, setAfforgenOverrides] = useState(() => loadInitialState('afforgenOverrides', {}));
   const [filters, setFilters] = useState({ component: 'all', mds: [], search: '', ccmd: 'all' });
   const [dateRange, setDateRange] = useState({ start: '', end: '' }); // Empty = show all
   const [sortConfig, setSortConfig] = useState({ field: 'squadron', direction: 'asc', groupByComponent: true, groupByMDS: true });
@@ -333,7 +352,6 @@ export default function MobilityAllocationTool() {
   const [detailLevel, setDetailLevel] = useState('medium');
   const [afforgenSettings, setAfforgenSettings] = useState({ phaseDuration: 6, displayMode: 'available' });
   const [showSettings, setShowSettings] = useState(false);
-  const [afforgenOverrides, setAfforgenOverrides] = useState({});
   const [afforgenModal, setAfforgenModal] = useState(null);
   const [conflictModal, setConflictModal] = useState(null);
   const [addPrompt, setAddPrompt] = useState(null);
@@ -343,7 +361,80 @@ export default function MobilityAllocationTool() {
   const [dragState, setDragState] = useState(null);
   const [inventoryModal, setInventoryModal] = useState(null);
   const [crewModal, setCrewModal] = useState(null);
+  const [lastSaved, setLastSaved] = useState(null);
   const scrollContainerRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  // Auto-save to localStorage when data changes
+  useEffect(() => {
+    if (READ_ONLY) return;
+    const dataToSave = {
+      version: DATA_VERSION,
+      savedAt: new Date().toISOString(),
+      units,
+      commitments,
+      tdgEntries,
+      wingInventory,
+      afforgenOverrides
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      setLastSaved(new Date());
+    } catch (e) { console.warn('Failed to save to localStorage:', e); }
+  }, [units, commitments, tdgEntries, wingInventory, afforgenOverrides]);
+
+  // Export data as JSON file
+  const exportData = () => {
+    const data = {
+      version: DATA_VERSION,
+      exportedAt: new Date().toISOString(),
+      units,
+      commitments,
+      tdgEntries,
+      wingInventory,
+      afforgenOverrides
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mobility-allocation-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Import data from JSON file
+  const importData = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.units) setUnits(data.units);
+        if (data.commitments) setCommitments(data.commitments);
+        if (data.tdgEntries) setTdgEntries(data.tdgEntries);
+        if (data.wingInventory) setWingInventory(data.wingInventory);
+        if (data.afforgenOverrides) setAfforgenOverrides(data.afforgenOverrides);
+        alert('Data imported successfully!');
+      } catch (err) {
+        alert('Failed to import data: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+  };
+
+  // Reset to default data
+  const resetData = () => {
+    if (!confirm('Reset all data to defaults? This cannot be undone.')) return;
+    setUnits(initialUnits);
+    setCommitments(initialCommitments);
+    setTdgEntries(initialTDG);
+    setWingInventory(initialWingInventory);
+    setAfforgenOverrides({});
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   // Calculate wing inventory stats: PAA = TAI - BAI, Possessed = PAA - Depot
   const getWingStats = useCallback((wingName) => {
@@ -662,15 +753,25 @@ export default function MobilityAllocationTool() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0a0f1a', color: '#e2e8f0', fontFamily: "'JetBrains Mono', 'SF Mono', monospace", fontSize: '12px', userSelect: dragState ? 'none' : 'auto' }}>
+      {/* Hidden file input for import */}
+      <input type="file" ref={fileInputRef} onChange={importData} accept=".json" style={{ display: 'none' }} />
+      
       {/* Header */}
       <div style={{ padding: '12px 20px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(180deg, #0f172a 0%, #0a0f1a 100%)' }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 600, letterSpacing: '0.05em', color: '#f8fafc' }}>MOBILITY FORCE ALLOCATION</h1>
-          <p style={{ margin: '2px 0 0 0', color: '#64748b', fontSize: '10px' }}>AMC A38 • FY24-FY30 • {unitCounts.total} units{showTheaterAssets && ` + ${unitCounts.theater} Theater`}</p>
+          <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 600, letterSpacing: '0.05em', color: '#f8fafc' }}>MOBILITY FORCE ALLOCATION {READ_ONLY && <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 400 }}>(VIEW ONLY)</span>}</h1>
+          <p style={{ margin: '2px 0 0 0', color: '#64748b', fontSize: '10px' }}>AMC A38 • FY24-FY30 • {unitCounts.total} units{showTheaterAssets && ` + ${unitCounts.theater} Theater`}{lastSaved && !READ_ONLY && ` • Saved ${lastSaved.toLocaleTimeString()}`}</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
+          {!READ_ONLY && (
+            <>
+              <button onClick={() => fileInputRef.current?.click()} style={{ padding: '6px 10px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#94a3b8', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }} title="Import JSON">📥</button>
+              <button onClick={exportData} style={{ padding: '6px 10px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#94a3b8', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }} title="Export JSON">📤</button>
+              <button onClick={resetData} style={{ padding: '6px 10px', backgroundColor: '#1e293b', border: '1px solid #7f1d1d', borderRadius: '4px', color: '#f87171', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }} title="Reset to defaults">⟲</button>
+            </>
+          )}
           <button onClick={() => setShowSettings(!showSettings)} style={{ padding: '6px 10px', backgroundColor: showSettings ? '#1e3a5f' : '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>⚙</button>
-          <button onClick={() => setEditMode(!editMode)} style={{ padding: '6px 12px', backgroundColor: editMode ? '#1d4ed8' : '#1e293b', border: editMode ? '1px solid #3b82f6' : '1px solid #334155', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontWeight: 500, fontFamily: 'inherit' }}>{editMode ? '✓ EDIT' : 'VIEW'}</button>
+          {!READ_ONLY && <button onClick={() => setEditMode(!editMode)} style={{ padding: '6px 12px', backgroundColor: editMode ? '#1d4ed8' : '#1e293b', border: editMode ? '1px solid #3b82f6' : '1px solid #334155', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontWeight: 500, fontFamily: 'inherit' }}>{editMode ? '✓ EDIT' : 'VIEW'}</button>}
         </div>
       </div>
 
@@ -705,7 +806,7 @@ export default function MobilityAllocationTool() {
             )}
           </button>
         ))}
-        {editMode && <button onClick={() => setTdgModal({ mode: 'view' })} style={{ marginLeft: 'auto', padding: '4px 8px', backgroundColor: '#422006', border: '1px solid #f59e0b', borderRadius: '4px', color: '#fcd34d', cursor: 'pointer', fontSize: '9px', fontFamily: 'inherit' }}>📋 TDG</button>}
+        {!READ_ONLY && editMode && <button onClick={() => setTdgModal({ mode: 'view' })} style={{ marginLeft: 'auto', padding: '4px 8px', backgroundColor: '#422006', border: '1px solid #f59e0b', borderRadius: '4px', color: '#fcd34d', cursor: 'pointer', fontSize: '9px', fontFamily: 'inherit' }}>📋 TDG</button>}
       </div>
 
       {/* Filters */}
@@ -851,7 +952,7 @@ export default function MobilityAllocationTool() {
                       {MONTHS.map((month, i) => <div key={month.key} style={{ position: 'absolute', left: i * MONTH_WIDTH, width: MONTH_WIDTH, height: '100%', borderRight: month.isFYStart ? '2px solid #334155' : '1px solid #1e293b15', pointerEvents: 'none' }} />)}
                       {!isTheater && showDwellLines && unitCommitments.map(c => { const dwell = getDwellLine(c, unit); if (!dwell) return null; const endPx = dateToPixel(dwell.endDate), redPx = dateToPixel(dwell.redlinePoint), idealPx = dwell.isARC ? dateToPixel(dwell.idealPoint) : null; if (endPx === null) return null; const lineEnd = dwell.isARC ? (idealPx ?? redPx) : redPx; return (<React.Fragment key={`dwell-${c.id}`}>{lineEnd && lineEnd > endPx && <div style={{ position: 'absolute', left: endPx + MONTH_WIDTH * 0.85, top: '50%', width: Math.min(lineEnd - endPx - MONTH_WIDTH * 0.85, MONTHS.length * MONTH_WIDTH - endPx), height: '1px', backgroundColor: '#475569', transform: 'translateY(-50%)', pointerEvents: 'none' }} />}{dwell.isARC && idealPx && idealPx > 0 && idealPx < MONTHS.length * MONTH_WIDTH && <div style={{ position: 'absolute', left: idealPx, top: '50%', width: '6px', height: '6px', backgroundColor: '#22c55e', borderRadius: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, pointerEvents: 'none' }} title="1:5" />}{redPx && redPx > 0 && redPx < MONTHS.length * MONTH_WIDTH && <div style={{ position: 'absolute', left: redPx, top: '50%', width: '6px', height: '6px', backgroundColor: '#eab308', borderRadius: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, pointerEvents: 'none' }} title={dwell.isARC ? '1:4' : '1:2'} />}</React.Fragment>); })}
                       {!isTheater && showChanges && unitCommitments.filter(c => c.originalStartDate).map(c => { const style = getCommitmentStyle(c, true); return style ? <div key={`ghost-${c.id}`} style={{ position: 'absolute', top: '5px', height: ROW_HEIGHT - 10, borderRadius: '3px', pointerEvents: 'none', ...style }} /> : null; })}
-                      {!isTheater && unitCommitments.map(c => { const style = getCommitmentStyle(c); if (!style) return null; const hasRFS = c.allocations.some(a => a.type === 'RFS'); const hasRFF = hasRFFAllocation(c); const width = parseFloat(style.width) - 8; const isDragging = dragState?.commitmentId === c.id; return (<div key={c.id} onMouseDown={e => handleDragStart(e, c, unit)} onClick={e => { e.stopPropagation(); if (!dragState && editMode) setSelectedCommitment(c); }} onDoubleClick={e => { e.stopPropagation(); setEditMode(true); setSelectedCommitment(c); }} onMouseEnter={e => handleMouseEnter(e, c)} onMouseLeave={() => !dragState && setHoveredCommitment(null)} style={{ position: 'absolute', top: afforgenSettings.displayMode === 'stripes' && unit.component === 'A' ? '6px' : '5px', height: afforgenSettings.displayMode === 'stripes' && unit.component === 'A' ? ROW_HEIGHT - 12 : ROW_HEIGHT - 10, borderRadius: hasRFS && !c.isConversion ? '10px' : '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 600, color: c.isConversion ? '#7f1d1d' : '#fff', cursor: editMode ? (isDragging ? 'grabbing' : 'grab') : 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px', boxShadow: selectedCommitment?.id === c.id ? '0 0 0 2px #fbbf24' : hasRFF ? 'inset 0 0 0 2px rgba(245, 158, 11, 0.8)' : 'none', textShadow: c.isConversion ? 'none' : '0 1px 2px rgba(0,0,0,0.5)', opacity: isDragging ? 0.8 : 1, zIndex: isDragging ? 100 : 1, ...style }}>{getBlockLabel(c, width)}</div>); })}
+                      {!isTheater && unitCommitments.map(c => { const style = getCommitmentStyle(c); if (!style) return null; const hasRFS = c.allocations.some(a => a.type === 'RFS'); const hasRFF = hasRFFAllocation(c); const width = parseFloat(style.width) - 8; const isDragging = dragState?.commitmentId === c.id; return (<div key={c.id} onMouseDown={e => !READ_ONLY && handleDragStart(e, c, unit)} onClick={e => { e.stopPropagation(); if (!dragState && editMode && !READ_ONLY) setSelectedCommitment(c); }} onDoubleClick={e => { e.stopPropagation(); if (!READ_ONLY) { setEditMode(true); setSelectedCommitment(c); } }} onMouseEnter={e => handleMouseEnter(e, c)} onMouseLeave={() => !dragState && setHoveredCommitment(null)} style={{ position: 'absolute', top: afforgenSettings.displayMode === 'stripes' && unit.component === 'A' ? '6px' : '5px', height: afforgenSettings.displayMode === 'stripes' && unit.component === 'A' ? ROW_HEIGHT - 12 : ROW_HEIGHT - 10, borderRadius: hasRFS && !c.isConversion ? '10px' : '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 600, color: c.isConversion ? '#7f1d1d' : '#fff', cursor: editMode && !READ_ONLY ? (isDragging ? 'grabbing' : 'grab') : 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px', boxShadow: selectedCommitment?.id === c.id ? '0 0 0 2px #fbbf24' : hasRFF ? 'inset 0 0 0 2px rgba(245, 158, 11, 0.8)' : 'none', textShadow: c.isConversion ? 'none' : '0 1px 2px rgba(0,0,0,0.5)', opacity: isDragging ? 0.8 : 1, zIndex: isDragging ? 100 : 1, ...style }}>{getBlockLabel(c, width)}</div>); })}
                     </div>
                   </div>
                 </React.Fragment>
