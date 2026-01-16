@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRT Trade-Off Analyzer</title>
+    <title>C-17 SRT Trade-Off Analyzer v3</title>
     <style>
         /* === CSS Variables: Calmer Executive Palette === */
         :root {
@@ -42,759 +42,233 @@
             min-height: 100vh;
         }
 
-        /* === App Shell === */
-        .app-shell {
-            max-width: 1500px;
-            margin: 0 auto;
-            padding: 16px;
-        }
+        .app-shell { max-width: 1500px; margin: 0 auto; padding: 16px; }
 
         .app-header {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 16px;
-            position: sticky;
-            top: 8px;
-            z-index: 100;
+            display: flex; gap: 16px; align-items: center; justify-content: space-between;
+            padding: 12px 20px; background: var(--panel); border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 16px; position: sticky; top: 8px; z-index: 100;
             backdrop-filter: blur(12px);
         }
+        .app-header h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+        .app-header .subtitle { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .progress-text { font-size: 0.8rem; color: var(--accent); }
 
-        .app-header h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: var(--text);
-        }
-
-        .app-header .subtitle {
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .progress-text {
-            font-size: 0.8rem;
-            color: var(--accent);
-        }
-
-        /* === Two-Column Grid === */
-        .app-grid {
-            display: grid;
-            gap: 16px;
-        }
-
+        .app-grid { display: grid; gap: 16px; }
         @media (min-width: 1100px) {
-            .app-grid {
-                grid-template-columns: 420px 1fr;
-                align-items: start;
-            }
-            .left-pane {
-                position: sticky;
-                top: 90px;
-                max-height: calc(100vh - 110px);
-                overflow-y: auto;
-            }
+            .app-grid { grid-template-columns: 420px 1fr; align-items: start; }
+            .left-pane { position: sticky; top: 90px; max-height: calc(100vh - 110px); overflow-y: auto; overflow-x: visible; }
         }
 
-        /* === Cards/Panels === */
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 12px;
-        }
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .card-title { font-size: 0.85rem; font-weight: 600; color: var(--accent); letter-spacing: 0.03em; text-transform: uppercase; }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
+        .btn { background: var(--accent); color: var(--bg); border: none; border-radius: var(--radius-sm); padding: 12px 24px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(119,189,242,0.25); }
+        .btn:hover { background: var(--accent-2); box-shadow: 0 6px 16px rgba(119,189,242,0.35); transform: translateY(-1px); }
+        .btn:disabled { background: var(--border); color: var(--faint); cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); box-shadow: none; }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); transform: none; }
+        .btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); box-shadow: none; padding: 8px 14px; font-size: 0.75rem; }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); transform: none; box-shadow: none; }
+        .btn-secondary.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+        .btn-compare { background: var(--warn); color: var(--bg); box-shadow: 0 4px 12px rgba(242,193,78,0.25); }
+        .btn-compare:hover { background: #f5d06a; box-shadow: 0 6px 16px rgba(242,193,78,0.35); }
 
-        .card-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--accent);
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-        }
+        .preset-group { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+        .preset-label { font-size: 0.7rem; color: var(--faint); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        /* === Buttons === */
-        .btn {
-            background: var(--accent);
-            color: var(--bg);
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 12px 24px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(119,189,242,0.25);
+        .input-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group.full-width { grid-column: 1 / -1; }
+        .input-group label { font-size: 0.75rem; color: var(--muted); font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .input-group input, .input-group select {
+            background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 10px 12px; color: var(--text); font-size: 0.95rem;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-feature-settings: "tnum"; transition: border-color 0.2s;
         }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--accent); }
 
-        .btn:hover {
-            background: var(--accent-2);
-            box-shadow: 0 6px 16px rgba(119,189,242,0.35);
-            transform: translateY(-1px);
-        }
+        .collapsible-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+        .collapsible-header:hover .card-title { color: var(--accent-2); }
+        .collapsible-content { display: none; }
+        .collapsible-content.open { display: block; }
+        .toggle-icon { color: var(--faint); font-size: 0.8rem; transition: transform 0.2s; }
+        .toggle-icon.open { transform: rotate(180deg); }
 
-        .btn:disabled {
-            background: var(--border);
-            color: var(--faint);
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
+        /* Toggle Switch */
+        .toggle-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 24px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: var(--accent-dim); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: var(--accent); }
+        .toggle-label { font-size: 0.8rem; color: var(--muted); }
+        .toggle-inputs { display: none; margin-top: 12px; }
+        .toggle-inputs.visible { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        .btn-secondary {
-            background: transparent;
-            color: var(--muted);
-            border: 1px solid var(--border);
-            box-shadow: none;
-            padding: 8px 14px;
-            font-size: 0.75rem;
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-dim);
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-secondary.active {
-            border-color: var(--accent);
-            background: var(--accent-dim);
-            color: var(--accent);
-        }
-
-        .preset-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        .preset-label {
-            font-size: 0.7rem;
-            color: var(--faint);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* === Inputs === */
-        .input-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .input-group label {
-            font-size: 0.75rem;
-            color: var(--muted);
-            font-weight: 500;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .input-group input,
-        .input-group select {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px;
-            color: var(--text);
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-        }
-
-        .input-group input:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .input-group select {
-            cursor: pointer;
-        }
-
-        /* === Collapsible Sections === */
-        .collapsible-header {
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 12px;
-        }
-
-        .collapsible-header:hover .card-title {
-            color: var(--accent-2);
-        }
-
-        .collapsible-content {
-            display: none;
-        }
-
-        .collapsible-content.open {
-            display: block;
-        }
-
-        .toggle-icon {
-            color: var(--faint);
-            font-size: 0.8rem;
-            transition: transform 0.2s;
-        }
-
-        .toggle-icon.open {
-            transform: rotate(180deg);
-        }
-
-        /* === Results: KPI Strip === */
-        .kpi-strip {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .kpi-card {
-            background: var(--panel-2);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            text-align: center;
-        }
-
-        .kpi-label {
-            font-size: 0.7rem;
-            color: var(--faint);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 6px;
-        }
-
-        .kpi-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
+        .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .kpi-card { background: var(--panel-2); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+        .kpi-label { font-size: 0.65rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .kpi-value { font-size: 1.4rem; font-weight: 700; color: var(--text); font-feature-settings: "tnum"; }
         .kpi-value.ok { color: var(--ok); }
         .kpi-value.warn { color: var(--warn); }
         .kpi-value.bad { color: var(--bad); }
+        .kpi-unit { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
 
-        .kpi-unit {
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-
-        /* === Recommendation Box === */
-        .recommendation-box {
-            background: var(--panel-2);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--border);
-        }
-
+        .recommendation-box { background: var(--panel-2); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; border-left: 4px solid var(--border); }
         .recommendation-box.feasible { border-left-color: var(--ok); background: var(--ok-dim); }
         .recommendation-box.warning { border-left-color: var(--warn); background: var(--warn-dim); }
         .recommendation-box.infeasible { border-left-color: var(--bad); background: var(--bad-dim); }
-
-        .recommendation-header {
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .recommendation-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
+        .recommendation-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+        .recommendation-title { font-size: 1.1rem; font-weight: 600; }
         .recommendation-title.feasible { color: var(--ok); }
         .recommendation-title.warning { color: var(--warn); }
         .recommendation-title.infeasible { color: var(--bad); }
+        .recommendation-srt { font-size: 2rem; font-weight: 700; color: var(--text); }
+        .recommendation-body { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
 
-        .recommendation-srt {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .recommendation-body {
-            font-size: 0.85rem;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        /* === Chart === */
-        .chart-container {
-            background: var(--panel-2);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .chart-title {
-            font-size: 0.75rem;
-            color: var(--faint);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 16px;
-        }
-
-        .chart {
-            position: relative;
-            height: 180px;
-            border-left: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            margin-left: 40px;
-            margin-bottom: 30px;
-        }
-
-        .chart-bar {
-            position: absolute;
-            bottom: 0;
-            width: 28px;
-            background: var(--accent);
-            border-radius: 4px 4px 0 0;
-            transition: all 0.2s;
-            cursor: pointer;
-            opacity: 0.8;
-        }
-
+        .chart-container { background: var(--panel-2); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+        .chart-title { font-size: 0.75rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; }
+        .chart { position: relative; height: 180px; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-left: 40px; margin-bottom: 30px; }
+        .chart-bar { position: absolute; bottom: 0; width: 28px; background: var(--accent); border-radius: 4px 4px 0 0; transition: all 0.2s; cursor: pointer; opacity: 0.8; }
         .chart-bar:hover { opacity: 1; }
         .chart-bar.infeasible { background: var(--bad); opacity: 0.4; }
         .chart-bar.feasible { background: var(--ok); }
         .chart-bar.best { background: var(--warn); opacity: 1; box-shadow: 0 0 12px rgba(242,193,78,0.4); }
+        .chart-bar-label { position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: var(--faint); }
+        .chart-bar-value { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; color: var(--muted); white-space: nowrap; }
+        .chart-tolerance-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--bad); opacity: 0.6; }
+        .chart-tolerance-label { position: absolute; right: 4px; transform: translateY(-50%); font-size: 0.65rem; color: var(--bad); background: var(--panel-2); padding: 0 4px; }
+        .chart-y-label { position: absolute; left: -35px; font-size: 0.6rem; color: var(--faint); transform: translateY(-50%); }
 
-        .chart-bar-label {
-            position: absolute;
-            bottom: -22px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.65rem;
-            color: var(--faint);
-        }
-
-        .chart-bar-value {
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.6rem;
-            color: var(--muted);
-            white-space: nowrap;
-        }
-
-        .chart-tolerance-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            border-top: 2px dashed var(--bad);
-            opacity: 0.6;
-        }
-
-        .chart-tolerance-label {
-            position: absolute;
-            right: 4px;
-            transform: translateY(-50%);
-            font-size: 0.65rem;
-            color: var(--bad);
-            background: var(--panel-2);
-            padding: 0 4px;
-        }
-
-        .chart-y-label {
-            position: absolute;
-            left: -35px;
-            font-size: 0.6rem;
-            color: var(--faint);
-            transform: translateY(-50%);
-        }
-
-        /* === Tables === */
-        .table-container {
-            overflow-x: auto;
-            border-radius: var(--radius-sm);
-        }
-
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
-
-        .results-table th,
-        .results-table td {
-            padding: 10px 8px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .results-table th {
-            color: var(--accent);
-            font-weight: 600;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            background: var(--bg);
-            position: sticky;
-            top: 0;
-        }
-
-        .results-table tr:hover {
-            background: var(--panel);
-        }
-
-        .results-table tr.best-row {
-            background: var(--ok-dim);
-        }
-
-        .results-table tr.infeasible-row {
-            opacity: 0.4;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
+        .table-container { overflow-x: auto; border-radius: var(--radius-sm); }
+        .results-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .results-table th, .results-table td { padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--border); font-feature-settings: "tnum"; }
+        .results-table th { color: var(--accent); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em; background: var(--bg); position: sticky; top: 0; }
+        .results-table tr:hover { background: var(--panel); }
+        .results-table tr.best-row { background: var(--ok-dim); }
+        .results-table tr.infeasible-row { opacity: 0.4; }
+        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
         .status-badge.ok { background: var(--ok-dim); color: var(--ok); }
         .status-badge.threshold { background: var(--bad-dim); color: var(--bad); }
         .status-badge.best { background: var(--warn-dim); color: var(--warn); }
 
-        /* === Tooltips === */
-        .tooltip-container {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-        }
+        .comparison-section { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+        .comparison-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .comparison-inputs { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .comparison-input { display: flex; align-items: center; gap: 6px; }
+        .comparison-input label { font-size: 0.75rem; color: var(--muted); }
+        .comparison-input input { width: 60px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; color: var(--text); font-size: 0.9rem; text-align: center; font-family: 'SF Mono', monospace; }
+        .comparison-input input:focus { outline: none; border-color: var(--accent); }
+        .comparison-results { display: none; }
+        .comparison-results.visible { display: block; }
 
-        .tooltip-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 14px;
-            height: 14px;
-            background: var(--border);
-            color: var(--faint);
-            border-radius: 50%;
-            font-size: 0.6rem;
-            cursor: help;
-            transition: all 0.2s;
-            margin-left: 4px;
-        }
+        .comparison-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .comparison-table th, .comparison-table td { padding: 12px 16px; text-align: center; border: 1px solid var(--border); }
+        .comparison-table th { background: var(--panel); color: var(--accent); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .comparison-table th.metric-header { text-align: left; background: var(--bg); color: var(--muted); font-size: 0.7rem; }
+        .comparison-table td.metric-label { text-align: left; color: var(--muted); font-size: 0.8rem; }
+        .comparison-table .highlight-col { background: var(--warn-dim); }
+        .comparison-table .srt-header { font-size: 1.2rem; font-weight: 700; }
+        .delta-indicator { font-size: 0.7rem; margin-left: 4px; }
+        .delta-indicator.positive { color: var(--ok); }
+        .delta-indicator.negative { color: var(--bad); }
 
-        .tooltip-icon:hover {
-            background: var(--accent);
-            color: var(--bg);
-        }
-
+        /* === TOOLTIPS - Fixed center overlay that can't be cut off === */
+        .tooltip-container { position: relative; display: inline-flex; align-items: center; }
+        .tooltip-icon { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; background: var(--border); color: var(--faint); border-radius: 50%; font-size: 0.6rem; cursor: help; transition: all 0.2s; margin-left: 4px; }
+        .tooltip-icon:hover { background: var(--accent); color: var(--bg); }
         .tooltip-content {
-            visibility: hidden;
-            opacity: 0;
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            width: 260px;
-            background: var(--bg);
-            border: 1px solid var(--accent);
-            border-radius: var(--radius-sm);
-            padding: 12px;
-            font-size: 0.75rem;
-            font-weight: 400;
-            text-transform: none;
-            letter-spacing: 0;
-            text-align: left;
-            color: var(--muted);
-            line-height: 1.5;
-            z-index: 1000;
-            box-shadow: var(--shadow);
-            transition: opacity 0.2s, visibility 0.2s;
+            visibility: hidden; opacity: 0; 
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px; max-width: 90vw;
+            background: #1a2535; border: 1px solid var(--accent); border-radius: var(--radius-sm);
+            padding: 16px; font-size: 0.8rem; font-weight: 400; text-transform: none; letter-spacing: 0;
+            text-align: left; color: var(--muted); line-height: 1.6; z-index: 9999;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6); transition: opacity 0.15s, visibility 0.15s; pointer-events: none;
         }
+        .tooltip-container:hover .tooltip-content { visibility: visible; opacity: 1; }
 
-        .tooltip-content::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 6px solid transparent;
-            border-bottom-color: var(--accent);
-        }
+        .reference-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 12px; }
+        .reference-table th, .reference-table td { padding: 8px; text-align: center; border-bottom: 1px solid var(--border); }
+        .reference-table th { color: var(--accent); font-weight: 600; font-size: 0.65rem; text-transform: uppercase; }
 
-        .tooltip-container:hover .tooltip-content,
-        .tooltip-content.open {
-            visibility: visible;
-            opacity: 1;
-        }
+        .warning-banner { background: var(--warn-dim); border: 1px solid rgba(242,193,78,0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px; font-size: 0.8rem; color: var(--warn); }
 
-        /* Tooltip positioning adjustments for table headers */
-        .results-table th .tooltip-content {
-            left: 0;
-            transform: none;
-        }
-
-        .results-table th .tooltip-content::before {
-            left: 20px;
-        }
-
-        /* KPI tooltips - position to not overflow */
-        .kpi-label .tooltip-content {
-            left: 0;
-            transform: none;
-            width: 240px;
-        }
-
-        .kpi-label .tooltip-content::before {
-            left: 20px;
-        }
-
-        /* === Help Drawer === */
-        .help-drawer {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-top: 16px;
-        }
-
-        .help-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .help-tab {
-            flex: 1;
-            padding: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--muted);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .help-tab:hover {
-            color: var(--text);
-            background: var(--panel-2);
-        }
-
-        .help-tab.active {
-            color: var(--accent);
-            border-bottom: 2px solid var(--accent);
-            margin-bottom: -1px;
-        }
-
-        .help-content {
-            display: none;
-            padding: 20px;
-            font-size: 0.8rem;
-            color: var(--muted);
-            line-height: 1.7;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .help-content.active {
-            display: block;
-        }
-
-        .help-content h4 {
-            color: var(--accent);
-            font-size: 0.85rem;
-            margin: 16px 0 8px 0;
-        }
-
-        .help-content h4:first-child {
-            margin-top: 0;
-        }
-
-        .help-content code {
-            background: var(--bg);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
-        .help-content .formula {
-            background: var(--bg);
-            padding: 8px 12px;
-            border-radius: var(--radius-sm);
-            margin: 8px 0;
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: var(--text);
-        }
-
-        /* === Constraints Panel (Crunch Points) === */
-        .constraints-panel {
-            background: var(--warn-dim);
-            border: 1px solid rgba(242,193,78,0.3);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .constraints-panel h4 {
-            color: var(--warn);
-            font-size: 0.8rem;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .constraints-panel p {
-            font-size: 0.8rem;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
-
-        /* === Sensitivity Panel === */
-        .sensitivity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.8rem;
-        }
-
-        .sensitivity-item:last-child {
-            border-bottom: none;
-        }
-
-        .sensitivity-lever {
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .sensitivity-impact {
-            font-weight: 600;
-            font-family: monospace;
-            font-size: 0.85rem;
-        }
-
+        .sensitivity-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+        .sensitivity-item:last-child { border-bottom: none; }
+        .sensitivity-lever { color: var(--muted); display: flex; align-items: center; gap: 6px; }
+        .sensitivity-impact { font-weight: 600; font-family: monospace; font-size: 0.85rem; }
         .sensitivity-impact.positive { color: var(--ok); }
         .sensitivity-impact.negative { color: var(--bad); }
 
-        /* === C-6 Reference Table === */
-        .reference-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.75rem;
-            margin-top: 12px;
-        }
+        .help-drawer { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 16px; }
+        .help-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .help-tab { flex: 1; padding: 12px; font-size: 0.75rem; font-weight: 500; color: var(--muted); background: transparent; border: none; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.03em; }
+        .help-tab:hover { color: var(--text); background: var(--panel-2); }
+        .help-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -1px; }
+        .help-content { display: none; padding: 20px; font-size: 0.8rem; color: var(--muted); line-height: 1.7; max-height: 400px; overflow-y: auto; }
+        .help-content.active { display: block; }
+        .help-content h4 { color: var(--accent); font-size: 0.85rem; margin: 16px 0 8px 0; }
+        .help-content h4:first-child { margin-top: 0; }
+        .help-content code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+        .help-content .formula { background: var(--bg); padding: 8px 12px; border-radius: var(--radius-sm); margin: 8px 0; font-family: monospace; font-size: 0.8rem; color: var(--text); }
 
-        .reference-table th,
-        .reference-table td {
-            padding: 8px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .reference-table th {
-            color: var(--accent);
-            font-weight: 600;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-        }
-
-        /* === Warnings === */
-        .warning-banner {
-            background: var(--warn-dim);
-            border: 1px solid rgba(242,193,78,0.3);
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            font-size: 0.8rem;
-            color: var(--warn);
-        }
-
-        /* === Utility === */
         .hidden { display: none !important; }
-        .text-muted { color: var(--muted); }
         .text-ok { color: var(--ok); }
         .text-warn { color: var(--warn); }
         .text-bad { color: var(--bad); }
 
-        /* === Mobile Adjustments === */
-        @media (max-width: 1099px) {
-            .app-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            .input-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(4px); overflow-y: auto; padding: 40px 20px; }
+        .modal-overlay.open { display: flex; justify-content: center; align-items: flex-start; }
+        .modal { background: #1a2535; border: 1px solid var(--border); border-radius: var(--radius); max-width: 800px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+        .modal-close { background: transparent; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1; }
+        .modal-close:hover { color: var(--text); }
+        .modal-body { padding: 24px; font-size: 0.85rem; line-height: 1.7; color: var(--muted); max-height: 70vh; overflow-y: auto; }
+        .modal-body h3 { color: var(--text); font-size: 1rem; margin: 24px 0 12px 0; font-weight: 600; }
+        .modal-body h3:first-child { margin-top: 0; }
+        .modal-body h4 { color: var(--accent); font-size: 0.85rem; margin: 16px 0 8px 0; font-weight: 600; }
+        .modal-body p { margin-bottom: 12px; }
+        .modal-body ul { margin: 8px 0 12px 20px; }
+        .modal-body li { margin-bottom: 4px; }
+        .modal-body table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.8rem; }
+        .modal-body th, .modal-body td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+        .modal-body th { background: var(--panel); color: var(--accent); font-weight: 600; }
+        .modal-body code { background: var(--panel); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+        .modal-body .highlight-box { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 16px 0; }
+        .modal-body .formula-box { background: var(--bg); padding: 16px; border-radius: var(--radius-sm); margin: 12px 0; font-family: monospace; font-size: 0.85rem; line-height: 1.8; }
 
+        @media (max-width: 1099px) {
+            .app-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .input-grid { grid-template-columns: 1fr 1fr; }
+        }
         @media (max-width: 600px) {
-            .input-grid {
-                grid-template-columns: 1fr;
-            }
-            .kpi-strip {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .input-grid { grid-template-columns: 1fr; }
+            .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+            .comparison-inputs { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
     <div class="app-shell">
-        <!-- Sticky Header -->
         <header class="app-header">
             <div>
-                <h1>SRT Trade-Off Analyzer</h1>
-                <p class="subtitle">C-6 allocation analysis • What SRT can we sustain?</p>
+                <h1>C-17 SRT Trade-Off Analyzer v3</h1>
+                <p class="subtitle">C-17 allocation analysis • SRT exceedance tracking • Capacity augmentation</p>
             </div>
             <div class="header-actions">
                 <span class="progress-text" id="progressText"></span>
+                <button class="btn btn-outline" onclick="showAboutModal()">About</button>
+                <button class="btn btn-outline" id="exportBtn" onclick="exportCSV()" disabled>Export CSV</button>
                 <button class="btn" id="runBtn" onclick="runTradeStudy()">Run Analysis</button>
             </div>
         </header>
@@ -802,30 +276,29 @@
         <main class="app-grid">
             <!-- Left Pane: Inputs -->
             <section class="left-pane">
-                <!-- Constraints Card -->
+                <!-- Base Constraints Card -->
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Constraints</span>
+                        <span class="card-title">Base Constraints</span>
                     </div>
 
-                    <!-- C-6 Presets -->
                     <div class="preset-label">RDAP OPORD Table C-6 Presets</div>
                     <div class="preset-group">
-                        <button class="btn btn-secondary" onclick="loadMainPreset('recovery')">Recovery</button>
-                        <button class="btn btn-secondary" onclick="loadMainPreset('nominal')">Nominal</button>
-                        <button class="btn btn-secondary" onclick="loadMainPreset('surge1')">Surge 1</button>
-                        <button class="btn btn-secondary" onclick="loadMainPreset('surge2')">Surge 2</button>
+                        <button class="btn btn-secondary" onclick="loadMainPreset('recovery', this)">Recovery</button>
+                        <button class="btn btn-secondary" onclick="loadMainPreset('nominal', this)">Nominal</button>
+                        <button class="btn btn-secondary" onclick="loadMainPreset('surge1', this)">Surge 1</button>
+                        <button class="btn btn-secondary" onclick="loadMainPreset('surge2', this)">Surge 2</button>
                     </div>
 
                     <div class="input-grid">
                         <div class="input-group">
                             <label>
-                                Crews Available
+                                Base Crews
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>Total crew pool size</strong><br>
-                                        Crews cycle through: AVAILABLE → ON_MISSION → PMCR
+                                        <strong>Baseline crew pool size</strong><br><br>
+                                        Core allocation before any augmentation (LTMPA, Mobilized). Crews cycle through: AVAILABLE → ON_MISSION → PMCR
                                     </span>
                                 </span>
                             </label>
@@ -833,12 +306,12 @@
                         </div>
                         <div class="input-group">
                             <label>
-                                Tails Allocated
+                                Base Tails
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>C-6 allocated tails</strong><br>
-                                        Capacity available for tasking, not all necessarily flying.
+                                        <strong>C-6 allocated tails</strong><br><br>
+                                        Baseline capacity available for tasking before augmentation.
                                     </span>
                                 </span>
                             </label>
@@ -850,8 +323,8 @@
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>% of allocated tails flying</strong><br>
-                                        Converts allocation → concurrency.<br><br>
+                                        <strong>% of allocated tails flying</strong><br><br>
+                                        Converts allocation → concurrency.<br>
                                         60-70%: Typical steady-state<br>
                                         80-90%: High ops tempo
                                     </span>
@@ -865,7 +338,7 @@
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>Crews per flying tail</strong><br>
+                                        <strong>Crews per flying tail</strong><br><br>
                                         Usually 1.0. NOT the C-6 planning factor.
                                     </span>
                                 </span>
@@ -878,12 +351,10 @@
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>Maximum acceptable shortage probability</strong><br><br>
-                                        What % of days are you willing to be short-crewed?<br><br>
-                                        • 5% = ~18 shortage days/year<br>
-                                        • 10% = ~37 shortage days/year<br>
-                                        • 2% = ~7 shortage days/year<br><br>
-                                        SRTs with shortage below this threshold are marked "Within Threshold."
+                                        <strong>Max acceptable shortage probability</strong><br><br>
+                                        What % of days are you willing to be short-crewed?<br>
+                                        5% = ~18 shortage days/year<br>
+                                        10% = ~37 shortage days/year
                                     </span>
                                 </span>
                             </label>
@@ -895,9 +366,8 @@
                                 <span class="tooltip-container">
                                     <span class="tooltip-icon">?</span>
                                     <span class="tooltip-content">
-                                        <strong>Scheduled Return Time range to analyze</strong><br><br>
-                                        The tool will simulate each SRT value from min to max and show which ones meet your risk threshold.<br><br>
-                                        Typical range: 10-21 days.
+                                        <strong>SRT values to analyze</strong><br><br>
+                                        Tool simulates each SRT from min to max.
                                     </span>
                                 </span>
                             </label>
@@ -905,6 +375,167 @@
                                 <input type="number" id="srtMin" value="10" min="5" max="30" style="width: 50%;" placeholder="Min">
                                 <input type="number" id="srtMax" value="21" min="5" max="30" style="width: 50%;" placeholder="Max">
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Capacity Augmentation Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Capacity Augmentation</span>
+                    </div>
+
+                    <!-- LTMPA Toggle -->
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="useLTMPA" onchange="toggleAugmentation('ltmpa')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div>
+                            <span class="toggle-label" style="font-weight: 500; color: var(--text);">LTMPA</span>
+                            <span class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-content">
+                                    <strong>Long-Term Military Personnel Appropriation</strong><br><br>
+                                    Additional tails and crews allocated via LTMPA orders. Adds to base capacity for analysis.
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="toggle-inputs" id="ltmpaInputs">
+                        <div class="input-group">
+                            <label>LTMPA Tails</label>
+                            <input type="number" id="ltmpaTails" value="0" min="0" max="50">
+                        </div>
+                        <div class="input-group">
+                            <label>LTMPA Crews</label>
+                            <input type="number" id="ltmpaCrews" value="0" min="0" max="100">
+                        </div>
+                    </div>
+
+                    <!-- Mobilized Toggle -->
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="useMobilized" onchange="toggleAugmentation('mobilized')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div>
+                            <span class="toggle-label" style="font-weight: 500; color: var(--text);">Mobilized</span>
+                            <span class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-content">
+                                    <strong>Mobilized ARC Capacity</strong><br><br>
+                                    Additional tails and crews from mobilized ARC units. Adds to base capacity for analysis.
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="toggle-inputs" id="mobilizedInputs">
+                        <div class="input-group">
+                            <label>Mobilized Tails</label>
+                            <input type="number" id="mobilizedTails" value="0" min="0" max="50">
+                        </div>
+                        <div class="input-group">
+                            <label>Mobilized Crews</label>
+                            <input type="number" id="mobilizedCrews" value="0" min="0" max="100">
+                        </div>
+                    </div>
+
+                    <!-- PACAF Toggle -->
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="usePACAF" onchange="toggleAugmentation('pacaf')">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div>
+                            <span class="toggle-label" style="font-weight: 500; color: var(--text);">PACAF</span>
+                            <span class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-content">
+                                    <strong>Pacific Air Forces Agreement</strong><br><br>
+                                    Additional tails and crews allocated via PACAF agreement. Adds to base capacity for analysis.
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="toggle-inputs" id="pacafInputs">
+                        <div class="input-group">
+                            <label>PACAF Tails</label>
+                            <input type="number" id="pacafTails" value="3" min="0" max="20">
+                        </div>
+                        <div class="input-group">
+                            <label>PACAF Crews</label>
+                            <input type="number" id="pacafCrews" value="4" min="0" max="50">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--faint);">
+                        <strong>Effective Totals:</strong>
+                        <span id="effectiveTotals">46 tails, 63 crews</span>
+                    </div>
+                </div>
+
+                <!-- Mission Length Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Mission Length Model</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; color: var(--muted);">
+                            <input type="checkbox" id="useVariableMissionLength" onchange="toggleMissionLengthInputs()" checked style="width: 16px; height: 16px;">
+                            <span>Variable Mission Lengths (Operational Mode)</span>
+                        </label>
+                        <p style="font-size: 0.7rem; color: var(--faint); margin-top: 6px;">
+                            When enabled, missions vary in length (capped at SRT). Shorter missions = shorter PMCR = crews available sooner.
+                        </p>
+                    </div>
+
+                    <div class="input-grid" id="missionLengthInputs">
+                        <div class="input-group">
+                            <label>
+                                Avg Mission Length (days)
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Typical mission duration</strong><br><br>
+                                        Average days per mission. Must be ≤ SRT.<br><br>
+                                        Examples:<br>
+                                        • Channel missions: 7-10 days<br>
+                                        • Extended deployments: 14-18 days
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="avgMissionLength" value="14" min="3" max="21" step="0.5">
+                        </div>
+                        <div class="input-group">
+                            <label>
+                                Mission Length Std Dev (days)
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Variation in mission duration</strong><br><br>
+                                        Standard deviation around the average.<br><br>
+                                        1-2 days: Fairly consistent<br>
+                                        3-4 days: Moderate variation<br>
+                                        5+ days: High variation
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="missionLengthStd" value="3" min="0" max="7" step="0.5">
+                        </div>
+                        <div class="input-group">
+                            <label>
+                                Min Mission Length (days)
+                                <span class="tooltip-container">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-content">
+                                        <strong>Shortest possible mission</strong><br><br>
+                                        No mission will be shorter than this value.
+                                    </span>
+                                </span>
+                            </label>
+                            <input type="number" id="minMissionLength" value="5" min="1" max="14" step="1">
                         </div>
                     </div>
                 </div>
@@ -918,62 +549,19 @@
                     <div class="collapsible-content" id="advancedContent">
                         <div class="input-grid">
                             <div class="input-group">
-                                <label>
-                                    Utilization Std Dev (%)
-                                    <span class="tooltip-container">
-                                        <span class="tooltip-icon">?</span>
-                                        <span class="tooltip-content">
-                                            <strong>How much does daily utilization fluctuate?</strong><br><br>
-                                            Standard deviation around the mean utilization rate.<br><br>
-                                            • 5-8%: Steady ops tempo<br>
-                                            • 10-12%: Normal fluctuation<br>
-                                            • 15%+: High variability
-                                        </span>
-                                    </span>
-                                </label>
+                                <label>Utilization Std Dev (%)</label>
                                 <input type="number" id="utilStdPct" value="10" min="0" max="30" step="1">
                             </div>
                             <div class="input-group">
-                                <label>
-                                    Utilization Min (%)
-                                    <span class="tooltip-container">
-                                        <span class="tooltip-icon">?</span>
-                                        <span class="tooltip-content">
-                                            <strong>Floor for daily utilization</strong><br><br>
-                                            On the lowest-demand days, what's the minimum % of allocated tails flying?<br><br>
-                                            Example: 50% means even on slow days, at least half your tails are employed.
-                                        </span>
-                                    </span>
-                                </label>
+                                <label>Utilization Min (%)</label>
                                 <input type="number" id="utilMinPct" value="50" min="10" max="100" step="5">
                             </div>
                             <div class="input-group">
-                                <label>
-                                    Utilization Max (%)
-                                    <span class="tooltip-container">
-                                        <span class="tooltip-icon">?</span>
-                                        <span class="tooltip-content">
-                                            <strong>Ceiling for daily utilization</strong><br><br>
-                                            On peak-demand days, what's the maximum % of allocated tails flying?<br><br>
-                                            100% = all allocated tails employed simultaneously.
-                                        </span>
-                                    </span>
-                                </label>
+                                <label>Utilization Max (%)</label>
                                 <input type="number" id="utilMaxPct" value="100" min="10" max="100" step="5">
                             </div>
                             <div class="input-group">
-                                <label>
-                                    PMCR Days Cap
-                                    <span class="tooltip-container">
-                                        <span class="tooltip-icon">?</span>
-                                        <span class="tooltip-content">
-                                            <strong>Post-Mission Crew Rest maximum</strong><br><br>
-                                            Crews get 40% of mission length as rest, but capped at this value.<br><br>
-                                            • 4 days (96 hrs): Standard<br>
-                                            • Reached at ~10-day SRT
-                                        </span>
-                                    </span>
-                                </label>
+                                <label>PMCR Days Cap</label>
                                 <input type="number" id="maxRest" value="4" min="1" max="14">
                             </div>
                             <div class="input-group">
@@ -982,97 +570,21 @@
                                     <span class="tooltip-container">
                                         <span class="tooltip-icon">?</span>
                                         <span class="tooltip-content">
-                                            <strong>Do missions sometimes run longer than SRT?</strong><br><br>
-                                            • Off: All missions complete exactly at SRT<br>
-                                            • On: 70% on-time, 20% +1 day, 8% +2 days, 2% +3 days<br><br>
-                                            Delays extend both mission and PMCR, reducing crew availability.
+                                            <strong>Do missions run longer than planned?</strong><br><br>
+                                            Off: No delays past base mission<br>
+                                            On: 70% on-time, 20% +1d, 8% +2d, 2% +3d<br><br>
+                                            Delays CAN push missions past SRT → busts
                                         </span>
                                     </span>
                                 </label>
                                 <select id="useDelayVariance">
-                                    <option value="false" selected>Off (steady-state)</option>
-                                    <option value="true">On (realistic)</option>
+                                    <option value="false">Off (steady-state)</option>
+                                    <option value="true" selected>On (realistic)</option>
                                 </select>
                             </div>
                             <div class="input-group">
-                                <label>
-                                    Iterations
-                                    <span class="tooltip-container">
-                                        <span class="tooltip-icon">?</span>
-                                        <span class="tooltip-content">
-                                            <strong>Monte Carlo sample size</strong><br><br>
-                                            How many simulated years to run. More = more stable results, slower runtime.<br><br>
-                                            • 100-150: Quick estimates<br>
-                                            • 200-300: Standard<br>
-                                            • 500+: High confidence
-                                        </span>
-                                    </span>
-                                </label>
+                                <label>Iterations</label>
                                 <input type="number" id="iterations" value="200" min="50" max="2000" step="50">
-                            </div>
-                        </div>
-
-                        <!-- Variable Mission Length Section -->
-                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; color: var(--muted);">
-                                    <input type="checkbox" id="useVariableMissionLength" onchange="toggleMissionLengthInputs()" style="width: 16px; height: 16px;">
-                                    <span>Variable Mission Lengths (Operational Mode)</span>
-                                </label>
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>Model missions shorter than SRT</strong><br><br>
-                                        <strong>Default (off):</strong> Every mission uses the full SRT. Conservative planning assumption — good for policy decisions.<br><br>
-                                        <strong>Enabled:</strong> Missions vary in length (capped at SRT). Shorter missions = shorter PMCR = crews available sooner.<br><br>
-                                        Use this when you have operational data on actual mission durations.
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="input-grid" id="missionLengthInputs" style="display: none;">
-                                <div class="input-group">
-                                    <label>
-                                        Avg Mission Length (days)
-                                        <span class="tooltip-container">
-                                            <span class="tooltip-icon">?</span>
-                                            <span class="tooltip-content">
-                                                <strong>Typical mission duration</strong><br><br>
-                                                Average days per mission. Must be ≤ SRT (the cap).<br><br>
-                                                Example: If SRT is 14 but most missions are 7-10 days, set this to 8-9.
-                                            </span>
-                                        </span>
-                                    </label>
-                                    <input type="number" id="avgMissionLength" value="7" min="3" max="21" step="1">
-                                </div>
-                                <div class="input-group">
-                                    <label>
-                                        Mission Length Std Dev (days)
-                                        <span class="tooltip-container">
-                                            <span class="tooltip-icon">?</span>
-                                            <span class="tooltip-content">
-                                                <strong>Variation in mission duration</strong><br><br>
-                                                How much do mission lengths vary around the average?<br><br>
-                                                • 1-2 days: Fairly consistent<br>
-                                                • 3-4 days: Moderate variation<br>
-                                                • 5+ days: High variation
-                                            </span>
-                                        </span>
-                                    </label>
-                                    <input type="number" id="missionLengthStd" value="2" min="0" max="7" step="0.5">
-                                </div>
-                                <div class="input-group">
-                                    <label>
-                                        Min Mission Length (days)
-                                        <span class="tooltip-container">
-                                            <span class="tooltip-icon">?</span>
-                                            <span class="tooltip-content">
-                                                <strong>Shortest possible mission</strong><br><br>
-                                                No mission will be shorter than this. Prevents unrealistic 1-2 day missions.
-                                            </span>
-                                        </span>
-                                    </label>
-                                    <input type="number" id="minMissionLength" value="3" min="1" max="14" step="1">
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1081,17 +593,12 @@
                 <!-- C-6 Reference -->
                 <div class="card">
                     <div class="collapsible-header" onclick="toggleSection('c6ref')">
-                        <span class="card-title">C-6 Reference (RDAP OPORD)</span>
+                        <span class="card-title">C-17 C-6 Reference (RDAP OPORD)</span>
                         <span class="toggle-icon" id="c6refToggle">▼</span>
                     </div>
                     <div class="collapsible-content" id="c6refContent">
                         <table class="reference-table">
-                            <tr>
-                                <th>LOE</th>
-                                <th>Tails</th>
-                                <th>Crews</th>
-                                <th>Ratio</th>
-                            </tr>
+                            <tr><th>LOE</th><th>Tails</th><th>Crews</th><th>Ratio</th></tr>
                             <tr><td>Recovery</td><td>39</td><td>54</td><td>1.38</td></tr>
                             <tr><td>Nominal</td><td>46</td><td>63</td><td>1.37</td></tr>
                             <tr><td>Surge 1</td><td>55</td><td>74</td><td>1.35</td></tr>
@@ -1106,12 +613,46 @@
 
             <!-- Right Pane: Results -->
             <section class="right-pane">
-                <!-- Warning Banner -->
                 <div class="warning-banner hidden" id="warningBanner"></div>
 
-                <!-- Results Section (hidden until run) -->
+                <!-- SRT Comparison Tool -->
+                <div class="comparison-section">
+                    <div class="comparison-header">
+                        <span class="card-title">
+                            SRT Comparison
+                            <span class="tooltip-container">
+                                <span class="tooltip-icon">?</span>
+                                <span class="tooltip-content">
+                                    <strong>Compare 3 specific SRT values</strong><br><br>
+                                    Pick any 3 SRTs to see how shortage and exceedance metrics compare directly.
+                                </span>
+                            </span>
+                        </span>
+                    </div>
+                    <div class="comparison-inputs">
+                        <div class="comparison-input">
+                            <label>SRT A:</label>
+                            <input type="number" id="compareSRT1" value="10" min="5" max="30">
+                        </div>
+                        <div class="comparison-input">
+                            <label>SRT B:</label>
+                            <input type="number" id="compareSRT2" value="14" min="5" max="30">
+                        </div>
+                        <div class="comparison-input">
+                            <label>SRT C:</label>
+                            <input type="number" id="compareSRT3" value="21" min="5" max="30">
+                        </div>
+                        <button class="btn btn-compare" id="compareBtn" onclick="runComparison()">Compare</button>
+                    </div>
+                    <div class="comparison-results" id="comparisonResults">
+                        <div class="table-container" style="margin-top: 16px;">
+                            <table class="comparison-table" id="comparisonTable"></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
                 <div id="resultsSection" class="hidden">
-                    <!-- Recommendation -->
                     <div class="recommendation-box" id="recommendationBox">
                         <div class="recommendation-header">
                             <span class="recommendation-title" id="recommendationTitle">Recommended SRT:</span>
@@ -1120,113 +661,47 @@
                         <p class="recommendation-body" id="recommendationBody"></p>
                     </div>
 
-                    <!-- KPI Strip -->
-                    <div class="kpi-strip" id="kpiStrip">
-                        <div class="kpi-card tooltip-hover">
-                            <div class="kpi-label">
-                                Shortage Probability
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>% of days you can't crew all tails</strong><br><br>
-                                        If this is 5%, then roughly 1 in 20 days you won't have enough available crews to meet the demand.<br><br>
-                                        Lower is better. Your threshold sets what's acceptable.
-                                    </span>
-                                </span>
-                            </div>
+                    <div class="kpi-strip">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Shortage Prob</div>
                             <div class="kpi-value" id="kpiShortage">—</div>
                             <div class="kpi-unit">of days</div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-label">
-                                Shortage Days/Yr
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>Expected days short per year</strong><br><br>
-                                        Shortage probability × 365 days.<br><br>
-                                        Example: 5% probability = ~18 days/year where you can't fully crew all tasked tails.
-                                    </span>
-                                </span>
-                            </div>
+                            <div class="kpi-label">SRT Exceedance</div>
+                            <div class="kpi-value" id="kpiExceedance">—</div>
+                            <div class="kpi-unit">of missions</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Avg Excess Days</div>
+                            <div class="kpi-value" id="kpiAvgExcess">—</div>
+                            <div class="kpi-unit">days over SRT</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Shortage Days/Yr</div>
                             <div class="kpi-value" id="kpiDays">—</div>
                             <div class="kpi-unit">expected</div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-label">
-                                Avg Cycle
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>Average days per crew rotation</strong><br><br>
-                                        Mission + PMCR = one complete cycle.<br><br>
-                                        <strong>Planning Mode:</strong> Cycle = SRT + PMCR<br>
-                                        <strong>Operational Mode:</strong> Cycle = Actual mission + proportional PMCR<br><br>
-                                        Shorter cycles = faster crew turnover = more capacity from same pool.
-                                    </span>
-                                </span>
-                            </div>
+                            <div class="kpi-label">Avg Cycle</div>
                             <div class="kpi-value" id="kpiCycle">—</div>
-                            <div class="kpi-unit" id="kpiCycleUnit">days</div>
+                            <div class="kpi-unit">days</div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-label">
-                                P95 Shortfall
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>Worst-case crews short (95th percentile)</strong><br><br>
-                                        On the worst 5% of shortage days, how many crews were you short?<br><br>
-                                        Example: P95 = 3 means on bad days, you're typically 3 crews short of full coverage.
-                                    </span>
-                                </span>
-                            </div>
-                            <div class="kpi-value" id="kpiP95">—</div>
-                            <div class="kpi-unit">crews short</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-label">
-                                Concurrent Tails
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>Tails actually flying at any moment</strong><br><br>
-                                        Calculated from: Allocated tails × Utilization rate.<br><br>
-                                        This is the demand your crew pool must support — not the total allocation, but what's actually employed.
-                                    </span>
-                                </span>
-                            </div>
+                            <div class="kpi-label">Concurrent Tails</div>
                             <div class="kpi-value" id="kpiConcurrent">—</div>
                             <div class="kpi-unit">mean</div>
                         </div>
                     </div>
 
-                    <!-- Constraints/Options Panel -->
-                    <div class="constraints-panel hidden" id="crunchPanel">
-                        <h4>⚠ Constraints &amp; Options</h4>
-                        <div id="crunchContent"></div>
-                    </div>
-
-                    <!-- Chart -->
                     <div class="chart-container">
                         <div class="chart-title">Shortage Probability by SRT</div>
                         <div class="chart" id="chart"></div>
                     </div>
 
-                    <!-- Sensitivity Analysis -->
                     <div class="card" id="sensitivityCard">
                         <div class="collapsible-header" onclick="toggleSection('sensitivity')">
-                            <span class="card-title">
-                                Sensitivity Analysis
-                                <span class="tooltip-container">
-                                    <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-content">
-                                        <strong>What levers reduce shortage the most?</strong><br><br>
-                                        Shows how much shortage probability drops when you change each input. Sorted by impact — the biggest lever is listed first.<br><br>
-                                        <strong>Example:</strong> "-2.2 ppts" means shortage probability drops by 2.2 percentage points (e.g., from 8% to 5.8%).
-                                    </span>
-                                </span>
-                            </span>
+                            <span class="card-title">Sensitivity Analysis</span>
                             <span class="toggle-icon" id="sensitivityToggle">▼</span>
                         </div>
                         <div class="collapsible-content" id="sensitivityContent">
@@ -1234,7 +709,6 @@
                         </div>
                     </div>
 
-                    <!-- Detailed Results Table -->
                     <div class="card">
                         <div class="collapsible-header" onclick="toggleSection('details')">
                             <span class="card-title">Detailed Results</span>
@@ -1245,69 +719,14 @@
                                 <table class="results-table" id="resultsTable">
                                     <thead>
                                         <tr>
-                                            <th>
-                                                SRT
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Scheduled Return Time</strong><br><br>
-                                                        Maximum days a crew can be away on a mission before returning home.
-                                                    </span>
-                                                </span>
-                                            </th>
+                                            <th>SRT</th>
                                             <th>Status</th>
-                                            <th>
-                                                Shortage %
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Shortage Probability</strong><br><br>
-                                                        % of days where available crews couldn't meet demand. Lower is better.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Days/Yr
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Shortage Days per Year</strong><br><br>
-                                                        Expected number of days per year you'll be short-crewed. (Shortage % × 365)
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Avg Msn
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Average Mission Length</strong><br><br>
-                                                        Actual average days per mission in the simulation.<br><br>
-                                                        <strong>Planning Mode:</strong> Always = SRT<br>
-                                                        <strong>Operational Mode:</strong> Based on your mission mix inputs
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Avg Cycle
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Average Crew Cycle</strong><br><br>
-                                                        Mission + PMCR = one rotation. Shorter cycles mean faster crew turnover and more effective capacity.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                P95
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>95th Percentile Shortfall</strong><br><br>
-                                                        On the worst 5% of shortage days, how many crews short? Measures severity, not frequency.
-                                                    </span>
-                                                </span>
-                                            </th>
+                                            <th>Shortage %</th>
+                                            <th>Exceed %</th>
+                                            <th>Avg Over</th>
+                                            <th>Days/Yr</th>
+                                            <th>Avg Msn</th>
+                                            <th>Avg Cycle</th>
                                         </tr>
                                     </thead>
                                     <tbody id="resultsBody"></tbody>
@@ -1316,136 +735,157 @@
                         </div>
                     </div>
 
-                    <!-- Crews Needed Table -->
-                    <div class="card">
-                        <div class="collapsible-header" onclick="toggleSection('crewsNeeded')">
-                            <span class="card-title">Crews Needed by SRT</span>
-                            <span class="toggle-icon" id="crewsNeededToggle">▼</span>
-                        </div>
-                        <div class="collapsible-content" id="crewsNeededContent">
-                            <div class="table-container">
-                                <table class="results-table" id="crewsNeededTable">
-                                    <thead>
-                                        <tr>
-                                            <th>SRT</th>
-                                            <th>
-                                                PMCR
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Post-Mission Crew Rest</strong><br><br>
-                                                        Required rest days after returning from mission. Calculated as 40% of mission length, capped at your PMCR cap (default 4 days).
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Efficiency
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>SRT / (SRT + PMCR)</strong><br><br>
-                                                        What % of the crew cycle is productive flying time vs. mandatory rest.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Crews Needed
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Minimum crew pool for steady-state</strong><br><br>
-                                                        Theoretical minimum crews to sustain this SRT with zero variance. Real-world needs a buffer above this.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                            <th>
-                                                Current Δ
-                                                <span class="tooltip-container">
-                                                    <span class="tooltip-icon">?</span>
-                                                    <span class="tooltip-content">
-                                                        <strong>Your crews minus crews needed</strong><br><br>
-                                                        Positive = you have margin. Negative = you're below the theoretical minimum.
-                                                    </span>
-                                                </span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="crewsNeededBody"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Validation Note -->
                     <div class="card" style="font-size: 0.75rem; color: var(--muted);" id="validationNote"></div>
                 </div>
 
-                <!-- Placeholder when no results -->
                 <div id="placeholder" class="card" style="text-align: center; padding: 60px 20px;">
-                    <p style="color: var(--muted); font-size: 0.9rem;">Configure constraints and click <strong>Run Analysis</strong> to see results.</p>
+                    <p style="color: var(--muted); font-size: 0.9rem;">Configure constraints and click <strong>Run Analysis</strong> or <strong>Compare</strong> to see results.</p>
                 </div>
 
-                <!-- Help Drawer -->
                 <div class="help-drawer">
                     <div class="help-tabs">
-                        <button class="help-tab active" onclick="showHelpTab('model')">Model</button>
-                        <button class="help-tab" onclick="showHelpTab('validate')">Validate</button>
-                        <button class="help-tab" onclick="showHelpTab('assumptions')">Assumptions</button>
+                        <button class="help-tab active" onclick="showHelpTab('model', this)">Model</button>
+                        <button class="help-tab" onclick="showHelpTab('exceedance', this)">Exceedance</button>
+                        <button class="help-tab" onclick="showHelpTab('assumptions', this)">Assumptions</button>
                     </div>
                     <div class="help-content active" id="helpModel">
                         <h4>The Core Question</h4>
                         <p>Given C-6 allocation and utilization rate, can we sustain operations at SRT of S days without running short more than X% of the time?</p>
-                        
                         <h4>Allocation → Concurrency</h4>
                         <div class="formula">Concurrent tails = Allocated × Utilization rate</div>
-                        <p>C-6 "tails" = capacity, not employment. The utilization rate bridges the gap.</p>
-                        
                         <h4>Crew State Machine</h4>
                         <div class="formula">AVAILABLE → ON_MISSION (M days) → PMCR (R days) → AVAILABLE</div>
                         <p>PMCR = min(cap, floor(0.4 × mission days)). With 4-day cap, reached at ~10-day SRT.</p>
-                        
-                        <h4>Mission Length</h4>
-                        <p><strong>Default (Planning Mode):</strong> Every mission = full SRT. Conservative assumption for policy decisions.</p>
-                        <p><strong>Operational Mode:</strong> Enable "Variable Mission Lengths" in Advanced Options to model shorter missions. Shorter missions = shorter PMCR = faster crew turnover = better efficiency.</p>
-                        
-                        <h4>Steady-State Formula</h4>
-                        <div class="formula">Crew_pool = Concurrent × Factor / Efficiency<br>where Efficiency = SRT / (SRT + PMCR)</div>
-                        
-                        <h4>Why Monte Carlo?</h4>
-                        <p>Handles variance in utilization, mission lengths, and delays. Runs 200+ simulated years, each 365 days, with 60-day warmup excluded.</p>
                     </div>
-                    <div class="help-content" id="helpValidate">
-                        <h4>1. Zero-Variance Sanity Check</h4>
-                        <p>Set Std Dev = 0, Delays = Off, Utilization = 70%. At 14-day SRT with 63 crews, shortage should be ~0%.</p>
-                        
-                        <h4>2. Find the Breaking Point</h4>
-                        <p>Increase utilization until shortage exceeds tolerance. That's your max sustainable ops tempo.</p>
-                        
-                        <h4>3. Compare Across LOE</h4>
-                        <p>Run each C-6 LOE at the same utilization. If all show similar shortage, model is consistent.</p>
-                        
-                        <h4>4. Sensitivity Stability</h4>
-                        <p>Run the same scenario 3-5 times. Results should be within ±2 ppts. If not, increase iterations.</p>
+                    <div class="help-content" id="helpExceedance">
+                        <h4>SRT Exceedance: The Key Metric</h4>
+                        <p><strong>What it measures:</strong> % of missions where actual duration > SRT</p>
+                        <h4>How It Works</h4>
+                        <div class="formula">Exceedance when: Base mission + Delay > SRT</div>
+                        <p>In Planning Mode (mission = SRT), any delay = bust. In Operational Mode, shorter missions create buffer.</p>
+                        <h4>Calibrating to Your Data</h4>
+                        <p>If you have historical SRT bust data (e.g., X crews past SRT out of Y total missions), that gives you an observed exceedance rate. Compare model output to validate.</p>
                     </div>
                     <div class="help-content" id="helpAssumptions">
                         <h4>What's Modeled</h4>
                         <p>• Crew cycling (available → mission → PMCR)<br>
                         • Utilization variance (truncated normal)<br>
+                        • Mission length variance (truncated normal)<br>
                         • Mission delay variance (optional)<br>
                         • 60-day warmup period</p>
-                        
                         <h4>What's NOT Modeled</h4>
-                        <p>• DNIF / Leave (crews unavailable)<br>
-                        • Aircraft MC rates<br>
-                        • Skill mix / crew interchangeability<br>
-                        • LOE step-changes (monthly blocks)<br>
-                        • Phase rotation (supply varying)</p>
-                        
-                        <p style="margin-top: 12px;"><strong>Real shortage will be higher than modeled.</strong> Use this as a floor estimate.</p>
+                        <p>• DNIF / Leave<br>• Aircraft MC rates<br>• Skill mix<br>• LOE step-changes</p>
+                        <p style="margin-top: 12px;"><strong>Real exceedance/shortage will be higher than modeled.</strong></p>
                     </div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal-overlay" id="aboutModal" onclick="closeAboutModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>About the C-17 SRT Trade-Off Analyzer</h2>
+                <button class="modal-close" onclick="closeAboutModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Version History</h3>
+                <table>
+                    <tr><th>Version</th><th>Changes</th></tr>
+                    <tr>
+                        <td><strong>v3</strong> (Current)</td>
+                        <td>
+                            • Rebranded as C-17 specific tool<br>
+                            • Added LTMPA capacity augmentation toggle<br>
+                            • Added Mobilized capacity augmentation toggle<br>
+                            • Added PACAF capacity augmentation toggle<br>
+                            • Fixed tooltip positioning (center screen overlay)<br>
+                            • Added tooltips to comparison table metrics<br>
+                            • Added math formula documentation
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>v2</strong></td>
+                        <td>
+                            • Added SRT Exceedance Rate metric<br>
+                            • Added Average Excess Days metric<br>
+                            • Added side-by-side SRT Comparison view
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>v1</strong></td>
+                        <td>
+                            • Initial release with Monte Carlo simulation<br>
+                            • Shortage probability by SRT<br>
+                            • Sensitivity analysis<br>
+                            • Variable mission length mode
+                        </td>
+                    </tr>
+                </table>
+
+                <h3>The Core Question</h3>
+                <div class="highlight-box">
+                    <strong>Given our crew allocation and ops tempo, what SRT can we sustain without unacceptable crew shortages or excessive SRT busts?</strong>
+                </div>
+
+                <h3>The Math (Single Iteration)</h3>
+                <p>If you wanted to calculate this by hand without Monte Carlo, here's the deterministic formula:</p>
+                
+                <div class="formula-box">
+                    <strong>Step 1: Calculate Effective Capacity</strong><br>
+                    Effective_Tails = Base_Tails + LTMPA_Tails + Mobilized_Tails + PACAF_Tails<br>
+                    Effective_Crews = Base_Crews + LTMPA_Crews + Mobilized_Crews + PACAF_Crews<br><br>
+                    
+                    <strong>Step 2: Calculate Concurrent Demand</strong><br>
+                    Concurrent_Tails = Effective_Tails × Utilization_Rate<br><br>
+                    
+                    <strong>Step 3: Calculate Crews On Mission</strong><br>
+                    Crews_On_Mission = Concurrent_Tails × On_Mission_Factor<br><br>
+                    
+                    <strong>Step 4: Calculate PMCR</strong><br>
+                    PMCR_Days = min(PMCR_Cap, floor(Mission_Days × 0.4))<br><br>
+                    
+                    <strong>Step 5: Calculate Efficiency</strong><br>
+                    Efficiency = SRT / (SRT + PMCR_Days)<br><br>
+                    
+                    <strong>Step 6: Calculate Crews Needed</strong><br>
+                    Crews_Needed = Crews_On_Mission / Efficiency<br><br>
+                    
+                    <strong>Step 7: Compare to Pool</strong><br>
+                    If Effective_Crews ≥ Crews_Needed → Feasible (in steady state)
+                </div>
+
+                <h4>Example Calculation</h4>
+                <p>With Nominal LOE (46 tails, 63 crews), 70% utilization, 14-day SRT:</p>
+                <div class="formula-box">
+                    Concurrent = 46 × 0.70 = 32.2 tails<br>
+                    On_Mission = 32.2 × 1.0 = 32 crews<br>
+                    PMCR = min(4, floor(14 × 0.4)) = min(4, 5) = 4 days<br>
+                    Efficiency = 14 / (14 + 4) = 77.8%<br>
+                    Crews_Needed = 32 / 0.778 = 41 crews<br>
+                    Pool = 63 crews → <span style="color: var(--ok);">41 &lt; 63, Feasible</span>
+                </div>
+
+                <h4>Why Monte Carlo?</h4>
+                <p>The deterministic formula assumes steady-state with no variance. Real operations have:</p>
+                <ul>
+                    <li>Daily utilization fluctuations (some days more tails flying)</li>
+                    <li>Mission length variance (some missions shorter/longer than average)</li>
+                    <li>Delays (MX, weather) that extend missions past SRT</li>
+                </ul>
+                <p>Monte Carlo runs 200+ simulated years with randomized variance to give you shortage <em>probability</em> rather than just feasibility.</p>
+
+                <h3>Key Metrics Explained</h3>
+                <table>
+                    <tr><th>Metric</th><th>What It Measures</th></tr>
+                    <tr><td><strong>Shortage Probability</strong></td><td>% of days where available crews < demand. Measures aggregate capacity.</td></tr>
+                    <tr><td><strong>SRT Exceedance Rate</strong></td><td>% of missions that exceed SRT. Measures individual compliance.</td></tr>
+                    <tr><td><strong>Avg Excess Days</strong></td><td>When missions exceed SRT, by how many days? Relevant for FSRT buffer.</td></tr>
+                    <tr><td><strong>Efficiency</strong></td><td>SRT / (SRT + PMCR). What % of crew cycle is productive flying time.</td></tr>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1457,18 +897,51 @@
             surge2: { tails: 68, crews: 91 }
         };
 
-        function loadMainPreset(preset) {
+        function loadMainPreset(preset, btn) {
             const data = C6_PRESETS[preset];
             if (data) {
                 document.getElementById('allocatedTails').value = data.tails;
                 document.getElementById('crewPool').value = data.crews;
-                // Highlight active preset
-                document.querySelectorAll('.preset-group .btn-secondary').forEach(btn => btn.classList.remove('active'));
-                event.target.classList.add('active');
+                document.querySelectorAll('.preset-group .btn-secondary').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+                updateEffectiveTotals();
             }
         }
 
-        // === UI Toggles ===
+        function toggleAugmentation(type) {
+            const idMap = { ltmpa: 'useLTMPA', mobilized: 'useMobilized', pacaf: 'usePACAF' };
+            const inputMap = { ltmpa: 'ltmpaInputs', mobilized: 'mobilizedInputs', pacaf: 'pacafInputs' };
+            const checkbox = document.getElementById(idMap[type]);
+            const inputs = document.getElementById(inputMap[type]);
+            inputs.classList.toggle('visible', checkbox.checked);
+            updateEffectiveTotals();
+        }
+
+        function updateEffectiveTotals() {
+            let tails = parseInt(document.getElementById('allocatedTails').value) || 0;
+            let crews = parseInt(document.getElementById('crewPool').value) || 0;
+            
+            if (document.getElementById('useLTMPA').checked) {
+                tails += parseInt(document.getElementById('ltmpaTails').value) || 0;
+                crews += parseInt(document.getElementById('ltmpaCrews').value) || 0;
+            }
+            if (document.getElementById('useMobilized').checked) {
+                tails += parseInt(document.getElementById('mobilizedTails').value) || 0;
+                crews += parseInt(document.getElementById('mobilizedCrews').value) || 0;
+            }
+            if (document.getElementById('usePACAF').checked) {
+                tails += parseInt(document.getElementById('pacafTails').value) || 0;
+                crews += parseInt(document.getElementById('pacafCrews').value) || 0;
+            }
+            
+            document.getElementById('effectiveTotals').textContent = `${tails} tails, ${crews} crews`;
+        }
+
+        // Add listeners to all relevant inputs
+        ['allocatedTails', 'crewPool', 'ltmpaTails', 'ltmpaCrews', 'mobilizedTails', 'mobilizedCrews', 'pacafTails', 'pacafCrews'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateEffectiveTotals);
+        });
+
         function toggleSection(name) {
             const content = document.getElementById(name + 'Content');
             const icon = document.getElementById(name + 'Toggle');
@@ -1478,11 +951,12 @@
             }
         }
 
-        function showHelpTab(tab) {
+        function showHelpTab(tab, btn) {
             document.querySelectorAll('.help-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.help-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('help' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+            if (btn) btn.classList.add('active');
+            const tabName = tab.charAt(0).toUpperCase() + tab.slice(1);
+            document.getElementById('help' + tabName).classList.add('active');
         }
 
         function toggleMissionLengthInputs() {
@@ -1490,6 +964,19 @@
             const inputs = document.getElementById('missionLengthInputs');
             inputs.style.display = checkbox.checked ? 'grid' : 'none';
         }
+
+        function showAboutModal() {
+            document.getElementById('aboutModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAboutModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('aboutModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAboutModal(); });
 
         // === Simulation Engine ===
         const CREW_STATE = { AVAILABLE: 0, ON_MISSION: 1, RECOVERY: 2 };
@@ -1501,20 +988,15 @@
         }
 
         function randomTruncatedNormal(mean, std, min, max) {
+            if (std === 0) return Math.max(min, Math.min(max, Math.round(mean)));
             let u, v, s;
-            do {
-                u = seededRandom() * 2 - 1;
-                v = seededRandom() * 2 - 1;
-                s = u * u + v * v;
-            } while (s >= 1 || s === 0);
+            do { u = seededRandom() * 2 - 1; v = seededRandom() * 2 - 1; s = u * u + v * v; } while (s >= 1 || s === 0);
             const z = u * Math.sqrt(-2 * Math.log(s) / s);
-            const raw = mean + z * std;
-            return Math.round(Math.max(min, Math.min(max, raw)));
+            return Math.round(Math.max(min, Math.min(max, mean + z * std)));
         }
 
-        function calculateRest(srtDays, maxRest) {
-            const accrued = Math.floor(srtDays * 0.4);
-            return Math.min(maxRest, Math.max(1, accrued));
+        function calculateRest(missionDays, maxRest) {
+            return Math.min(maxRest, Math.max(1, Math.floor(missionDays * 0.4)));
         }
 
         function sampleDelayDays(useVariance) {
@@ -1527,74 +1009,44 @@
         }
 
         function sampleMissionLength(srtDays, params) {
-            // If variable mission length is disabled, use full SRT
-            if (!params.useVariableMissionLength) {
-                return srtDays;
-            }
-            
-            // Generate mission length from truncated normal distribution
-            // Mean = avgMissionLength, capped at SRT
+            if (!params.useVariableMissionLength) return srtDays;
             const mean = Math.min(params.avgMissionLength, srtDays);
             const std = params.missionLengthStd;
-            const min = params.minMissionLength;
-            const max = srtDays; // SRT is the cap
-            
-            if (std === 0) return mean;
-            
-            // Box-Muller for normal distribution
+            const min = Math.min(params.minMissionLength, srtDays);
+            const max = srtDays;
+            if (std === 0) return Math.round(Math.max(min, Math.min(max, mean)));
             let u, v, s;
-            do {
-                u = seededRandom() * 2 - 1;
-                v = seededRandom() * 2 - 1;
-                s = u * u + v * v;
-            } while (s >= 1 || s === 0);
+            do { u = seededRandom() * 2 - 1; v = seededRandom() * 2 - 1; s = u * u + v * v; } while (s >= 1 || s === 0);
             const z = u * Math.sqrt(-2 * Math.log(s) / s);
-            const raw = mean + z * std;
-            
-            // Clamp to valid range and round
-            return Math.round(Math.max(min, Math.min(max, raw)));
-        }
-
-        function recoveryDaysFromMission(missionDays, maxRest) {
-            const accrued = Math.floor(missionDays * 0.4);
-            return Math.min(maxRest, Math.max(1, accrued));
+            return Math.round(Math.max(min, Math.min(max, mean + z * std)));
         }
 
         function simulateOnce(params, srtDays) {
             const { crewPool, crewsPerTail, maxRest, simDays, demandMin, demandMean, demandMax, demandStd, useDelayVariance } = params;
-            const baseRecoveryDays = calculateRest(srtDays, maxRest);
             const warmupDays = 60;
-
             const crews = new Array(crewPool);
+            
             for (let i = 0; i < crewPool; i++) {
                 const r = seededRandom();
                 if (r < 0.70) {
-                    crews[i] = { state: CREW_STATE.AVAILABLE, daysRemaining: 0, lastMissionDays: 0 };
+                    crews[i] = { state: CREW_STATE.AVAILABLE, daysRemaining: 0, baseMissionDays: 0, totalMissionDays: 0 };
                 } else if (r < 0.90) {
-                    // Use variable mission length for initialization too
                     const baseMission = sampleMissionLength(srtDays, params);
-                    const missionDays = baseMission + sampleDelayDays(useDelayVariance);
-                    const remaining = 1 + Math.floor(seededRandom() * missionDays);
-                    crews[i] = { state: CREW_STATE.ON_MISSION, daysRemaining: remaining, lastMissionDays: missionDays };
+                    const delay = sampleDelayDays(useDelayVariance);
+                    const totalMission = baseMission + delay;
+                    crews[i] = { state: CREW_STATE.ON_MISSION, daysRemaining: 1 + Math.floor(seededRandom() * totalMission), baseMissionDays: baseMission, totalMissionDays: totalMission };
                 } else {
-                    const initRest = calculateRest(sampleMissionLength(srtDays, params), maxRest);
-                    const remaining = 1 + Math.floor(seededRandom() * initRest);
-                    crews[i] = { state: CREW_STATE.RECOVERY, daysRemaining: remaining, lastMissionDays: srtDays };
+                    const baseMission = sampleMissionLength(srtDays, params);
+                    const pmcrDays = calculateRest(baseMission, maxRest);
+                    crews[i] = { state: CREW_STATE.RECOVERY, daysRemaining: 1 + Math.floor(seededRandom() * pmcrDays), baseMissionDays: baseMission, totalMissionDays: baseMission };
                 }
             }
 
-            let shortageDays = 0;
-            const shortfalls = [];
-            let totalUtilized = 0;
-            let assignStart = 0;
-            const totalDaysToSim = simDays + warmupDays;
-            
-            // Track actual mission and cycle lengths
-            let totalMissionDays = 0;
-            let totalCycleDays = 0;
-            let completedCycles = 0;
+            let shortageDays = 0, totalUtilized = 0, assignStart = 0;
+            let totalMissionsCompleted = 0, missionsExceedingSRT = 0, totalExcessDays = 0;
+            let totalMissionDays = 0, totalCycleDays = 0, completedCycles = 0;
 
-            for (let day = 0; day < totalDaysToSim; day++) {
+            for (let day = 0; day < simDays + warmupDays; day++) {
                 const clampedMean = Math.max(demandMin, Math.min(demandMax, demandMean));
                 const concurrentTails = demandStd === 0 ? clampedMean : randomTruncatedNormal(clampedMean, demandStd, demandMin, demandMax);
                 const targetCrewsOnMission = Math.ceil(concurrentTails * crewsPerTail);
@@ -1606,19 +1058,18 @@
                 }
 
                 const gap = Math.max(0, targetCrewsOnMission - onMission);
-                let toAssign = Math.min(gap, available);
-                let assigned = 0;
+                let toAssign = Math.min(gap, available), assigned = 0;
 
                 if (toAssign > 0) {
                     for (let j = 0; j < crewPool && assigned < toAssign; j++) {
                         const i = (assignStart + j) % crewPool;
                         if (crews[i].state === CREW_STATE.AVAILABLE) {
-                            // Use variable mission length + delays
                             const baseMission = sampleMissionLength(srtDays, params);
-                            const missionDays = baseMission + sampleDelayDays(useDelayVariance);
+                            const delay = sampleDelayDays(useDelayVariance);
                             crews[i].state = CREW_STATE.ON_MISSION;
-                            crews[i].daysRemaining = missionDays;
-                            crews[i].lastMissionDays = missionDays;
+                            crews[i].daysRemaining = baseMission + delay;
+                            crews[i].baseMissionDays = baseMission;
+                            crews[i].totalMissionDays = baseMission + delay;
                             assigned++;
                         }
                     }
@@ -1627,11 +1078,7 @@
 
                 if (day >= warmupDays) {
                     const actualOnMission = onMission + assigned;
-                    const shortfall = Math.max(0, targetCrewsOnMission - actualOnMission);
-                    if (shortfall > 0) {
-                        shortageDays++;
-                        shortfalls.push(shortfall);
-                    }
+                    if (targetCrewsOnMission > actualOnMission) shortageDays++;
                     totalUtilized += actualOnMission;
                 }
 
@@ -1641,16 +1088,19 @@
                     c.daysRemaining -= 1;
                     if (c.daysRemaining <= 0) {
                         if (c.state === CREW_STATE.ON_MISSION) {
-                            c.state = CREW_STATE.RECOVERY;
-                            const pmcrDays = recoveryDaysFromMission(c.lastMissionDays, maxRest);
-                            c.daysRemaining = pmcrDays;
-                            
-                            // Track cycle completion (after warmup)
                             if (day >= warmupDays) {
-                                totalMissionDays += c.lastMissionDays;
-                                totalCycleDays += c.lastMissionDays + pmcrDays;
+                                totalMissionsCompleted++;
+                                if (c.totalMissionDays > srtDays) {
+                                    missionsExceedingSRT++;
+                                    totalExcessDays += (c.totalMissionDays - srtDays);
+                                }
+                                const pmcrDays = calculateRest(c.totalMissionDays, maxRest);
+                                totalMissionDays += c.totalMissionDays;
+                                totalCycleDays += c.totalMissionDays + pmcrDays;
                                 completedCycles++;
                             }
+                            c.state = CREW_STATE.RECOVERY;
+                            c.daysRemaining = calculateRest(c.totalMissionDays, maxRest);
                         } else if (c.state === CREW_STATE.RECOVERY) {
                             c.state = CREW_STATE.AVAILABLE;
                             c.daysRemaining = 0;
@@ -1660,20 +1110,18 @@
             }
 
             return {
-                shortageDays,
-                shortfalls,
-                avgUtilization: totalUtilized / (simDays * crewPool),
+                shortageDays, avgUtilization: totalUtilized / (simDays * crewPool),
+                totalMissions: totalMissionsCompleted, exceedingMissions: missionsExceedingSRT,
+                exceedanceRate: totalMissionsCompleted > 0 ? missionsExceedingSRT / totalMissionsCompleted : 0,
+                avgExcessDays: missionsExceedingSRT > 0 ? totalExcessDays / missionsExceedingSRT : 0,
                 avgMissionDays: completedCycles > 0 ? totalMissionDays / completedCycles : srtDays,
-                avgCycleDays: completedCycles > 0 ? totalCycleDays / completedCycles : srtDays + baseRecoveryDays
+                avgCycleDays: completedCycles > 0 ? totalCycleDays / completedCycles : srtDays + calculateRest(srtDays, params.maxRest)
             };
         }
 
         function runMonteCarloSync(params, srtDays) {
-            const allShortfalls = [];
-            let totalShortageDays = 0;
-            let totalUtilization = 0;
-            let totalMissionDays = 0;
-            let totalCycleDays = 0;
+            let totalShortageDays = 0, totalUtilization = 0, totalMissionDays = 0, totalCycleDays = 0;
+            let totalMissions = 0, totalExceedingMissions = 0, totalExcessDaysSum = 0;
 
             for (let iter = 0; iter < params.iterations; iter++) {
                 const result = simulateOnce(params, srtDays);
@@ -1681,131 +1129,201 @@
                 totalUtilization += result.avgUtilization;
                 totalMissionDays += result.avgMissionDays;
                 totalCycleDays += result.avgCycleDays;
-                allShortfalls.push(...result.shortfalls);
+                totalMissions += result.totalMissions;
+                totalExceedingMissions += result.exceedingMissions;
+                if (result.exceedingMissions > 0) totalExcessDaysSum += result.avgExcessDays * result.exceedingMissions;
             }
 
             const totalDays = params.iterations * params.simDays;
-            allShortfalls.sort((a, b) => a - b);
-            const p95Index = Math.floor(allShortfalls.length * 0.95);
-
             return {
                 shortageProbability: totalShortageDays / totalDays,
                 shortageDaysPerYear: (totalShortageDays / totalDays) * 365,
-                p95Shortfall: allShortfalls.length > 0 ? allShortfalls[Math.min(p95Index, allShortfalls.length - 1)] : 0,
                 avgUtilization: totalUtilization / params.iterations,
                 avgMissionDays: totalMissionDays / params.iterations,
-                avgCycleDays: totalCycleDays / params.iterations
+                avgCycleDays: totalCycleDays / params.iterations,
+                exceedanceRate: totalMissions > 0 ? totalExceedingMissions / totalMissions : 0,
+                avgExcessDays: totalExceedingMissions > 0 ? totalExcessDaysSum / totalExceedingMissions : 0
             };
         }
 
-        // === Main Run Function ===
+        function buildParams() {
+            let allocatedTails = parseInt(document.getElementById('allocatedTails').value);
+            let crewPool = parseInt(document.getElementById('crewPool').value);
+            
+            if (document.getElementById('useLTMPA').checked) {
+                allocatedTails += parseInt(document.getElementById('ltmpaTails').value) || 0;
+                crewPool += parseInt(document.getElementById('ltmpaCrews').value) || 0;
+            }
+            if (document.getElementById('useMobilized').checked) {
+                allocatedTails += parseInt(document.getElementById('mobilizedTails').value) || 0;
+                crewPool += parseInt(document.getElementById('mobilizedCrews').value) || 0;
+            }
+            if (document.getElementById('usePACAF').checked) {
+                allocatedTails += parseInt(document.getElementById('pacafTails').value) || 0;
+                crewPool += parseInt(document.getElementById('pacafCrews').value) || 0;
+            }
+
+            const utilizationRate = parseFloat(document.getElementById('utilizationRate').value) / 100;
+            const utilStdPct = parseFloat(document.getElementById('utilStdPct').value) / 100;
+            const utilMinPct = parseFloat(document.getElementById('utilMinPct').value) / 100;
+            const utilMaxPct = parseFloat(document.getElementById('utilMaxPct').value) / 100;
+
+            return {
+                crewPool, allocatedTails, utilizationRate,
+                crewsPerTail: parseFloat(document.getElementById('crewsPerTail').value),
+                maxRest: parseFloat(document.getElementById('maxRest').value),
+                simDays: 365,
+                iterations: parseInt(document.getElementById('iterations').value),
+                demandMean: Math.round(allocatedTails * utilizationRate),
+                demandMin: Math.round(allocatedTails * utilMinPct),
+                demandMax: Math.round(allocatedTails * utilMaxPct),
+                demandStd: Math.round(allocatedTails * utilStdPct),
+                useDelayVariance: document.getElementById('useDelayVariance').value === 'true',
+                useVariableMissionLength: document.getElementById('useVariableMissionLength').checked,
+                avgMissionLength: parseFloat(document.getElementById('avgMissionLength').value),
+                missionLengthStd: parseFloat(document.getElementById('missionLengthStd').value),
+                minMissionLength: parseInt(document.getElementById('minMissionLength').value)
+            };
+        }
+
+        async function runComparison() {
+            const btn = document.getElementById('compareBtn');
+            const progressText = document.getElementById('progressText');
+            btn.disabled = true;
+            progressText.textContent = 'Running comparison...';
+
+            const params = buildParams();
+            const baseSeed = 12345;
+            const srts = [
+                parseInt(document.getElementById('compareSRT1').value),
+                parseInt(document.getElementById('compareSRT2').value),
+                parseInt(document.getElementById('compareSRT3').value)
+            ];
+
+            const results = [];
+            for (let i = 0; i < srts.length; i++) {
+                seed = baseSeed;
+                progressText.textContent = `Running SRT ${srts[i]}...`;
+                await new Promise(resolve => setTimeout(resolve, 10));
+                const result = runMonteCarloSync(params, srts[i]);
+                const rest = calculateRest(srts[i], params.maxRest);
+                results.push({ srt: srts[i], rest, efficiency: srts[i] / (srts[i] + rest), ...result });
+            }
+
+            renderComparisonTable(results, params);
+            document.getElementById('comparisonResults').classList.add('visible');
+            document.getElementById('placeholder').classList.add('hidden');
+            btn.disabled = false;
+            progressText.textContent = '';
+        }
+
+        function renderComparisonTable(results, params) {
+            const table = document.getElementById('comparisonTable');
+            const riskTolerance = parseFloat(document.getElementById('riskTolerance').value) / 100;
+            const feasible = results.filter(r => r.shortageProbability <= riskTolerance);
+            let bestIdx = feasible.length > 0 
+                ? results.indexOf(feasible.reduce((a, b) => a.srt < b.srt ? a : b))
+                : results.indexOf(results.reduce((a, b) => a.exceedanceRate < b.exceedanceRate ? a : b));
+            const baseline = results[0];
+
+            const tooltips = {
+                shortage: '% of days where available crews < demand. Lower is better.',
+                exceedance: '% of missions that exceed SRT. This is what triggers SRT bust paperwork.',
+                avgOver: 'When missions exceed SRT, by how many days on average? Relevant for FSRT compliance.',
+                daysYr: 'Expected shortage days per year. Shortage % × 365.',
+                avgMsn: 'Average mission length in the simulation.',
+                avgCycle: 'Mission + PMCR = one crew rotation cycle.',
+                efficiency: 'SRT / (SRT + PMCR). % of cycle that is productive flying time.'
+            };
+
+            let html = `
+                <thead><tr>
+                    <th class="metric-header">Metric</th>
+                    ${results.map((r, i) => `<th class="${i === bestIdx ? 'highlight-col' : ''}"><div class="srt-header">${r.srt}-day</div>${i === bestIdx ? '<span style="font-size:0.65rem;color:var(--warn);">★ BEST</span>' : ''}</th>`).join('')}
+                </tr></thead>
+                <tbody>
+                    <tr>
+                        <td class="metric-label">Shortage Probability <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.shortage}</span></span></td>
+                        ${results.map((r, i) => `<td class="${i === bestIdx ? 'highlight-col' : ''}" style="color:${r.shortageProbability <= riskTolerance ? 'var(--ok)' : 'var(--bad)'};font-weight:600;">${(r.shortageProbability * 100).toFixed(1)}%</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="metric-label">SRT Exceedance Rate <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.exceedance}</span></span></td>
+                        ${results.map((r, i) => {
+                            const delta = r.exceedanceRate - baseline.exceedanceRate;
+                            const deltaStr = i > 0 ? `<span class="delta-indicator ${delta < 0 ? 'positive' : 'negative'}">${delta < 0 ? '▼' : '▲'}${Math.abs(delta * 100).toFixed(1)}</span>` : '';
+                            return `<td class="${i === bestIdx ? 'highlight-col' : ''}" style="color:${r.exceedanceRate < 0.10 ? 'var(--ok)' : r.exceedanceRate < 0.20 ? 'var(--warn)' : 'var(--bad)'};font-weight:600;">${(r.exceedanceRate * 100).toFixed(1)}%${deltaStr}</td>`;
+                        }).join('')}
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Avg Days Over SRT <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.avgOver}</span></span></td>
+                        ${results.map((r, i) => `<td class="${i === bestIdx ? 'highlight-col' : ''}">${r.avgExcessDays.toFixed(1)} days</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Shortage Days/Year <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.daysYr}</span></span></td>
+                        ${results.map((r, i) => `<td class="${i === bestIdx ? 'highlight-col' : ''}">${Math.round(r.shortageDaysPerYear)}</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Avg Mission Length <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.avgMsn}</span></span></td>
+                        ${results.map((r, i) => `<td class="${i === bestIdx ? 'highlight-col' : ''}">${r.avgMissionDays.toFixed(1)} days</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Avg Crew Cycle <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.avgCycle}</span></span></td>
+                        ${results.map((r, i) => `<td class="${i === bestIdx ? 'highlight-col' : ''}">${r.avgCycleDays.toFixed(1)} days</td>`).join('')}
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Efficiency (SRT/Cycle) <span class="tooltip-container"><span class="tooltip-icon">?</span><span class="tooltip-content">${tooltips.efficiency}</span></span></td>
+                        ${results.map((r, i) => `<td class="${i === bestIdx ? 'highlight-col' : ''}">${(r.efficiency * 100).toFixed(0)}%</td>`).join('')}
+                    </tr>
+                </tbody>`;
+            table.innerHTML = html;
+        }
+
         async function runTradeStudy() {
             const btn = document.getElementById('runBtn');
             const progressText = document.getElementById('progressText');
             btn.disabled = true;
             progressText.textContent = 'Running...';
 
-            // Gather params
-            const allocatedTails = parseInt(document.getElementById('allocatedTails').value);
-            const utilizationRate = parseFloat(document.getElementById('utilizationRate').value) / 100;
-            const utilStdPct = parseFloat(document.getElementById('utilStdPct').value) / 100;
-            const utilMinPct = parseFloat(document.getElementById('utilMinPct').value) / 100;
-            const utilMaxPct = parseFloat(document.getElementById('utilMaxPct').value) / 100;
-
-            const concurrentTailsMean = Math.round(allocatedTails * utilizationRate);
-            const concurrentTailsStd = Math.round(allocatedTails * utilStdPct);
-            const concurrentTailsMin = Math.round(allocatedTails * utilMinPct);
-            const concurrentTailsMax = Math.round(allocatedTails * utilMaxPct);
-
-            const params = {
-                crewPool: parseInt(document.getElementById('crewPool').value),
-                crewsPerTail: parseFloat(document.getElementById('crewsPerTail').value),
-                maxRest: parseFloat(document.getElementById('maxRest').value),
-                simDays: 365,
-                iterations: parseInt(document.getElementById('iterations').value),
-                demandMean: concurrentTailsMean,
-                demandMin: concurrentTailsMin,
-                demandMax: concurrentTailsMax,
-                demandStd: concurrentTailsStd,
-                useDelayVariance: document.getElementById('useDelayVariance').value === 'true',
-                allocatedTails: allocatedTails,
-                utilizationRate: utilizationRate,
-                // Variable mission length parameters
-                useVariableMissionLength: document.getElementById('useVariableMissionLength').checked,
-                avgMissionLength: parseInt(document.getElementById('avgMissionLength').value),
-                missionLengthStd: parseFloat(document.getElementById('missionLengthStd').value),
-                minMissionLength: parseInt(document.getElementById('minMissionLength').value)
-            };
-
+            const params = buildParams();
             const riskTolerance = parseFloat(document.getElementById('riskTolerance').value) / 100;
             const srtMin = parseInt(document.getElementById('srtMin').value);
             const srtMax = parseInt(document.getElementById('srtMax').value);
-
-            // Warnings
-            const warnings = [];
-            if (utilizationRate < utilMinPct) {
-                warnings.push(`Mean utilization (${(utilizationRate*100).toFixed(0)}%) is below min (${(utilMinPct*100).toFixed(0)}%).`);
-            }
-            if (utilizationRate > utilMaxPct) {
-                warnings.push(`Mean utilization (${(utilizationRate*100).toFixed(0)}%) is above max (${(utilMaxPct*100).toFixed(0)}%).`);
-            }
-            if (utilStdPct > (utilMaxPct - utilMinPct) / 2) {
-                warnings.push(`High utilization variance relative to range.`);
-            }
-            if (params.useVariableMissionLength && params.avgMissionLength > srtMin) {
-                warnings.push(`Avg mission length (${params.avgMissionLength}d) exceeds min SRT (${srtMin}d). Some SRTs will cap mission length.`);
-            }
+            const srtStart = Math.min(srtMin, srtMax);
+            const srtEnd = Math.max(srtMin, srtMax);
 
             const warningBanner = document.getElementById('warningBanner');
-            if (warnings.length > 0) {
-                warningBanner.innerHTML = warnings.join(' ');
-                warningBanner.classList.remove('hidden');
-            } else {
-                warningBanner.classList.add('hidden');
-            }
+            warningBanner.classList.add('hidden');
 
-            // Run simulation
             const results = [];
-            seed = 12345;
-
+            const baseSeed = 12345;
             await new Promise(resolve => setTimeout(resolve, 10));
 
-            for (let srt = srtMin; srt <= srtMax; srt++) {
+            for (let srt = srtStart; srt <= srtEnd; srt++) {
+                seed = baseSeed;
                 const result = runMonteCarloSync(params, srt);
                 const rest = calculateRest(srt, params.maxRest);
-                const efficiency = srt / (srt + rest);
-                results.push({
-                    srt,
-                    rest,
-                    efficiency,
-                    ...result,
-                    feasible: result.shortageProbability <= riskTolerance
-                });
-
-                progressText.textContent = `SRT ${srt}/${srtMax}...`;
+                results.push({ srt, rest, efficiency: srt / (srt + rest), ...result, feasible: result.shortageProbability <= riskTolerance });
+                progressText.textContent = `SRT ${srt}/${srtEnd}...`;
                 await new Promise(resolve => setTimeout(resolve, 5));
             }
 
-            // Find best
             const feasible = results.filter(r => r.feasible);
-            let bestResult = null;
-            if (feasible.length > 0) {
-                bestResult = feasible.reduce((a, b) => a.srt < b.srt ? a : b);
-            }
+            const bestResult = feasible.length > 0 ? feasible.reduce((a, b) => a.srt < b.srt ? a : b) : null;
 
-            // Render results
             renderResults(results, bestResult, params, riskTolerance);
-            runSensitivityAnalysis(params, bestResult ? bestResult.srt : srtMax, riskTolerance);
+            runSensitivityAnalysis(params, bestResult ? bestResult.srt : srtEnd, riskTolerance);
+
+            lastResults = results;
+            lastParams = { ...params, riskTolerance };
 
             document.getElementById('resultsSection').classList.remove('hidden');
             document.getElementById('placeholder').classList.add('hidden');
-
             btn.disabled = false;
+            document.getElementById('exportBtn').disabled = false;
             progressText.textContent = '';
         }
 
         function renderResults(results, bestResult, params, riskTolerance) {
-            // Recommendation Box
             const recBox = document.getElementById('recommendationBox');
             const recTitle = document.getElementById('recommendationTitle');
             const recSRT = document.getElementById('recommendationSRT');
@@ -1819,120 +1337,60 @@
                 recTitle.classList.add('feasible');
                 recTitle.textContent = 'Recommended SRT:';
                 recSRT.textContent = bestResult.srt + ' days';
-                const modeNote = params.useVariableMissionLength 
-                    ? ` (with variable mission lengths averaging ${params.avgMissionLength} days)` 
-                    : '';
-                recBody.textContent = `At ${(params.utilizationRate * 100).toFixed(0)}% utilization, ${bestResult.srt}-day SRT yields ${(bestResult.shortageProbability * 100).toFixed(1)}% shortage probability (${Math.round(bestResult.shortageDaysPerYear)} days/year), within your ${(riskTolerance * 100).toFixed(0)}% threshold${modeNote}.`;
+                recBody.textContent = `At ${(params.utilizationRate * 100).toFixed(0)}% utilization, ${bestResult.srt}-day SRT yields ${(bestResult.shortageProbability * 100).toFixed(1)}% shortage and ${(bestResult.exceedanceRate * 100).toFixed(1)}% SRT exceedance rate.`;
             } else {
                 recBox.classList.add('infeasible');
                 recTitle.classList.add('infeasible');
                 recTitle.textContent = 'No SRT Meets Threshold';
                 recSRT.textContent = '—';
                 const lowest = results.reduce((a, b) => a.shortageProbability < b.shortageProbability ? a : b);
-                recBody.textContent = `Best option is ${lowest.srt}-day SRT at ${(lowest.shortageProbability * 100).toFixed(1)}% shortage. Consider adding crews, reducing utilization, or accepting higher risk.`;
+                recBody.textContent = `Best option is ${lowest.srt}-day SRT at ${(lowest.shortageProbability * 100).toFixed(1)}% shortage, ${(lowest.exceedanceRate * 100).toFixed(1)}% exceedance.`;
             }
 
-            // KPI Strip
             const displayResult = bestResult || results.reduce((a, b) => a.shortageProbability < b.shortageProbability ? a : b);
             
-            const kpiShortage = document.getElementById('kpiShortage');
-            const kpiDays = document.getElementById('kpiDays');
-            const kpiP95 = document.getElementById('kpiP95');
-            const kpiConcurrent = document.getElementById('kpiConcurrent');
-            const kpiCycle = document.getElementById('kpiCycle');
-            const kpiCycleUnit = document.getElementById('kpiCycleUnit');
+            document.getElementById('kpiShortage').textContent = (displayResult.shortageProbability * 100).toFixed(1) + '%';
+            document.getElementById('kpiShortage').className = 'kpi-value ' + (displayResult.feasible ? 'ok' : 'bad');
+            document.getElementById('kpiExceedance').textContent = (displayResult.exceedanceRate * 100).toFixed(1) + '%';
+            document.getElementById('kpiExceedance').className = 'kpi-value ' + (displayResult.exceedanceRate < 0.10 ? 'ok' : displayResult.exceedanceRate < 0.20 ? 'warn' : 'bad');
+            document.getElementById('kpiAvgExcess').textContent = displayResult.avgExcessDays.toFixed(1);
+            document.getElementById('kpiAvgExcess').className = 'kpi-value ' + (displayResult.avgExcessDays <= 1 ? 'ok' : displayResult.avgExcessDays <= 2 ? 'warn' : 'bad');
+            document.getElementById('kpiDays').textContent = Math.round(displayResult.shortageDaysPerYear);
+            document.getElementById('kpiDays').className = 'kpi-value ' + (displayResult.shortageDaysPerYear < 20 ? 'ok' : displayResult.shortageDaysPerYear < 40 ? 'warn' : 'bad');
+            document.getElementById('kpiCycle').textContent = displayResult.avgCycleDays.toFixed(1);
+            document.getElementById('kpiConcurrent').textContent = params.demandMean;
 
-            kpiShortage.textContent = (displayResult.shortageProbability * 100).toFixed(1) + '%';
-            kpiShortage.className = 'kpi-value ' + (displayResult.feasible ? 'ok' : 'bad');
-
-            kpiDays.textContent = Math.round(displayResult.shortageDaysPerYear);
-            kpiDays.className = 'kpi-value ' + (displayResult.shortageDaysPerYear < 20 ? 'ok' : displayResult.shortageDaysPerYear < 40 ? 'warn' : 'bad');
-
-            kpiP95.textContent = displayResult.p95Shortfall;
-            kpiP95.className = 'kpi-value ' + (displayResult.p95Shortfall <= 2 ? 'ok' : displayResult.p95Shortfall <= 5 ? 'warn' : 'bad');
-
-            kpiConcurrent.textContent = params.demandMean;
-            kpiConcurrent.className = 'kpi-value';
-            
-            // Cycle metrics - show actual vs theoretical
-            const theoreticalCycle = displayResult.srt + displayResult.rest;
-            const actualCycle = displayResult.avgCycleDays;
-            kpiCycle.textContent = actualCycle.toFixed(1);
-            
-            // Color code: green if operational mode is giving efficiency gains
-            if (params.useVariableMissionLength && actualCycle < theoreticalCycle * 0.9) {
-                kpiCycle.className = 'kpi-value ok';
-                kpiCycleUnit.textContent = `days (vs ${theoreticalCycle}d planning)`;
-            } else {
-                kpiCycle.className = 'kpi-value';
-                kpiCycleUnit.textContent = 'days';
-            }
-
-            // Chart
             renderChart(results, riskTolerance, bestResult);
-
-            // Detailed Table
             renderTable(results, riskTolerance, bestResult);
-
-            // Crews Needed Table
-            renderCrewsNeededTable(results, params);
-
-            // Crunch Panel
-            renderCrunchPanel(results, bestResult, params, riskTolerance);
-
-            // Validation Note
             renderValidationNote(params, displayResult);
         }
 
         function renderChart(results, riskTolerance, bestResult) {
             const chart = document.getElementById('chart');
             chart.innerHTML = '';
-
             const maxProb = Math.max(...results.map(r => r.shortageProbability), riskTolerance * 1.2);
-            const barWidth = 28;
-            const gap = 12;
-            const chartWidth = results.length * (barWidth + gap);
+            const barWidth = 28, gap = 12;
 
             results.forEach((r, i) => {
                 const height = (r.shortageProbability / maxProb) * 160;
-                const left = i * (barWidth + gap) + gap;
-
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
                 if (bestResult && r.srt === bestResult.srt) bar.classList.add('best');
                 else if (r.feasible) bar.classList.add('feasible');
                 else bar.classList.add('infeasible');
-
-                bar.style.left = left + 'px';
+                bar.style.left = (i * (barWidth + gap) + gap) + 'px';
                 bar.style.height = Math.max(4, height) + 'px';
                 bar.style.width = barWidth + 'px';
-
-                const label = document.createElement('div');
-                label.className = 'chart-bar-label';
-                label.textContent = r.srt;
-                bar.appendChild(label);
-
-                const value = document.createElement('div');
-                value.className = 'chart-bar-value';
-                value.textContent = (r.shortageProbability * 100).toFixed(1) + '%';
-                bar.appendChild(value);
-
+                bar.innerHTML = `<div class="chart-bar-label">${r.srt}</div><div class="chart-bar-value">${(r.shortageProbability * 100).toFixed(1)}%</div>`;
                 chart.appendChild(bar);
             });
 
-            // Tolerance line
-            const tolHeight = (riskTolerance / maxProb) * 160;
             const tolLine = document.createElement('div');
             tolLine.className = 'chart-tolerance-line';
-            tolLine.style.bottom = tolHeight + 'px';
-
-            const tolLabel = document.createElement('div');
-            tolLabel.className = 'chart-tolerance-label';
-            tolLabel.textContent = (riskTolerance * 100) + '% threshold';
-            tolLine.appendChild(tolLabel);
+            tolLine.style.bottom = ((riskTolerance / maxProb) * 160) + 'px';
+            tolLine.innerHTML = `<div class="chart-tolerance-label">${(riskTolerance * 100)}% threshold</div>`;
             chart.appendChild(tolLine);
 
-            // Y-axis labels
             [0, 0.25, 0.5, 0.75, 1].forEach(pct => {
                 const label = document.createElement('div');
                 label.className = 'chart-y-label';
@@ -1945,168 +1403,94 @@
         function renderTable(results, riskTolerance, bestResult) {
             const tbody = document.getElementById('resultsBody');
             tbody.innerHTML = '';
-
             results.forEach(r => {
                 const row = document.createElement('tr');
                 if (bestResult && r.srt === bestResult.srt) row.classList.add('best-row');
                 if (!r.feasible) row.classList.add('infeasible-row');
-
-                let statusBadge = '';
-                if (bestResult && r.srt === bestResult.srt) {
-                    statusBadge = '<span class="status-badge best">Best</span>';
-                } else if (r.feasible) {
-                    statusBadge = '<span class="status-badge ok">Within</span>';
-                } else {
-                    statusBadge = '<span class="status-badge threshold">Exceeds</span>';
-                }
-
+                let statusBadge = bestResult && r.srt === bestResult.srt ? '<span class="status-badge best">Best</span>' : r.feasible ? '<span class="status-badge ok">Within</span>' : '<span class="status-badge threshold">Exceeds</span>';
                 row.innerHTML = `
-                    <td><strong>${r.srt}</strong></td>
-                    <td>${statusBadge}</td>
+                    <td><strong>${r.srt}</strong></td><td>${statusBadge}</td>
                     <td>${(r.shortageProbability * 100).toFixed(1)}%</td>
-                    <td>${Math.round(r.shortageDaysPerYear)}</td>
-                    <td>${r.avgMissionDays.toFixed(1)}</td>
-                    <td>${r.avgCycleDays.toFixed(1)}</td>
-                    <td>${r.p95Shortfall}</td>
-                `;
+                    <td style="color: ${r.exceedanceRate < 0.10 ? 'var(--ok)' : r.exceedanceRate < 0.20 ? 'var(--warn)' : 'var(--bad)'}; font-weight: 600;">${(r.exceedanceRate * 100).toFixed(1)}%</td>
+                    <td>${r.avgExcessDays.toFixed(1)}</td><td>${Math.round(r.shortageDaysPerYear)}</td>
+                    <td>${r.avgMissionDays.toFixed(1)}</td><td>${r.avgCycleDays.toFixed(1)}</td>`;
                 tbody.appendChild(row);
             });
-        }
-
-        function renderCrewsNeededTable(results, params) {
-            const tbody = document.getElementById('crewsNeededBody');
-            tbody.innerHTML = '';
-
-            results.forEach(r => {
-                const crewsNeeded = Math.ceil(params.demandMean * params.crewsPerTail / r.efficiency);
-                const delta = params.crewPool - crewsNeeded;
-                const deltaClass = delta >= 0 ? 'text-ok' : 'text-bad';
-                const deltaText = delta >= 0 ? '+' + delta : delta;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${r.srt}</strong></td>
-                    <td>${r.rest}</td>
-                    <td>${(r.efficiency * 100).toFixed(1)}%</td>
-                    <td>${crewsNeeded}</td>
-                    <td class="${deltaClass}">${deltaText}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function renderCrunchPanel(results, bestResult, params, riskTolerance) {
-            const panel = document.getElementById('crunchPanel');
-            const content = document.getElementById('crunchContent');
-
-            if (bestResult) {
-                panel.classList.add('hidden');
-                return;
-            }
-
-            panel.classList.remove('hidden');
-            const lowest = results.reduce((a, b) => a.shortageProbability < b.shortageProbability ? a : b);
-
-            // Find crews needed to make lowest SRT feasible
-            const crewsNeeded = Math.ceil(params.demandMean * params.crewsPerTail / lowest.efficiency);
-            const additionalCrews = Math.max(0, crewsNeeded - params.crewPool + 5); // +5 buffer for variance
-
-            content.innerHTML = `
-                <p><strong>Option 1:</strong> Add ~${additionalCrews} crews to make ${lowest.srt}-day SRT feasible</p>
-                <p><strong>Option 2:</strong> Accept ${(lowest.shortageProbability * 100).toFixed(1)}% risk (current threshold: ${(riskTolerance * 100)}%)</p>
-                <p><strong>Option 3:</strong> Reduce utilization below ${(params.utilizationRate * 100).toFixed(0)}%</p>
-            `;
         }
 
         function renderValidationNote(params, result) {
             const note = document.getElementById('validationNote');
-            const efficiency = result.efficiency;
             const crewsOnMission = Math.ceil(params.demandMean * params.crewsPerTail);
-            const theoreticalPool = Math.ceil(crewsOnMission / efficiency);
+            const theoreticalPool = Math.ceil(crewsOnMission / result.efficiency);
             const sufficient = params.crewPool >= theoreticalPool;
-            
-            const modeIndicator = params.useVariableMissionLength 
-                ? `<span style="background: var(--accent-dim); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">OPERATIONAL MODE: Avg ${params.avgMissionLength}d missions</span>` 
-                : '';
-
-            note.innerHTML = `<strong style="color: var(--accent);">Validation:</strong> ${params.allocatedTails} allocated × ${(params.utilizationRate * 100).toFixed(0)}% = ${params.demandMean} concurrent × ${params.crewsPerTail} = ${crewsOnMission} on-mission. At ${result.srt}-day SRT (${(efficiency * 100).toFixed(0)}% eff.), steady-state needs ${theoreticalPool} crews. Pool of ${params.crewPool} is <span style="color: var(${sufficient ? '--ok' : '--bad'});">${sufficient ? 'sufficient' : 'below minimum'}</span>.${modeIndicator}`;
+            const modeIndicator = params.useVariableMissionLength ? `<span style="background: var(--accent-dim); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">OPERATIONAL MODE</span>` : '';
+            note.innerHTML = `<strong style="color: var(--accent);">Validation:</strong> ${params.allocatedTails} tails × ${(params.utilizationRate * 100).toFixed(0)}% = ${params.demandMean} concurrent. Pool of ${params.crewPool} is <span style="color: var(${sufficient ? '--ok' : '--bad'});">${sufficient ? 'sufficient' : 'below minimum'}</span>.${modeIndicator}`;
         }
 
         function runSensitivityAnalysis(params, targetSRT, riskTolerance) {
             const list = document.getElementById('sensitivityList');
             list.innerHTML = '';
-
             const quickParams = { ...params, iterations: 80 };
             seed = 99999;
             const baseline = runMonteCarloSync(quickParams, targetSRT);
-
             const sensitivities = [];
 
-            // +5 crews
             seed = 99999;
             const moreCrews = runMonteCarloSync({ ...quickParams, crewPool: quickParams.crewPool + 5 }, targetSRT);
-            sensitivities.push({
-                lever: '+5 crews',
-                impact: baseline.shortageProbability - moreCrews.shortageProbability,
-                explanation: 'Adding 5 more crews to your pool increases available capacity'
-            });
+            sensitivities.push({ lever: '+5 crews', shortageImpact: baseline.shortageProbability - moreCrews.shortageProbability, exceedanceImpact: baseline.exceedanceRate - moreCrews.exceedanceRate });
 
-            // -10% utilization
             seed = 99999;
-            const lowerUtil = Math.max(1, Math.round(quickParams.demandMean * 0.85));
-            const lessUtil = runMonteCarloSync({ ...quickParams, demandMean: lowerUtil }, targetSRT);
-            sensitivities.push({
-                lever: '-10% utilization',
-                impact: baseline.shortageProbability - lessUtil.shortageProbability,
-                explanation: 'Flying fewer tails simultaneously (lower ops tempo) reduces crew demand'
-            });
+            const lessUtil = runMonteCarloSync({ ...quickParams, demandMean: Math.max(1, Math.round(quickParams.demandMean * 0.85)) }, targetSRT);
+            sensitivities.push({ lever: '-10% utilization', shortageImpact: baseline.shortageProbability - lessUtil.shortageProbability, exceedanceImpact: baseline.exceedanceRate - lessUtil.exceedanceRate });
 
-            // +2 SRT days
             seed = 99999;
             const longerSRT = runMonteCarloSync(quickParams, targetSRT + 2);
-            sensitivities.push({
-                lever: '+2 SRT days',
-                impact: baseline.shortageProbability - longerSRT.shortageProbability,
-                explanation: 'Longer missions mean crews stay out longer, improving efficiency'
-            });
+            sensitivities.push({ lever: '+2 SRT days', shortageImpact: baseline.shortageProbability - longerSRT.shortageProbability, exceedanceImpact: baseline.exceedanceRate - longerSRT.exceedanceRate });
 
-            // Lower variance
-            if (quickParams.demandStd >= 2) {
-                seed = 99999;
-                const lessVar = runMonteCarloSync({ ...quickParams, demandStd: Math.max(0, quickParams.demandStd - 3) }, targetSRT);
-                sensitivities.push({
-                    lever: 'Lower util variance',
-                    impact: baseline.shortageProbability - lessVar.shortageProbability,
-                    explanation: 'Steadier day-to-day demand reduces shortage spikes'
-                });
-            }
-
-            // Sort by impact
-            sensitivities.sort((a, b) => b.impact - a.impact);
-
+            sensitivities.sort((a, b) => b.shortageImpact - a.shortageImpact);
             sensitivities.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'sensitivity-item';
-                const impactPct = (s.impact * 100).toFixed(1);
-                const impactClass = s.impact > 0 ? 'positive' : 'negative';
-                const impactSign = s.impact > 0 ? '−' : '+';
                 item.innerHTML = `
-                    <span class="sensitivity-lever">
-                        ${s.lever}
-                        <span class="tooltip-container">
-                            <span class="tooltip-icon">?</span>
-                            <span class="tooltip-content">
-                                <strong>${s.lever}</strong><br><br>
-                                ${s.explanation}<br><br>
-                                <strong>Impact:</strong> ${impactSign}${Math.abs(impactPct)} percentage points means shortage probability ${s.impact > 0 ? 'decreases' : 'increases'} from ${(baseline.shortageProbability * 100).toFixed(1)}% to ${((baseline.shortageProbability - s.impact) * 100).toFixed(1)}%.
-                            </span>
-                        </span>
-                    </span>
-                    <span class="sensitivity-impact ${impactClass}">${impactSign}${Math.abs(impactPct)} ppts</span>
-                `;
+                    <span class="sensitivity-lever">${s.lever}</span>
+                    <span>
+                        <span class="sensitivity-impact ${s.shortageImpact > 0 ? 'positive' : 'negative'}">${s.shortageImpact > 0 ? '−' : '+'}${Math.abs(s.shortageImpact * 100).toFixed(1)} shortage</span>
+                        <span style="color: var(--faint); margin: 0 4px;">|</span>
+                        <span class="sensitivity-impact ${s.exceedanceImpact > 0 ? 'positive' : 'negative'}">${s.exceedanceImpact > 0 ? '−' : '+'}${Math.abs(s.exceedanceImpact * 100).toFixed(1)} exceed</span>
+                    </span>`;
                 list.appendChild(item);
             });
         }
+
+        let lastResults = [], lastParams = {};
+
+        function exportCSV() {
+            if (lastResults.length === 0) return;
+            const p = lastParams;
+            let csv = 'SRT Trade-Off Analysis Export v3\n';
+            csv += `Generated,${new Date().toISOString()}\n`;
+            csv += `Effective Crews,${p.crewPool}\n`;
+            csv += `Effective Tails,${p.allocatedTails}\n`;
+            csv += `Utilization Rate,${(p.utilizationRate * 100).toFixed(0)}%\n`;
+            csv += `Risk Tolerance,${(p.riskTolerance * 100).toFixed(0)}%\n`;
+            csv += '\nSRT,Status,Shortage %,Exceedance %,Avg Excess Days,Days/Yr,Avg Mission,Avg Cycle,Efficiency\n';
+            lastResults.forEach(r => {
+                csv += `${r.srt},${r.feasible ? 'Within' : 'Exceeds'},${(r.shortageProbability * 100).toFixed(2)}%,${(r.exceedanceRate * 100).toFixed(2)}%,${r.avgExcessDays.toFixed(2)},${Math.round(r.shortageDaysPerYear)},${r.avgMissionDays.toFixed(1)},${r.avgCycleDays.toFixed(1)},${(r.efficiency * 100).toFixed(1)}%\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `srt_analysis_v3_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleMissionLengthInputs();
+            updateEffectiveTotals();
+        });
     </script>
 </body>
 </html>
