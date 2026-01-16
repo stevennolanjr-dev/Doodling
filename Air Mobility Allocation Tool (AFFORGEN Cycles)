@@ -1,0 +1,1133 @@
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
+
+// Wing inventory data - TAI (Total Aircraft Inventory), BAI (Backup Aircraft Inventory), depot tails
+// PAA (Primary Aircraft Authorized) = TAI - BAI, Possessed = PAA - Depot
+const initialWingInventory = {
+  // KC-135/KC-46 Wings
+  '92 ARW': { tai: 28, bai: 4, depot: 2, mds: 'KC-135' },
+  '6 AMW': { tai: 16, bai: 2, depot: 1, mds: 'KC-135' },
+  '60 AMW': { tai: 24, bai: 3, depot: 2, mds: 'KC-46' },
+  '22 ARW': { tai: 36, bai: 4, depot: 3, mds: 'KC-46' },
+  '305 AMW': { tai: 24, bai: 3, depot: 2, mds: 'KC-46' },
+  '434 ARW': { tai: 16, bai: 2, depot: 1, mds: 'KC-135' },
+  '452 ARW': { tai: 12, bai: 2, depot: 1, mds: 'KC-135' },
+  '101 ARW': { tai: 8, bai: 1, depot: 0, mds: 'KC-135' },
+  '121 ARW': { tai: 8, bai: 1, depot: 1, mds: 'KC-135' },
+  '126 ARW': { tai: 8, bai: 1, depot: 0, mds: 'KC-135' },
+  '157 ARW': { tai: 12, bai: 2, depot: 1, mds: 'KC-46' },
+  // C-17 Wings
+  '437 AMW': { tai: 48, bai: 6, depot: 4, mds: 'C-17' },
+  '60 AMW-C17': { tai: 13, bai: 2, depot: 1, mds: 'C-17' },
+  '436 AW': { tai: 18, bai: 2, depot: 2, mds: 'C-17' },
+  '62 AW': { tai: 40, bai: 5, depot: 3, mds: 'C-17' },
+  '305 AMW-C17': { tai: 8, bai: 1, depot: 1, mds: 'C-17' },
+  '445 AW': { tai: 8, bai: 1, depot: 1, mds: 'C-17' },
+  '452 AMW': { tai: 8, bai: 1, depot: 0, mds: 'C-17' },
+  '105 AW': { tai: 8, bai: 1, depot: 1, mds: 'C-17' },
+  '164 AW': { tai: 8, bai: 1, depot: 0, mds: 'C-17' },
+  // C-130J Wings
+  '19 AW': { tai: 24, bai: 3, depot: 2, mds: 'C-130J' },
+  '317 AW': { tai: 28, bai: 4, depot: 2, mds: 'C-130J' },
+  '143 AW': { tai: 8, bai: 1, depot: 1, mds: 'C-130J' },
+  '136 AW': { tai: 8, bai: 1, depot: 0, mds: 'C-130J' },
+  // C-5M Wings
+  '436 AW-C5': { tai: 9, bai: 1, depot: 1, mds: 'C-5M' },
+  '60 AMW-C5': { tai: 9, bai: 1, depot: 1, mds: 'C-5M' },
+  '433 AW': { tai: 16, bai: 2, depot: 2, mds: 'C-5M' },
+  '439 AW': { tai: 8, bai: 1, depot: 1, mds: 'C-5M' },
+};
+
+// Unit data - KC-135/KC-46 (50 AMC + 4 theater) + C-17 (26) + C-130J/H (24)
+// crews = authorized crew count for the squadron
+const initialUnits = [
+  // ==================== KC-135/KC-46 ====================
+  // AD Tankers
+  { id: 'KC-A-1', component: 'A', mds: 'KC-135', wing: '92 ARW', squadron: '384 ARS', base: 'Fairchild', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-2', component: 'A', mds: 'KC-135', wing: '6 AMW', squadron: '50 ARS', base: 'MacDill', associateType: null, theater: null, crews: 10 },
+  { id: 'KC-A-3', component: 'A', mds: 'KC-46', wing: '60 AMW', squadron: '9 ARS', base: 'Travis', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-4', component: 'A', mds: 'KC-135', wing: '92 ARW', squadron: '92 ARS', base: 'Fairchild', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-5', component: 'A', mds: 'KC-135', wing: '22 ARW', squadron: '350 ARS', base: 'McConnell', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-6', component: 'A', mds: 'KC-46', wing: '22 ARW', squadron: '344 ARS', base: 'McConnell', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-7', component: 'A', mds: 'KC-46', wing: '305 AMW', squadron: '2 ARS', base: 'JB-MDL', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-8', component: 'A', mds: 'KC-135', wing: '92 ARW', squadron: '97 ARS', base: 'Fairchild', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-9', component: 'A', mds: 'KC-135', wing: '6 AMW', squadron: '91 ARS', base: 'MacDill', associateType: null, theater: null, crews: 10 },
+  { id: 'KC-A-10', component: 'A', mds: 'KC-46', wing: '60 AMW', squadron: '6 ARS', base: 'Travis', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-11', component: 'A', mds: 'KC-135', wing: '92 ARW', squadron: '93 ARS', base: 'Fairchild', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-12', component: 'A', mds: 'KC-46', wing: '22 ARW', squadron: '349 ARS', base: 'McConnell', associateType: null, theater: null, crews: 12 },
+  { id: 'KC-A-13', component: 'A', mds: 'KC-46', wing: '305 AMW', squadron: '32 ARS', base: 'JB-MDL', associateType: null, theater: null, crews: 12 },
+  // AD Active Associate Tankers
+  { id: 'KC-AA-1', component: 'A', mds: 'KC-135', wing: '126 ARW', squadron: '906 ARS', base: 'Scott', associateType: 'active', partnerWing: '126 ARW (ANG)', theater: null, crews: 8 },
+  { id: 'KC-AA-2', component: 'A', mds: 'KC-135', wing: '452 ARW', squadron: '912 ARS', base: 'March', associateType: 'active', partnerWing: '452 ARW (AFRC)', theater: null, crews: 8 },
+  { id: 'KC-AA-3', component: 'A', mds: 'KC-135', wing: '117 ARW', squadron: '99 ARS', base: 'Birmingham', associateType: 'active', partnerWing: '117 ARW (ANG)', theater: null, crews: 8 },
+  { id: 'KC-AA-4', component: 'A', mds: 'KC-46', wing: '157 ARW', squadron: '64 ARS', base: 'Pease', associateType: 'active', partnerWing: '157 ARW (ANG)', theater: null, crews: 8 },
+  { id: 'KC-AA-5', component: 'A', mds: 'KC-46', wing: '916 ARW', squadron: '911 ARS', base: 'Seymour-Johnson', associateType: 'active', partnerWing: '916 ARW (ANG)', theater: null, crews: 8 },
+  // Classic Associate Tankers (AFRC)
+  { id: 'KC-CA-R-1', component: 'R', mds: 'KC-135', wing: '927 ARW', squadron: '63 ARS', base: 'MacDill', associateType: 'classic', partnerWing: '6 AMW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-R-2', component: 'R', mds: 'KC-46', wing: '931 ARW', squadron: '18 ARS', base: 'McConnell', associateType: 'classic', partnerWing: '22 ARW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-R-3', component: 'R', mds: 'KC-46', wing: '931 ARW', squadron: '924 ARS', base: 'McConnell', associateType: 'classic', partnerWing: '22 ARW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-R-4', component: 'R', mds: 'KC-46', wing: '931 ARW', squadron: '905 ARS', base: 'McConnell', associateType: 'classic', partnerWing: '22 ARW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-R-5', component: 'R', mds: 'KC-46', wing: '349 AMW', squadron: '70 ARS', base: 'Travis', associateType: 'classic', partnerWing: '60 AMW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-R-6', component: 'R', mds: 'KC-46', wing: '349 AMW', squadron: '79 ARS', base: 'Travis', associateType: 'classic', partnerWing: '60 AMW (AD)', theater: null, crews: 6 },
+  // Classic Associate Tankers (ANG)
+  { id: 'KC-CA-G-1', component: 'G', mds: 'KC-46', wing: '108 ARW', squadron: '141 ARS', base: 'JB-MDL', associateType: 'classic', partnerWing: '305 AMW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-G-2', component: 'G', mds: 'KC-46', wing: '108 ARW', squadron: '170 ARS', base: 'JB-MDL', associateType: 'classic', partnerWing: '305 AMW (AD)', theater: null, crews: 6 },
+  { id: 'KC-CA-G-3', component: 'G', mds: 'KC-135', wing: '141 ARW', squadron: '116 ARS', base: 'Fairchild', associateType: 'classic', partnerWing: '92 ARW (AD)', theater: null, crews: 6 },
+  // AFRC Tankers (Unit Equipped)
+  { id: 'KC-R-1', component: 'R', mds: 'KC-135', wing: '434 ARW', squadron: '74 ARS', base: 'Grissom', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-R-2', component: 'R', mds: 'KC-135', wing: '434 ARW', squadron: '72 ARS', base: 'Grissom', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-R-3', component: 'R', mds: 'KC-135', wing: '452 ARW', squadron: '336 ARS', base: 'March', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-R-4', component: 'R', mds: 'KC-135', wing: '459 ARW', squadron: '756 ARS', base: 'Andrews', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-R-5', component: 'R', mds: 'KC-135', wing: '507 ARW', squadron: '465 ARS', base: 'Tinker', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-R-6', component: 'R', mds: 'KC-135', wing: '914 ARW', squadron: '328 ARS', base: 'Niagara', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-R-7', component: 'R', mds: 'KC-135', wing: '940 ARW', squadron: '314 ARS', base: 'Beale', associateType: null, theater: null, crews: 8 },
+  // ANG Tankers (Unit Equipped)
+  { id: 'KC-G-1', component: 'G', mds: 'KC-135', wing: '101 ARW', squadron: '132 ARS', base: 'Bangor', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-G-2', component: 'G', mds: 'KC-135', wing: '121 ARW', squadron: '166 ARS', base: 'Rickenbacker', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-G-3', component: 'G', mds: 'KC-135', wing: '126 ARW', squadron: '108 ARS', base: 'Scott', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-G-4', component: 'G', mds: 'KC-135', wing: '127 ARW', squadron: '171 ARS', base: 'Selfridge', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-G-5', component: 'G', mds: 'KC-135', wing: '128 ARW', squadron: '126 ARS', base: 'Mitchell', associateType: null, theater: null, crews: 8 },
+  { id: 'KC-G-6', component: 'G', mds: 'KC-135', wing: '134 ARW', squadron: '151 ARS', base: 'McGhee-Tyson', associateType: null, theater: null },
+  { id: 'KC-G-7', component: 'G', mds: 'KC-46', wing: '157 ARW', squadron: '133 ARS', base: 'Pease', associateType: null, theater: null },
+  { id: 'KC-G-8', component: 'G', mds: 'KC-135', wing: '151 WG', squadron: '191 ARS', base: 'Salt Lake City', associateType: null, theater: null },
+  { id: 'KC-G-9', component: 'G', mds: 'KC-135', wing: '155 ARW', squadron: '173 ARS', base: 'Lincoln', associateType: null, theater: null },
+  { id: 'KC-G-10', component: 'G', mds: 'KC-135', wing: '161 ARW', squadron: '197 ARS', base: 'Phoenix', associateType: null, theater: null },
+  { id: 'KC-G-11', component: 'G', mds: 'KC-135', wing: '171 ARW', squadron: '147 ARS', base: 'Pittsburgh', associateType: null, theater: null },
+  { id: 'KC-G-12', component: 'G', mds: 'KC-135', wing: '185 ARW', squadron: '174 ARS', base: 'Sioux City', associateType: null, theater: null },
+  { id: 'KC-G-13', component: 'G', mds: 'KC-135', wing: '186 ARW', squadron: '153 ARS', base: 'Key Field', associateType: null, theater: null },
+  { id: 'KC-G-14', component: 'G', mds: 'KC-135', wing: '190 ARW', squadron: '117 ARS', base: 'Forbes', associateType: null, theater: null },
+  { id: 'KC-G-15', component: 'G', mds: 'KC-46', wing: '916 ARW', squadron: '77 ARS', base: 'Seymour-Johnson', associateType: null, theater: null },
+  { id: 'KC-G-16', component: 'G', mds: 'KC-135', wing: '117 ARW', squadron: '106 ARS', base: 'Birmingham', associateType: null, theater: null },
+  // Theater Tankers
+  { id: 'KC-PACAF-1', component: 'A', mds: 'KC-135', wing: '18 WG', squadron: '909 ARS', base: 'Kadena', associateType: null, theater: 'PACAF' },
+  { id: 'KC-PACAF-2', component: 'G', mds: 'KC-135', wing: '154 WG', squadron: '203 ARS', base: 'JB PH-H', associateType: null, theater: 'PACAF' },
+  { id: 'KC-PACAF-3', component: 'G', mds: 'KC-135', wing: '168 WG', squadron: '168 ARS', base: 'Eielson', associateType: null, theater: 'PACAF' },
+  { id: 'KC-USAFE-1', component: 'A', mds: 'KC-135', wing: '100 ARW', squadron: '351 ARS', base: 'Mildenhall', associateType: null, theater: 'USAFE' },
+
+  // ==================== C-17 ====================
+  // AD C-17
+  { id: 'C17-A-1', component: 'A', mds: 'C-17', wing: '437 AMW', squadron: '16 AS', base: 'JB-Charleston', associateType: null, theater: null },
+  { id: 'C17-A-2', component: 'A', mds: 'C-17', wing: '60 AMW', squadron: '21 AS', base: 'Travis', associateType: null, theater: null },
+  { id: 'C17-A-3', component: 'A', mds: 'C-17', wing: '436 AW', squadron: '3 AS', base: 'Dover', associateType: null, theater: null },
+  { id: 'C17-A-4', component: 'A', mds: 'C-17', wing: '62 AW', squadron: '4 AS', base: 'JBLM', associateType: null, theater: null },
+  { id: 'C17-A-5', component: 'A', mds: 'C-17', wing: '437 AMW', squadron: '14 AS', base: 'JB-Charleston', associateType: null, theater: null },
+  { id: 'C17-A-6', component: 'A', mds: 'C-17', wing: '305 AMW', squadron: '6 AS', base: 'JB-MDL', associateType: null, theater: null },
+  { id: 'C17-A-7', component: 'A', mds: 'C-17', wing: '62 AW', squadron: '8 AS', base: 'JBLM', associateType: null, theater: null },
+  { id: 'C17-A-8', component: 'A', mds: 'C-17', wing: '62 AW', squadron: '7 AS', base: 'JBLM', associateType: null, theater: null },
+  { id: 'C17-A-9', component: 'A', mds: 'C-17', wing: '437 AMW', squadron: '15 AS', base: 'JB-Charleston', associateType: null, theater: null },
+  // Classic Associate C-17 (AFRC)
+  { id: 'C17-CA-1', component: 'R', mds: 'C-17', wing: '315 AW', squadron: '701 AS', base: 'JB-Charleston', associateType: 'classic', partnerWing: '437 AMW (AD)', theater: null },
+  { id: 'C17-CA-2', component: 'R', mds: 'C-17', wing: '349 AMW', squadron: '301 AS', base: 'Travis', associateType: 'classic', partnerWing: '60 AMW (AD)', theater: null },
+  { id: 'C17-CA-3', component: 'R', mds: 'C-17', wing: '315 AW', squadron: '300 AS', base: 'JB-Charleston', associateType: 'classic', partnerWing: '437 AMW (AD)', theater: null },
+  { id: 'C17-CA-4', component: 'R', mds: 'C-17', wing: '512 AW', squadron: '326 AS', base: 'Dover', associateType: 'classic', partnerWing: '436 AW (AD)', theater: null },
+  { id: 'C17-CA-5', component: 'R', mds: 'C-17', wing: '514 AMW', squadron: '732 AS', base: 'JB-MDL', associateType: 'classic', partnerWing: '305 AMW (AD)', theater: null },
+  { id: 'C17-CA-6', component: 'R', mds: 'C-17', wing: '446 AW', squadron: '97 AS', base: 'JBLM', associateType: 'classic', partnerWing: '62 AW (AD)', theater: null },
+  { id: 'C17-CA-7', component: 'R', mds: 'C-17', wing: '315 AW', squadron: '317 AS', base: 'JB-Charleston', associateType: 'classic', partnerWing: '437 AMW (AD)', theater: null },
+  { id: 'C17-CA-8', component: 'R', mds: 'C-17', wing: '446 AW', squadron: '728 AS', base: 'JBLM', associateType: 'classic', partnerWing: '62 AW (AD)', theater: null },
+  { id: 'C17-CA-9', component: 'R', mds: 'C-17', wing: '446 AW', squadron: '313 AS', base: 'JBLM', associateType: 'classic', partnerWing: '62 AW (AD)', theater: null },
+  // Unit Equipped C-17 (ANG)
+  { id: 'C17-G-1', component: 'G', mds: 'C-17', wing: '105 AW', squadron: '137 AS', base: 'Stewart', associateType: null, theater: null },
+  { id: 'C17-G-2', component: 'G', mds: 'C-17', wing: '164 AW', squadron: '155 AS', base: 'Memphis', associateType: null, theater: null },
+  { id: 'C17-G-3', component: 'G', mds: 'C-17', wing: '167 AW', squadron: '167 AS', base: 'Martinsburg', associateType: null, theater: null },
+  { id: 'C17-G-4', component: 'G', mds: 'C-17', wing: '172 AW', squadron: '183 AS', base: 'Jackson', associateType: null, theater: null },
+  { id: 'C17-G-5', component: 'G', mds: 'C-17', wing: '145 AW', squadron: '156 AS', base: 'Charlotte', associateType: null, theater: null },
+  // Unit Equipped C-17 (AFRC)
+  { id: 'C17-R-1', component: 'R', mds: 'C-17', wing: '445 AW', squadron: '89 AS', base: 'Wright-Patt', associateType: null, theater: null },
+  { id: 'C17-R-2', component: 'R', mds: 'C-17', wing: '452 AMW', squadron: '729 AS', base: 'March', associateType: null, theater: null },
+  { id: 'C17-R-3', component: 'R', mds: 'C-17', wing: '911 AW', squadron: '758 AS', base: 'Pittsburgh', associateType: null, theater: null },
+  // Theater C-17 (PACAF)
+  { id: 'C17-PACAF-1', component: 'A', mds: 'C-17', wing: '15 WG', squadron: '535 AS', base: 'JB PH-H', associateType: null, theater: 'PACAF' },
+  { id: 'C17-PACAF-2', component: 'G', mds: 'C-17', wing: '154 WG', squadron: '204 AS', base: 'JB PH-H', associateType: 'classic', partnerWing: '15 WG (AD)', theater: 'PACAF' },
+  { id: 'C17-PACAF-3', component: 'G', mds: 'C-17', wing: '176 WG', squadron: '249 AS', base: 'JBER', associateType: null, theater: 'PACAF' },
+  { id: 'C17-PACAF-4', component: 'A', mds: 'C-17', wing: '3 WG', squadron: '517 AS', base: 'JBER', associateType: 'active', partnerWing: '176 WG (ANG)', theater: 'PACAF' },
+
+  // ==================== C-130J ====================
+  // AD C-130J
+  { id: 'C130J-A-1', component: 'A', mds: 'C-130J', wing: '19 AW', squadron: '61 AS', base: 'Little Rock', associateType: null, theater: null },
+  { id: 'C130J-A-2', component: 'A', mds: 'C-130J', wing: '19 AW', squadron: '41 AS', base: 'Little Rock', associateType: null, theater: null },
+  { id: 'C130J-A-3', component: 'A', mds: 'C-130J', wing: '317 AW', squadron: '39 AS', base: 'Dyess', associateType: null, theater: null },
+  { id: 'C130J-A-4', component: 'A', mds: 'C-130J', wing: '317 AW', squadron: '40 AS', base: 'Dyess', associateType: null, theater: null },
+  // Classic Associate C-130J (AFRC)
+  { id: 'C130J-CA-1', component: 'R', mds: 'C-130J', wing: '913 AG', squadron: '327 AS', base: 'Little Rock', associateType: 'classic', partnerWing: '19 AW (AD)', theater: null },
+  // Unit Equipped C-130J (AFRC)
+  { id: 'C130J-R-1', component: 'R', mds: 'C-130J', wing: '403 AW', squadron: '815 AS', base: 'Keesler', associateType: null, theater: null },
+  { id: 'C130J-R-2', component: 'R', mds: 'C-130J', wing: '910 AW', squadron: '757 AS', base: 'Youngstown', associateType: null, theater: null },
+  // Unit Equipped C-130J (ANG)
+  { id: 'C130J-G-1', component: 'G', mds: 'C-130J', wing: '143 AW', squadron: '143 AS', base: 'Quonset Pt', associateType: null, theater: null },
+  { id: 'C130J-G-2', component: 'G', mds: 'C-130J', wing: '136 AW', squadron: '181 AS', base: 'Ft Worth', associateType: null, theater: null },
+  { id: 'C130J-G-3', component: 'G', mds: 'C-130J', wing: '123 AW', squadron: '165 AS', base: 'Louisville', associateType: null, theater: null },
+  { id: 'C130J-G-4', component: 'G', mds: 'C-130J', wing: '130 AW', squadron: '130 AS', base: 'Charleston WV', associateType: null, theater: null },
+  { id: 'C130J-G-5', component: 'G', mds: 'C-130J', wing: '146 AW', squadron: '115 AS', base: 'Channel Islands', associateType: null, theater: null },
+  { id: 'C130J-G-6', component: 'G', mds: 'C-130J', wing: '165 AW', squadron: '158 AS', base: 'Savannah', associateType: null, theater: null },
+  { id: 'C130J-G-7', component: 'G', mds: 'C-130J', wing: '182 AW', squadron: '169 AS', base: 'Peoria', associateType: null, theater: null },
+  { id: 'C130J-G-8', component: 'G', mds: 'C-130J', wing: '120 AW', squadron: '186 AS', base: 'Great Falls', associateType: null, theater: null },
+
+  // ==================== C-130H ====================
+  // Unit Equipped C-130H (AFRC)
+  { id: 'C130H-R-1', component: 'R', mds: 'C-130H', wing: '94 AW', squadron: '700 AS', base: 'Dobbins', associateType: null, theater: null },
+  { id: 'C130H-R-2', component: 'R', mds: 'C-130H', wing: '302 AW', squadron: '731 AS', base: 'Peterson', associateType: null, theater: null },
+  { id: 'C130H-R-3', component: 'R', mds: 'C-130H', wing: '934 AW', squadron: '96 AS', base: 'Minneapolis', associateType: null, theater: null },
+  // Unit Equipped C-130H (ANG)
+  { id: 'C130H-G-1', component: 'G', mds: 'C-130H', wing: '103 AW', squadron: '118 AS', base: 'Bradley', associateType: null, theater: null },
+  { id: 'C130H-G-2', component: 'G', mds: 'C-130H', wing: '153 AW', squadron: '187 AS', base: 'Cheyenne', associateType: null, theater: null },
+  { id: 'C130H-G-3', component: 'G', mds: 'C-130H', wing: '166 AW', squadron: '142 AS', base: 'New Castle', associateType: null, theater: null },
+  { id: 'C130H-G-4', component: 'G', mds: 'C-130H', wing: '139 AW', squadron: '180 AS', base: 'St Joe', associateType: null, theater: null },
+  { id: 'C130H-G-5', component: 'G', mds: 'C-130H', wing: '152 AW', squadron: '192 AS', base: 'Reno', associateType: null, theater: null },
+  { id: 'C130H-G-6', component: 'G', mds: 'C-130H', wing: '133 AW', squadron: '109 AS', base: 'Minneapolis', associateType: null, theater: null },
+
+  // ==================== C-5M ====================
+  // AD C-5M
+  { id: 'C5M-A-1', component: 'A', mds: 'C-5M', wing: '436 AW', squadron: '9 AS', base: 'Dover', associateType: null, theater: null },
+  { id: 'C5M-A-2', component: 'A', mds: 'C-5M', wing: '60 AMW', squadron: '22 AS', base: 'Travis', associateType: null, theater: null },
+  // Classic Associate C-5M (AFRC)
+  { id: 'C5M-CA-1', component: 'R', mds: 'C-5M', wing: '512 AW', squadron: '709 AS', base: 'Dover', associateType: 'classic', partnerWing: '436 AW (AD)', theater: null },
+  { id: 'C5M-CA-2', component: 'R', mds: 'C-5M', wing: '349 AMW', squadron: '312 AS', base: 'Travis', associateType: 'classic', partnerWing: '60 AMW (AD)', theater: null },
+  // Unit Equipped C-5M (AFRC)
+  { id: 'C5M-R-1', component: 'R', mds: 'C-5M', wing: '433 AW', squadron: '68 AS', base: 'Lackland', associateType: null, theater: null },
+  { id: 'C5M-R-2', component: 'R', mds: 'C-5M', wing: '433 AW', squadron: '356 AS', base: 'Lackland', associateType: null, theater: null },
+  { id: 'C5M-R-3', component: 'R', mds: 'C-5M', wing: '439 AW', squadron: '337 AS', base: 'Westover', associateType: null, theater: null },
+];
+
+const packageTypes = { '4L': { tails: 4, crews: 6, label: '4-Ship Lead' }, '4F': { tails: 4, crews: 6, label: '4-Ship Follow' }, '2F': { tails: 2, crews: 3, label: '2-Ship Follow' } };
+const commitmentTypes = { GFMAP: { label: 'GFMAP' }, RFF: { label: 'RFF' }, RFS: { label: 'RFS' } };
+const ccmdColors = { 'TRANSCOM': '#6b7280', 'CENTCOM': '#dc2626', 'INDOPACOM': '#1e3a8a', 'NORTHCOM': '#06b6d4', 'AFRICOM': '#92400e', 'EUCOM': '#166534', 'SOUTHCOM': '#ea580c' };
+const theaterColors = { 'PACAF': '#0891b2', 'USAFE': '#4f46e5' };
+const componentColors = { 'A': '#3b82f6', 'R': '#22c55e', 'G': '#a855f7' };
+const mdsColors = { 'KC-135': '#64748b', 'KC-46': '#0ea5e9', 'C-17': '#f59e0b', 'C-130J': '#10b981', 'C-130H': '#84cc16', 'C-5M': '#8b5cf6' };
+const mdsOptions = ['KC-135', 'KC-46', 'C-17', 'C-130J', 'C-130H', 'C-5M'];
+
+// Calculate TDG totals from packages
+const calcTdgTotals = (tdg) => {
+  const pkg4L = (tdg.pkg4L || 0) * 4;
+  const pkg4F = (tdg.pkg4F || 0) * 4;
+  const pkg2F = (tdg.pkg2F || 0) * 2;
+  const addTails = tdg.addTails || 0;
+  const tails = pkg4L + pkg4F + pkg2F + addTails;
+  const crews4L = (tdg.pkg4L || 0) * 6;
+  const crews4F = (tdg.pkg4F || 0) * 6;
+  const crews2F = (tdg.pkg2F || 0) * 3;
+  const addCrews = tdg.addCrews || 0;
+  const crews = crews4L + crews4F + crews2F + addCrews;
+  return { tails, crews };
+};
+
+// TDG with package-based requirements, location, and notes
+const initialTDG = [
+  { id: 't1', ccmd: 'CENTCOM', period: '27.1a', startDate: '2026-10-01', endDate: '2027-01-31', pkg4L: 4, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Al Udeid AB', icao: 'OTBH', notes: 'Standard rotation, boom-only' },
+  { id: 't2', ccmd: 'CENTCOM', period: '27.1b', startDate: '2027-02-01', endDate: '2027-05-31', pkg4L: 5, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Al Udeid AB', icao: 'OTBH', notes: 'Surge period, 1x soft basket req' },
+  { id: 't3', ccmd: 'CENTCOM', period: '27.2a', startDate: '2027-06-01', endDate: '2027-09-30', pkg4L: 4, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Al Udeid AB', icao: 'OTBH', notes: '' },
+  { id: 't4', ccmd: 'INDOPACOM', period: '27.1a', startDate: '2026-10-01', endDate: '2027-01-31', pkg4L: 2, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Kadena AB', icao: 'RODN', notes: '2x KafMa capable' },
+  { id: 't5', ccmd: 'INDOPACOM', period: '27.1b', startDate: '2027-02-01', endDate: '2027-05-31', pkg4L: 2, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Kadena AB', icao: 'RODN', notes: '' },
+  { id: 't6', ccmd: 'INDOPACOM', period: '27.2a', startDate: '2027-06-01', endDate: '2027-09-30', pkg4L: 3, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Andersen AFB', icao: 'PGUA', notes: 'Exercise support, split ops Kadena/Andersen' },
+  { id: 't7', ccmd: 'EUCOM', period: '27.1a', startDate: '2026-10-01', endDate: '2027-01-31', pkg4L: 1, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Mildenhall', icao: 'EGUN', notes: '' },
+  { id: 't8', ccmd: 'EUCOM', period: '27.1b', startDate: '2027-02-01', endDate: '2027-05-31', pkg4L: 2, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Mildenhall', icao: 'EGUN', notes: 'NATO exercise support' },
+  { id: 't9', ccmd: 'EUCOM', period: '27.2a', startDate: '2027-06-01', endDate: '2027-09-30', pkg4L: 2, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Mildenhall', icao: 'EGUN', notes: '' },
+  { id: 't10', ccmd: 'AFRICOM', period: '27.1b', startDate: '2027-02-01', endDate: '2027-05-31', pkg4L: 1, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Molesworth', icao: 'EGDM', notes: '' },
+  { id: 't11', ccmd: 'SOUTHCOM', period: '27.1a', startDate: '2026-10-01', endDate: '2027-01-31', pkg4L: 1, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Davis-Monthan', icao: 'KDMA', notes: 'Counter-narco ops' },
+  { id: 't12', ccmd: 'CENTCOM', period: '28.1a', startDate: '2027-10-01', endDate: '2028-01-31', pkg4L: 4, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Al Udeid AB', icao: 'OTBH', notes: '' },
+  { id: 't13', ccmd: 'CENTCOM', period: '28.1b', startDate: '2028-02-01', endDate: '2028-05-31', pkg4L: 4, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Al Udeid AB', icao: 'OTBH', notes: '' },
+  { id: 't14', ccmd: 'INDOPACOM', period: '28.1a', startDate: '2027-10-01', endDate: '2028-01-31', pkg4L: 2, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: 'Kadena AB', icao: 'RODN', notes: '' },
+  { id: 't15', ccmd: 'NORTHCOM', period: 'RFF-27-001', startDate: '2027-06-01', endDate: '2027-11-30', pkg4L: 1, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'RFF', base: 'JBER', icao: 'PAED', notes: 'Hurricane response, soft basket required' },
+];
+
+const initialCommitments = [
+  // KC-135/KC-46 Tanker Commitments
+  { id: 'c1', unitId: 'KC-A-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-01-01', endDate: '2027-06-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c2', unitId: 'KC-A-1', isConversion: false, notes: '', allocations: [{ type: 'RFS', location: 'EUCOM', package: '2F', customTails: null, customCrews: null }], startDate: '2027-09-01', endDate: '2027-10-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c3', unitId: 'KC-A-2', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-01-01', endDate: '2027-06-30', originalStartDate: '2027-02-01', originalEndDate: '2027-05-31' },
+  { id: 'c4', unitId: 'KC-A-3', isConversion: true, notes: 'KC-135 → KC-46 conversion. IOC Mar 2027.', allocations: [], startDate: '2026-10-01', endDate: '2027-09-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c5', unitId: 'KC-A-4', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'INDOPACOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-07-01', endDate: '2027-12-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c6', unitId: 'KC-A-5', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2028-01-01', endDate: '2028-06-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c7', unitId: 'KC-A-7', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }, { type: 'GFMAP', location: 'EUCOM', package: '4F', customTails: null, customCrews: null }], startDate: '2027-01-15', endDate: '2027-07-14', originalStartDate: null, originalEndDate: null },
+  { id: 'c8', unitId: 'KC-A-8', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'AFRICOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-04-01', endDate: '2027-09-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c9', unitId: 'KC-A-9', isConversion: false, notes: '', allocations: [{ type: 'RFF', location: 'NORTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-06-01', endDate: '2027-11-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c10', unitId: 'KC-G-6', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-04-01', endDate: '2027-09-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c11', unitId: 'KC-G-12', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2026-10-01', endDate: '2027-03-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c12', unitId: 'KC-R-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-07-01', endDate: '2027-12-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c13', unitId: 'KC-G-2', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'INDOPACOM', package: '4L', customTails: null, customCrews: null }], startDate: '2028-01-01', endDate: '2028-06-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c14', unitId: 'KC-G-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-10-01', endDate: '2028-03-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c15', unitId: 'KC-R-3', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'SOUTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-01-01', endDate: '2027-06-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c16', unitId: 'KC-AA-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'SOUTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2026-10-01', endDate: '2027-03-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c17', unitId: 'KC-CA-R-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-04-01', endDate: '2027-09-30', originalStartDate: null, originalEndDate: null },
+  // C-17 Commitments
+  { id: 'c17-1', unitId: 'C17-A-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-01-01', endDate: '2027-06-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c17-2', unitId: 'C17-A-2', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'INDOPACOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-03-01', endDate: '2027-08-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c17-3', unitId: 'C17-A-3', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'EUCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-07-01', endDate: '2027-12-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c17-4', unitId: 'C17-A-4', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-04-01', endDate: '2027-09-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c17-5', unitId: 'C17-CA-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-10-01', endDate: '2028-03-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c17-6', unitId: 'C17-G-1', isConversion: false, notes: '', allocations: [{ type: 'RFF', location: 'NORTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-06-01', endDate: '2027-11-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c17-7', unitId: 'C17-R-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'AFRICOM', package: '4L', customTails: null, customCrews: null }], startDate: '2028-01-01', endDate: '2028-06-30', originalStartDate: null, originalEndDate: null },
+  // C-130J Commitments
+  { id: 'c130j-1', unitId: 'C130J-A-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-02-01', endDate: '2027-07-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c130j-2', unitId: 'C130J-A-3', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'INDOPACOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-08-01', endDate: '2028-01-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c130j-3', unitId: 'C130J-G-1', isConversion: false, notes: '', allocations: [{ type: 'RFF', location: 'SOUTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-05-01', endDate: '2027-10-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c130j-4', unitId: 'C130J-CA-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-11-01', endDate: '2028-04-30', originalStartDate: null, originalEndDate: null },
+  // C-130H Commitments
+  { id: 'c130h-1', unitId: 'C130H-G-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'AFRICOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-03-01', endDate: '2027-08-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c130h-2', unitId: 'C130H-R-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'SOUTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-09-01', endDate: '2028-02-28', originalStartDate: null, originalEndDate: null },
+  // C-5M Commitments
+  { id: 'c5m-1', unitId: 'C5M-A-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-01-01', endDate: '2027-06-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c5m-2', unitId: 'C5M-A-2', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'INDOPACOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-04-01', endDate: '2027-09-30', originalStartDate: null, originalEndDate: null },
+  { id: 'c5m-3', unitId: 'C5M-R-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'EUCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-07-01', endDate: '2027-12-31', originalStartDate: null, originalEndDate: null },
+  // C-17 PACAF Commitments
+  { id: 'c17p-1', unitId: 'C17-PACAF-1', isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'INDOPACOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-02-01', endDate: '2027-07-31', originalStartDate: null, originalEndDate: null },
+  { id: 'c17p-2', unitId: 'C17-PACAF-3', isConversion: false, notes: '', allocations: [{ type: 'RFF', location: 'NORTHCOM', package: '4L', customTails: null, customCrews: null }], startDate: '2027-05-01', endDate: '2027-10-31', originalStartDate: null, originalEndDate: null },
+];
+
+const afforgenPhases = [
+  { id: 'reset', label: 'R', fullLabel: 'Reset', color: '#d97706' },
+  { id: 'prepare', label: 'P', fullLabel: 'Prepare', color: '#22c55e' },
+  { id: 'certify', label: 'C', fullLabel: 'Certify', color: '#dc2626' },
+  { id: 'available', label: 'A', fullLabel: 'Available', color: '#374151' },
+];
+
+// Extended timeline: FY24 (Oct 2023) through FY30 (Sep 2030)
+const generateMonths = () => {
+  const months = [];
+  for (let year = 2023; year <= 2030; year++) {
+    const monthStart = year === 2023 ? 10 : 1;
+    const monthEnd = year === 2030 ? 9 : 12;
+    for (let month = monthStart; month <= monthEnd; month++) {
+      months.push({ key: `${year}-${String(month).padStart(2, '0')}`, label: new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short' }), year, month, fiscalYear: month >= 10 ? year + 1 : year, isFYStart: month === 10 });
+    }
+  }
+  return months;
+};
+
+const MONTHS = generateMonths();
+const MONTH_WIDTH = 38;
+const ROW_HEIGHT = 34;
+const LABEL_WIDTH = 320;
+
+// Timezone-safe date formatting (avoids toISOString UTC conversion issues)
+const formatDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const parseDate = (dateStr) => { const [y, m, d] = dateStr.split('-').map(Number); return new Date(y, m - 1, d); };
+
+const dateToPixel = (dateStr) => { if (!dateStr) return null; const date = parseDate(dateStr); if (isNaN(date.getTime())) return null; const monthIdx = MONTHS.findIndex(m => m.year === date.getFullYear() && m.month === date.getMonth() + 1); if (monthIdx === -1) return null; return monthIdx * MONTH_WIDTH + ((date.getDate() - 1) / 30) * MONTH_WIDTH; };
+const pixelToDate = (px) => { const monthIdx = Math.floor(px / MONTH_WIDTH); if (monthIdx < 0 || monthIdx >= MONTHS.length) return null; const month = MONTHS[monthIdx]; const day = Math.max(1, Math.min(28, Math.round(((px % MONTH_WIDTH) / MONTH_WIDTH) * 30) + 1)); return `${month.year}-${String(month.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`; };
+const monthsBetween = (start, end) => { if (!start || !end) return 0; const s = parseDate(start), e = parseDate(end); if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0; return (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()); };
+const addMonths = (dateStr, months) => { if (!dateStr) return null; const d = parseDate(dateStr); if (isNaN(d.getTime())) return null; d.setMonth(d.getMonth() + months); return formatDate(d); };
+const addDays = (dateStr, days) => { if (!dateStr) return null; const d = parseDate(dateStr); if (isNaN(d.getTime())) return null; d.setDate(d.getDate() + days); return formatDate(d); };
+const daysBetween = (start, end) => { if (!start || !end) return 0; const s = parseDate(start), e = parseDate(end); if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0; return Math.round((e - s) / (1000 * 60 * 60 * 24)); };
+const datesOverlap = (s1, e1, s2, e2) => { if (!s1 || !e1 || !s2 || !e2) return false; const d1 = parseDate(s1), d2 = parseDate(e1), d3 = parseDate(s2), d4 = parseDate(e2); if (isNaN(d1.getTime()) || isNaN(d2.getTime()) || isNaN(d3.getTime()) || isNaN(d4.getTime())) return false; return d1 <= d4 && d2 >= d3; };
+const getAllocationTailsCrews = (alloc) => { if (alloc.customTails !== null) return { tails: alloc.customTails, crews: alloc.customCrews ?? Math.round(alloc.customTails * 1.5) }; if (alloc.package && packageTypes[alloc.package]) return { tails: packageTypes[alloc.package].tails, crews: packageTypes[alloc.package].crews }; return { tails: 0, crews: 0 }; };
+const getAllocationTotals = (allocations) => allocations.reduce((acc, a) => { const tc = getAllocationTailsCrews(a); return { tails: acc.tails + tc.tails, crews: acc.crews + tc.crews }; }, { tails: 0, crews: 0 });
+const extractNumber = (str) => { const m = str.match(/\d+/); return m ? parseInt(m[0], 10) : 0; };
+
+export default function MobilityAllocationTool() {
+  const [units, setUnits] = useState(initialUnits);
+  const [commitments, setCommitments] = useState(initialCommitments);
+  const [tdgEntries, setTdgEntries] = useState(initialTDG);
+  const [wingInventory, setWingInventory] = useState(initialWingInventory);
+  const [filters, setFilters] = useState({ component: 'all', mds: [], search: '', ccmd: 'all' });
+  const [dateRange, setDateRange] = useState({ start: '', end: '' }); // Empty = show all
+  const [sortConfig, setSortConfig] = useState({ field: 'squadron', direction: 'asc', groupByComponent: true, groupByMDS: true });
+  const [selectedCommitment, setSelectedCommitment] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [showChanges, setShowChanges] = useState(true);
+  const [showDwellLines, setShowDwellLines] = useState(true);
+  const [showTheaterAssets, setShowTheaterAssets] = useState(false);
+  const [showTDG, setShowTDG] = useState(true);
+  const [hoveredCommitment, setHoveredCommitment] = useState(null);
+  const [hoveredBadge, setHoveredBadge] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [detailLevel, setDetailLevel] = useState('medium');
+  const [afforgenSettings, setAfforgenSettings] = useState({ phaseDuration: 6, displayMode: 'available' });
+  const [showSettings, setShowSettings] = useState(false);
+  const [afforgenOverrides, setAfforgenOverrides] = useState({});
+  const [afforgenModal, setAfforgenModal] = useState(null);
+  const [conflictModal, setConflictModal] = useState(null);
+  const [addPrompt, setAddPrompt] = useState(null);
+  const [tdgModal, setTdgModal] = useState(null);
+  const [tdgSort, setTdgSort] = useState({ field: 'date', direction: 'asc' });
+  const [editingTdg, setEditingTdg] = useState(null);
+  const [dragState, setDragState] = useState(null);
+  const [inventoryModal, setInventoryModal] = useState(null);
+  const [crewModal, setCrewModal] = useState(null);
+  const scrollContainerRef = useRef(null);
+
+  // Calculate wing inventory stats: PAA = TAI - BAI, Possessed = PAA - Depot
+  const getWingStats = useCallback((wingName) => {
+    const inv = wingInventory[wingName] || { tai: 0, bai: 0, depot: 0, mds: '' };
+    const paa = inv.tai - inv.bai;
+    const possessed = paa - inv.depot;
+    return { ...inv, paa, possessed };
+  }, [wingInventory]);
+
+  // Aggregate crews by wing (sum of all squadrons in that wing with same MDS)
+  const wingCrewTotals = useMemo(() => {
+    const totals = {};
+    units.forEach(u => {
+      if (u.theater) return; // Skip theater units
+      const key = u.wing;
+      if (!totals[key]) totals[key] = { crews: 0, mds: u.mds, squadrons: [] };
+      totals[key].crews += (u.crews || 0);
+      totals[key].squadrons.push({ id: u.id, squadron: u.squadron, crews: u.crews || 0 });
+    });
+    return totals;
+  }, [units]);
+
+  // Update squadron crews
+  const updateSquadronCrews = (unitId, newCrews) => {
+    setUnits(prev => prev.map(u => u.id === unitId ? { ...u, crews: parseInt(newCrews) || 0 } : u));
+  };
+
+  // Update wing inventory (creates entry if doesn't exist)
+  const updateWingInventory = (wingName, field, value) => {
+    setWingInventory(prev => ({
+      ...prev,
+      [wingName]: { 
+        tai: prev[wingName]?.tai || 0,
+        bai: prev[wingName]?.bai || 0,
+        depot: prev[wingName]?.depot || 0,
+        mds: prev[wingName]?.mds || '',
+        ...prev[wingName],
+        [field]: parseInt(value) || 0 
+      }
+    }));
+  };
+
+  // Visible months based on date range filter
+  const visibleMonths = useMemo(() => {
+    if (!dateRange.start && !dateRange.end) return MONTHS;
+    return MONTHS.filter(m => {
+      const monthStart = `${m.year}-${String(m.month).padStart(2, '0')}-01`;
+      const monthEnd = `${m.year}-${String(m.month).padStart(2, '0')}-28`;
+      if (dateRange.start && monthEnd < dateRange.start) return false;
+      if (dateRange.end && monthStart > dateRange.end) return false;
+      return true;
+    });
+  }, [dateRange]);
+
+  // Filter commitments by date range
+  const visibleCommitments = useMemo(() => {
+    if (!dateRange.start && !dateRange.end) return commitments;
+    return commitments.filter(c => {
+      if (dateRange.start && c.endDate < dateRange.start) return false;
+      if (dateRange.end && c.startDate > dateRange.end) return false;
+      return true;
+    });
+  }, [commitments, dateRange]);
+
+  // Calculate allocations per TDG period
+  const tdgStatus = useMemo(() => {
+    const status = {};
+    tdgEntries.forEach(tdg => {
+      let allocatedTails = 0, allocatedCrews = 0;
+      commitments.forEach(c => {
+        if (c.isConversion) return;
+        if (!datesOverlap(c.startDate, c.endDate, tdg.startDate, tdg.endDate)) return;
+        c.allocations.forEach(a => {
+          if (a.location === tdg.ccmd) {
+            const tc = getAllocationTailsCrews(a);
+            allocatedTails += tc.tails;
+            allocatedCrews += tc.crews;
+          }
+        });
+      });
+      const required = calcTdgTotals(tdg);
+      const delta = allocatedTails - required.tails;
+      let state = 'met';
+      if (delta < 0) state = 'under';
+      else if (delta > 2) state = 'over';
+      status[tdg.id] = { ...tdg, required, allocated: { tails: allocatedTails, crews: allocatedCrews }, delta, state };
+    });
+    return status;
+  }, [tdgEntries, commitments]);
+
+  // CCMD demand with issue details including specific periods
+  const ccmdDemand = useMemo(() => {
+    const demand = {};
+    Object.keys(ccmdColors).forEach(ccmd => { demand[ccmd] = { tails: 0, crews: 0, hasTDG: false, issues: 0, underCount: 0, overCount: 0, underPeriods: [], overPeriods: [] }; });
+    commitments.forEach(c => { if (c.isConversion) return; c.allocations.forEach(a => { if (a.location && demand[a.location]) { const tc = getAllocationTailsCrews(a); demand[a.location].tails += tc.tails; demand[a.location].crews += tc.crews; } }); });
+    Object.values(tdgStatus).forEach(ts => { 
+      if (demand[ts.ccmd]) { 
+        demand[ts.ccmd].hasTDG = true; 
+        if (ts.state === 'under') { 
+          demand[ts.ccmd].issues++; 
+          demand[ts.ccmd].underCount++; 
+          demand[ts.ccmd].underPeriods.push({ period: ts.period, delta: ts.delta });
+        }
+        if (ts.state === 'over') { 
+          demand[ts.ccmd].issues++; 
+          demand[ts.ccmd].overCount++; 
+          demand[ts.ccmd].overPeriods.push({ period: ts.period, delta: ts.delta });
+        }
+      } 
+    });
+    return demand;
+  }, [commitments, tdgStatus]);
+
+  // TDG entries for selected CCMD (for requirement bar)
+  const selectedCcmdTdg = useMemo(() => {
+    if (filters.ccmd === 'all') return [];
+    return Object.values(tdgStatus).filter(ts => ts.ccmd === filters.ccmd).sort((a, b) => {
+      const dateA = a.startDate ? parseDate(a.startDate).getTime() : 0;
+      const dateB = b.startDate ? parseDate(b.startDate).getTime() : 0;
+      return dateA - dateB;
+    });
+  }, [tdgStatus, filters.ccmd]);
+
+  // Format TDG packages for display
+  const formatTdgPackages = (tdg) => {
+    const parts = [];
+    if (tdg.pkg4L) parts.push(`${tdg.pkg4L}×4L`);
+    if (tdg.pkg4F) parts.push(`${tdg.pkg4F}×4F`);
+    if (tdg.pkg2F) parts.push(`${tdg.pkg2F}×2F`);
+    if (tdg.addTails) parts.push(`+${tdg.addTails}T`);
+    return parts.join(' ') || '-';
+  };
+
+  // Precompute commitments by unit for O(1) lookup instead of O(n) filter each render
+  const commitmentsByUnit = useMemo(() => {
+    const map = new Map();
+    commitments.forEach(c => {
+      const arr = map.get(c.unitId) || [];
+      arr.push(c);
+      map.set(c.unitId, arr);
+    });
+    return map;
+  }, [commitments]);
+
+  // Visible commitments by unit (filtered by date range)
+  const visibleCommitmentsByUnit = useMemo(() => {
+    const map = new Map();
+    visibleCommitments.forEach(c => {
+      const arr = map.get(c.unitId) || [];
+      arr.push(c);
+      map.set(c.unitId, arr);
+    });
+    return map;
+  }, [visibleCommitments]);
+
+  const unitCounts = useMemo(() => {
+    const counts = { total: units.filter(u => !u.theater).length, theater: units.filter(u => u.theater).length };
+    mdsOptions.forEach(m => { counts[m] = units.filter(u => u.mds === m && !u.theater).length; });
+    return counts;
+  }, [units]);
+
+  const filteredAndSortedUnits = useMemo(() => {
+    let filtered = units.filter(unit => {
+      if (!showTheaterAssets && unit.theater) return false;
+      if (filters.component !== 'all' && unit.component !== filters.component) return false;
+      if (filters.mds.length > 0 && !filters.mds.includes(unit.mds)) return false;
+      if (filters.search && ![unit.squadron, unit.wing, unit.base].join(' ').toLowerCase().includes(filters.search.toLowerCase())) return false;
+      if (filters.ccmd !== 'all' && !unit.theater && !(commitmentsByUnit.get(unit.id) || []).some(c => c.allocations.some(a => a.location === filters.ccmd))) return false;
+      return true;
+    });
+    
+    // Sort function based on selected field
+    const sortFn = (a, b) => { 
+      if (sortConfig.field === 'base') return sortConfig.direction === 'asc' ? a.base.localeCompare(b.base) : b.base.localeCompare(a.base); 
+      const aVal = extractNumber(sortConfig.field === 'wing' ? a.wing : a.squadron);
+      const bVal = extractNumber(sortConfig.field === 'wing' ? b.wing : b.squadron); 
+      return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal; 
+    };
+    
+    const amcUnits = filtered.filter(u => !u.theater);
+    const theaterUnits = filtered.filter(u => u.theater);
+    
+    // FLAT SORT - no grouping, just sort everything together
+    if (!sortConfig.groupByMDS && !sortConfig.groupByComponent) {
+      return [...amcUnits.sort(sortFn), ...theaterUnits.sort(sortFn)];
+    }
+    
+    // GROUP BY MDS ONLY
+    if (sortConfig.groupByMDS && !sortConfig.groupByComponent) {
+      const mdsOrder = ['KC-135', 'KC-46', 'C-5M', 'C-17', 'C-130J', 'C-130H'];
+      const groupedByMds = mdsOrder.flatMap(mds => amcUnits.filter(u => u.mds === mds).sort(sortFn));
+      return [...groupedByMds, ...['PACAF', 'USAFE'].flatMap(t => theaterUnits.filter(u => u.theater === t).sort(sortFn))];
+    }
+    
+    // GROUP BY COMPONENT ONLY
+    if (!sortConfig.groupByMDS && sortConfig.groupByComponent) {
+      return [...['A', 'R', 'G'].flatMap(comp => amcUnits.filter(u => u.component === comp).sort(sortFn)), ...['PACAF', 'USAFE'].flatMap(t => theaterUnits.filter(u => u.theater === t).sort(sortFn))];
+    }
+    
+    // GROUP BY MDS THEN COMPONENT (default)
+    const mdsOrder = ['KC-135', 'KC-46', 'C-5M', 'C-17', 'C-130J', 'C-130H'];
+    const groupedByMds = mdsOrder.flatMap(mds => {
+      const mdsUnits = amcUnits.filter(u => u.mds === mds);
+      return ['A', 'R', 'G'].flatMap(comp => mdsUnits.filter(u => u.component === comp).sort(sortFn));
+    });
+    return [...groupedByMds, ...['PACAF', 'USAFE'].flatMap(t => theaterUnits.filter(u => u.theater === t).sort(sortFn))];
+  }, [units, filters, commitments, sortConfig, showTheaterAssets]);
+
+  // TDG sorted
+  const sortedTdgStatus = useMemo(() => {
+    const arr = Object.values(tdgStatus);
+    return arr.sort((a, b) => {
+      let cmp = 0;
+      if (tdgSort.field === 'ccmd') cmp = a.ccmd.localeCompare(b.ccmd);
+      else if (tdgSort.field === 'period') cmp = (a.period || '').localeCompare(b.period || '');
+      else {
+        const dateA = a.startDate ? parseDate(a.startDate).getTime() : 0;
+        const dateB = b.startDate ? parseDate(b.startDate).getTime() : 0;
+        cmp = dateA - dateB;
+      }
+      return tdgSort.direction === 'asc' ? cmp : -cmp;
+    });
+  }, [tdgStatus, tdgSort]);
+
+  const getAfforgenPhases = useCallback((unit) => {
+    if (unit.component !== 'A' || unit.theater) return [];
+    const override = afforgenOverrides[unit.id], useCustom = override?.useCustom;
+    let phaseDays = useCustom ? { reset: override.reset || 180, prepare: override.prepare || 180, certify: override.certify || 180, available: override.available || 180 } : { reset: afforgenSettings.phaseDuration * 30, prepare: afforgenSettings.phaseDuration * 30, certify: afforgenSettings.phaseDuration * 30, available: afforgenSettings.phaseDuration * 30 };
+    let cycleStart = override?.cycleStart;
+    if (!cycleStart) { const unitCommitments = (commitmentsByUnit.get(unit.id) || []).filter(c => !c.isConversion && !c.allocations.some(a => a.type === 'RFS')).sort((a, b) => { const dateA = a.startDate ? parseDate(a.startDate).getTime() : 0; const dateB = b.startDate ? parseDate(b.startDate).getTime() : 0; return dateA - dateB; }); if (unitCommitments.length === 0) cycleStart = '2023-10-01'; else { const totalCycleDays = phaseDays.reset + phaseDays.prepare + phaseDays.certify; const firstDeploy = parseDate(unitCommitments[0].startDate); if (!isNaN(firstDeploy.getTime())) { firstDeploy.setDate(firstDeploy.getDate() - totalCycleDays); cycleStart = formatDate(firstDeploy); } else { cycleStart = '2023-10-01'; } } }
+    const phases = []; let currentDate = cycleStart; const phaseOrder = ['reset', 'prepare', 'certify', 'available']; let phaseIdx = 0;
+    const endLimit = parseDate('2030-09-30');
+    while (currentDate && parseDate(currentDate) < endLimit && phaseIdx < 100) { const phaseId = phaseOrder[phaseIdx % 4]; const phase = afforgenPhases.find(p => p.id === phaseId); const duration = phaseDays[phaseId]; const phaseEnd = addDays(currentDate, duration - 1); if (!phaseEnd) break; phases.push({ ...phase, start: currentDate, end: phaseEnd }); currentDate = addDays(phaseEnd, 1); phaseIdx++; }
+    return phases;
+  }, [commitments, afforgenOverrides, afforgenSettings.phaseDuration]);
+
+  const getDwellLine = useCallback((commitment, unit) => { if (commitment.isConversion || unit.theater) return null; const mobDuration = monthsBetween(commitment.startDate, commitment.endDate); const isARC = unit.component !== 'A'; if (isARC) return { endDate: commitment.endDate, idealPoint: addMonths(commitment.endDate, mobDuration * 5), redlinePoint: addMonths(commitment.endDate, mobDuration * 4), isARC: true }; return { endDate: commitment.endDate, redlinePoint: addMonths(commitment.endDate, mobDuration * 2), isARC: false }; }, []);
+  const checkConversionConflicts = useCallback((unitId, startDate, endDate, excludeId = null) => (commitmentsByUnit.get(unitId) || []).filter(c => !c.isConversion && c.id !== excludeId && datesOverlap(startDate, endDate, c.startDate, c.endDate)), [commitmentsByUnit]);
+
+  const getCommitmentBackground = (commitment) => { if (commitment.isConversion) return { background: 'repeating-linear-gradient(45deg, #fef2f2, #fef2f2 6px, #dc2626 6px, #dc2626 12px)', border: '2px solid #dc2626' }; const locations = [...new Set(commitment.allocations.map(a => a.location).filter(Boolean))]; if (locations.length === 0) return { backgroundColor: '#6b7280' }; if (locations.length === 1) return { backgroundColor: ccmdColors[locations[0]] || '#6b7280' }; return { background: `linear-gradient(to right, ${locations.map((loc, i) => `${ccmdColors[loc] || '#6b7280'} ${(i / locations.length) * 100}%, ${ccmdColors[loc] || '#6b7280'} ${((i + 1) / locations.length) * 100}%`).join(', ')})` }; };
+  const getCommitmentStyle = (commitment, isGhost = false) => { const startDate = isGhost ? commitment.originalStartDate : commitment.startDate, endDate = isGhost ? commitment.originalEndDate : commitment.endDate; if (!startDate || !endDate) return null; const startPx = dateToPixel(startDate), endPx = dateToPixel(endDate); if (startPx === null || endPx === null) return null; if (isGhost) return { left: `${startPx}px`, width: `${Math.max(endPx - startPx + MONTH_WIDTH * 0.9, 24)}px`, backgroundColor: 'transparent', border: `2px dashed ${ccmdColors[commitment.allocations[0]?.location] || '#6b7280'}`, opacity: 0.5 }; return { left: `${startPx}px`, width: `${Math.max(endPx - startPx + MONTH_WIDTH * 0.9, 24)}px`, ...getCommitmentBackground(commitment) }; };
+  const hasRFFAllocation = (c) => c.allocations.some(a => a.type === 'RFF');
+  const getAllocationTypes = (c) => [...new Set(c.allocations.map(a => a.type))];
+  const ccmdAbbrev = { 'TRANSCOM': 'TC', 'CENTCOM': 'CC', 'INDOPACOM': 'IPC', 'EUCOM': 'EC', 'AFRICOM': 'AC', 'NORTHCOM': 'NC', 'SOUTHCOM': 'SC' };
+  const getBlockLabel = (commitment, width) => { 
+    if (width < 30) return ''; 
+    if (commitment.isConversion) return width > 80 ? 'CONVERSION' : 'CONV'; 
+    const allocs = commitment.allocations;
+    if (allocs.length === 0) return '';
+    
+    // Single allocation
+    if (allocs.length === 1) {
+      const a = allocs[0];
+      const pkg = a.customTails !== null ? `${a.customTails}T` : a.package || '';
+      const loc = ccmdAbbrev[a.location] || a.location?.slice(0,3) || '';
+      if (width < 50) return loc;
+      if (width < 80) return `${pkg} ${loc}`;
+      if (width < 120) return `${a.type} ${pkg} ${loc}`;
+      return `${a.type} • ${pkg} • ${a.location}`;
+    }
+    
+    // Multiple allocations - use compact format
+    const totals = getAllocationTotals(allocs);
+    const locs = allocs.map(a => ccmdAbbrev[a.location] || a.location?.slice(0,3) || '').join('/');
+    const pkgs = allocs.map(a => a.customTails !== null ? `${a.customTails}T` : a.package || '').filter(Boolean).join('/');
+    
+    if (width < 50) return `${allocs.length}×`;
+    if (width < 80) return locs;
+    if (width < 120) return `${pkgs} ${locs}`;
+    if (width < 180) return `${totals.tails}T • ${locs}`;
+    return `${getAllocationTypes(commitment).join('/')} • ${totals.tails}T/${totals.crews}C • ${locs}`;
+  };
+
+  // Drag handlers
+  const handleDragStart = (e, commitment, unit) => { if (!editMode || unit.theater) return; e.preventDefault(); const startPx = dateToPixel(commitment.startDate); setDragState({ commitmentId: commitment.id, unitId: unit.id, startX: e.clientX, startPx, originalStart: commitment.startDate, originalEnd: commitment.endDate, duration: daysBetween(commitment.startDate, commitment.endDate) }); };
+  useEffect(() => {
+    if (!dragState) return;
+    const handleMouseMove = (e) => { const deltaX = e.clientX - dragState.startX; const newStartPx = Math.max(0, dragState.startPx + deltaX); const newStartDate = pixelToDate(newStartPx); if (newStartDate) { const newEndDate = addDays(newStartDate, dragState.duration); if (newEndDate) { setCommitments(prev => prev.map(c => c.id === dragState.commitmentId ? { ...c, startDate: newStartDate, endDate: newEndDate } : c)); } } };
+    const handleMouseUp = () => { if (dragState) { const commitment = commitments.find(c => c.id === dragState.commitmentId); if (commitment && commitment.startDate !== dragState.originalStart && !commitment.originalStartDate) setCommitments(prev => prev.map(c => c.id === dragState.commitmentId ? { ...c, originalStartDate: dragState.originalStart, originalEndDate: dragState.originalEnd } : c)); } setDragState(null); };
+    window.addEventListener('mousemove', handleMouseMove); window.addEventListener('mouseup', handleMouseUp);
+    return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleMouseUp); };
+  }, [dragState, commitments]);
+
+  const handleMouseEnter = (e, commitment) => { if (dragState) return; setTooltipPos({ x: e.currentTarget.getBoundingClientRect().left, y: e.currentTarget.getBoundingClientRect().bottom + 5 }); setHoveredCommitment(commitment); };
+  const handleBadgeEnter = (e, ccmd, data) => { setTooltipPos({ x: e.currentTarget.getBoundingClientRect().left, y: e.currentTarget.getBoundingClientRect().bottom + 5 }); setHoveredBadge({ ccmd, ...data }); };
+  const handleTimelineClick = (e, unit) => { if (!editMode || unit.theater || dragState) return; const rect = e.currentTarget.getBoundingClientRect(); const clickX = e.clientX - rect.left; const clickDate = pixelToDate(clickX); if (clickDate) setAddPrompt({ unitId: unit.id, date: clickDate, x: e.clientX, y: e.clientY, unit }); };
+  const confirmAdd = () => { if (!addPrompt) return; const endDate = addMonths(addPrompt.date, 6); if (!endDate) return; setCommitments(prev => [...prev, { id: `c${Date.now()}`, unitId: addPrompt.unitId, isConversion: false, notes: '', allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }], startDate: addPrompt.date, endDate, originalStartDate: null, originalEndDate: null }]); setAddPrompt(null); };
+
+  const deleteCommitment = (id) => { setCommitments(prev => prev.filter(c => c.id !== id)); setSelectedCommitment(null); };
+  const deleteCommitments = (ids) => setCommitments(prev => prev.filter(c => !ids.includes(c.id)));
+  const updateCommitment = (id, updates) => { setCommitments(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c)); if (selectedCommitment?.id === id) setSelectedCommitment(prev => ({ ...prev, ...updates })); };
+  const handleConversionToggle = (checked) => { if (!selectedCommitment) return; if (checked) { const conflicts = checkConversionConflicts(selectedCommitment.unitId, selectedCommitment.startDate, selectedCommitment.endDate, selectedCommitment.id); if (conflicts.length > 0) setConflictModal({ conflicts, commitmentId: selectedCommitment.id }); else updateCommitment(selectedCommitment.id, { isConversion: true, allocations: [] }); } else updateCommitment(selectedCommitment.id, { isConversion: false, allocations: [{ type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }] }); };
+  const handleConflictResolution = (del) => { if (!conflictModal) return; if (del) deleteCommitments(conflictModal.conflicts.map(c => c.id)); updateCommitment(conflictModal.commitmentId, { isConversion: true, allocations: [] }); setConflictModal(null); };
+  const addAllocation = () => { if (!selectedCommitment) return; updateCommitment(selectedCommitment.id, { allocations: [...selectedCommitment.allocations, { type: 'GFMAP', location: 'CENTCOM', package: '4L', customTails: null, customCrews: null }] }); };
+  const removeAllocation = (idx) => { if (!selectedCommitment || selectedCommitment.allocations.length <= 1) return; updateCommitment(selectedCommitment.id, { allocations: selectedCommitment.allocations.filter((_, i) => i !== idx) }); };
+  const updateAllocation = (idx, field, value) => { if (!selectedCommitment) return; const newAllocs = selectedCommitment.allocations.map((a, i) => { if (i !== idx) return a; if (field === 'package' && value) return { ...a, package: value, customTails: null, customCrews: null }; if (field === 'customTails') { const numVal = value === '' ? null : parseInt(value, 10); return { ...a, customTails: numVal, package: numVal !== null ? null : a.package }; } if (field === 'customCrews') return { ...a, customCrews: value === '' ? null : parseInt(value, 10) }; return { ...a, [field]: value }; }); updateCommitment(selectedCommitment.id, { allocations: newAllocs }); };
+  const openAfforgenModal = (unit) => { const existing = afforgenOverrides[unit.id] || {}; setAfforgenModal({ unitId: unit.id, unit, useCustom: existing.useCustom || false, reset: existing.reset || 180, prepare: existing.prepare || 180, certify: existing.certify || 180, available: existing.available || 180, cycleStart: existing.cycleStart || '' }); };
+  const saveAfforgenOverride = () => { if (!afforgenModal) return; setAfforgenOverrides(prev => ({ ...prev, [afforgenModal.unitId]: { useCustom: afforgenModal.useCustom, reset: afforgenModal.reset, prepare: afforgenModal.prepare, certify: afforgenModal.certify, available: afforgenModal.available, cycleStart: afforgenModal.cycleStart || null } })); setAfforgenModal(null); };
+  const clearAfforgenOverride = () => { if (!afforgenModal) return; setAfforgenOverrides(prev => { const copy = { ...prev }; delete copy[afforgenModal.unitId]; return copy; }); setAfforgenModal(null); };
+  const toggleSort = (field) => setSortConfig(prev => ({ ...prev, field, direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc' }));
+  const toggleTdgSort = (field) => setTdgSort(prev => ({ field, direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc' }));
+
+  // TDG CRUD
+  const addTdgEntry = () => { const newEntry = { id: `t${Date.now()}`, ccmd: 'CENTCOM', period: '', startDate: '2027-01-01', endDate: '2027-06-30', pkg4L: 0, pkg4F: 0, pkg2F: 0, addTails: 0, addCrews: 0, type: 'AFFORGEN', base: '', icao: '', notes: '' }; setEditingTdg(newEntry); };
+  const saveTdgEntry = () => { if (!editingTdg) return; if (tdgEntries.find(t => t.id === editingTdg.id)) setTdgEntries(prev => prev.map(t => t.id === editingTdg.id ? editingTdg : t)); else setTdgEntries(prev => [...prev, editingTdg]); setEditingTdg(null); };
+  const deleteTdgEntry = (id) => { setTdgEntries(prev => prev.filter(t => t.id !== id)); setEditingTdg(null); };
+
+  // Scroll to current FY on mount
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      // Scroll to FY27 (Oct 2026) - index 36 months from start
+      const fy27Idx = MONTHS.findIndex(m => m.year === 2026 && m.month === 10);
+      scrollContainerRef.current.scrollLeft = fy27Idx * MONTH_WIDTH - 100;
+    }
+  }, []);
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#0a0f1a', color: '#e2e8f0', fontFamily: "'JetBrains Mono', 'SF Mono', monospace", fontSize: '12px', userSelect: dragState ? 'none' : 'auto' }}>
+      {/* Header */}
+      <div style={{ padding: '12px 20px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(180deg, #0f172a 0%, #0a0f1a 100%)' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '16px', fontWeight: 600, letterSpacing: '0.05em', color: '#f8fafc' }}>MOBILITY FORCE ALLOCATION</h1>
+          <p style={{ margin: '2px 0 0 0', color: '#64748b', fontSize: '10px' }}>AMC A38 • FY24-FY30 • {unitCounts.total} units{showTheaterAssets && ` + ${unitCounts.theater} Theater`}</p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => setShowSettings(!showSettings)} style={{ padding: '6px 10px', backgroundColor: showSettings ? '#1e3a5f' : '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>⚙</button>
+          <button onClick={() => setEditMode(!editMode)} style={{ padding: '6px 12px', backgroundColor: editMode ? '#1d4ed8' : '#1e293b', border: editMode ? '1px solid #3b82f6' : '1px solid #334155', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontWeight: 500, fontFamily: 'inherit' }}>{editMode ? '✓ EDIT' : 'VIEW'}</button>
+        </div>
+      </div>
+
+      {/* Settings */}
+      {showSettings && (
+        <div style={{ padding: '10px 20px', borderBottom: '1px solid #1e293b', backgroundColor: '#0f172a', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <select value={detailLevel} onChange={e => setDetailLevel(e.target.value)} style={{ padding: '4px 8px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}><option value="full">Full</option><option value="medium">Med</option><option value="minimal">Min</option></select>
+          <select value={afforgenSettings.phaseDuration} onChange={e => setAfforgenSettings(s => ({ ...s, phaseDuration: parseInt(e.target.value) }))} style={{ padding: '4px 8px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}><option value={3}>3mo</option><option value={4}>4mo</option><option value={6}>6mo</option><option value={9}>9mo</option><option value={12}>12mo</option></select>
+          <select value={afforgenSettings.displayMode} onChange={e => setAfforgenSettings(s => ({ ...s, displayMode: e.target.value }))} style={{ padding: '4px 8px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}><option value="available">Avail</option><option value="stripes">Stripes</option><option value="off">Off</option></select>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}><input type="checkbox" checked={showDwellLines} onChange={e => setShowDwellLines(e.target.checked)} style={{ accentColor: '#3b82f6' }} /><span style={{ color: '#94a3b8', fontSize: '10px' }}>Dwell</span></label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}><input type="checkbox" checked={showChanges} onChange={e => setShowChanges(e.target.checked)} style={{ accentColor: '#3b82f6' }} /><span style={{ color: '#94a3b8', fontSize: '10px' }}>Mods</span></label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Group units by MDS"><input type="checkbox" checked={sortConfig.groupByMDS} onChange={e => setSortConfig(s => ({ ...s, groupByMDS: e.target.checked }))} style={{ accentColor: '#3b82f6' }} /><span style={{ color: '#94a3b8', fontSize: '10px' }}>Grp MDS</span></label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }} title="Group units by Component (AD/AFRC/ANG)"><input type="checkbox" checked={sortConfig.groupByComponent} onChange={e => setSortConfig(s => ({ ...s, groupByComponent: e.target.checked }))} style={{ accentColor: '#3b82f6' }} /><span style={{ color: '#94a3b8', fontSize: '10px' }}>Grp Comp</span></label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}><input type="checkbox" checked={showTDG} onChange={e => setShowTDG(e.target.checked)} style={{ accentColor: '#f59e0b' }} /><span style={{ color: '#94a3b8', fontSize: '10px' }}>TDG</span></label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', borderLeft: '1px solid #334155', paddingLeft: '12px' }}><input type="checkbox" checked={showTheaterAssets} onChange={e => setShowTheaterAssets(e.target.checked)} style={{ accentColor: '#0891b2' }} /><span style={{ color: '#94a3b8', fontSize: '10px' }}>Theater</span></label>
+        </div>
+      )}
+
+      {/* CCMD Demand */}
+      <div style={{ padding: '8px 20px', borderBottom: '1px solid #1e293b', backgroundColor: '#0f172a', display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto' }}>
+        <span style={{ color: '#64748b', fontSize: '9px', textTransform: 'uppercase', flexShrink: 0 }}>DEMAND</span>
+        <button onClick={() => setFilters(f => ({ ...f, ccmd: 'all' }))} style={{ padding: '4px 10px', backgroundColor: filters.ccmd === 'all' ? '#334155' : '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>ALL</button>
+        {Object.entries(ccmdDemand).map(([ccmd, data]) => (
+          <button key={ccmd} onClick={() => setFilters(f => ({ ...f, ccmd: filters.ccmd === ccmd ? 'all' : ccmd }))} style={{ padding: '4px 10px', backgroundColor: filters.ccmd === ccmd ? ccmdColors[ccmd] : '#1e293b', border: `1px solid ${ccmdColors[ccmd]}`, borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit', display: 'flex', gap: '6px', alignItems: 'center', position: 'relative' }}>
+            <span>{ccmd}</span><span style={{ color: filters.ccmd === ccmd ? '#fff' : '#94a3b8', fontWeight: 600 }}>{data.tails}T/{data.crews}C</span>
+            {showTDG && data.hasTDG && data.issues > 0 && (
+              <span 
+                onMouseEnter={e => handleBadgeEnter(e, ccmd, data)} 
+                onMouseLeave={() => setHoveredBadge(null)}
+                style={{ position: 'absolute', top: '-4px', right: '-4px', width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#dc2626', color: '#fff', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, cursor: 'help' }}
+              >{data.issues}</span>
+            )}
+          </button>
+        ))}
+        {editMode && <button onClick={() => setTdgModal({ mode: 'view' })} style={{ marginLeft: 'auto', padding: '4px 8px', backgroundColor: '#422006', border: '1px solid #f59e0b', borderRadius: '4px', color: '#fcd34d', cursor: 'pointer', fontSize: '9px', fontFamily: 'inherit' }}>📋 TDG</button>}
+      </div>
+
+      {/* Filters */}
+      <div style={{ padding: '8px 20px', borderBottom: '1px solid #1e293b', display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: '#0a0f1a', flexWrap: 'wrap' }}>
+        <select value={filters.component} onChange={e => setFilters(f => ({ ...f, component: e.target.value }))} style={{ padding: '4px 8px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}><option value="all">All</option><option value="A">AD</option><option value="R">AFRC</option><option value="G">ANG</option></select>
+        <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
+          {mdsOptions.map(m => {
+            const label = m === 'C-5M' ? 'C-5' : m;
+            return (
+              <button key={m} onClick={() => setFilters(f => ({ ...f, mds: f.mds.includes(m) ? f.mds.filter(x => x !== m) : [...f.mds, m] }))} style={{ padding: '3px 6px', backgroundColor: filters.mds.includes(m) ? mdsColors[m] : '#1e293b', border: `1px solid ${filters.mds.includes(m) ? mdsColors[m] : '#334155'}`, borderRadius: '3px', color: filters.mds.includes(m) ? '#fff' : '#94a3b8', fontSize: '8px', fontFamily: 'inherit', cursor: 'pointer', fontWeight: filters.mds.includes(m) ? 600 : 400 }}>{label}</button>
+            );
+          })}
+          {filters.mds.length > 0 && <button onClick={() => setFilters(f => ({ ...f, mds: [] }))} style={{ padding: '2px 4px', backgroundColor: 'transparent', border: 'none', color: '#64748b', fontSize: '10px', cursor: 'pointer' }}>×</button>}
+        </div>
+        <input type="text" placeholder="Search..." value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))} style={{ padding: '4px 8px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', width: '80px', fontFamily: 'inherit' }} />
+        <span style={{ color: '#334155' }}>|</span>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <span style={{ color: '#64748b', fontSize: '9px' }}>Date:</span>
+          <input type="date" value={dateRange.start} onChange={e => setDateRange(r => ({ ...r, start: e.target.value }))} style={{ padding: '2px 4px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '3px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }} />
+          <span style={{ color: '#64748b' }}>→</span>
+          <input type="date" value={dateRange.end} onChange={e => setDateRange(r => ({ ...r, end: e.target.value }))} style={{ padding: '2px 4px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '3px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }} />
+          {(dateRange.start || dateRange.end) && <button onClick={() => setDateRange({ start: '', end: '' })} style={{ padding: '2px 4px', backgroundColor: 'transparent', border: 'none', color: '#64748b', fontSize: '10px', cursor: 'pointer' }}>×</button>}
+        </div>
+        <span style={{ color: '#334155' }}>|</span>
+        {['wing', 'sqdn', 'base'].map(field => <button key={field} onClick={() => toggleSort(field === 'sqdn' ? 'squadron' : field)} style={{ padding: '4px 6px', backgroundColor: sortConfig.field === (field === 'sqdn' ? 'squadron' : field) ? '#334155' : '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: sortConfig.field === (field === 'sqdn' ? 'squadron' : field) ? '#f8fafc' : '#94a3b8', cursor: 'pointer', fontSize: '9px', fontFamily: 'inherit' }}>{field}{sortConfig.field === (field === 'sqdn' ? 'squadron' : field) && (sortConfig.direction === 'asc' ? '↑' : '↓')}</button>)}
+        <span style={{ marginLeft: 'auto', color: '#64748b', fontSize: '10px' }}>{filteredAndSortedUnits.length}</span>
+      </div>
+
+      {/* Legend */}
+      <div style={{ padding: '6px 20px', borderBottom: '1px solid #1e293b', display: 'flex', gap: '8px', alignItems: 'center', backgroundColor: '#0a0f1a', flexWrap: 'wrap', fontSize: '9px' }}>
+        {Object.entries(componentColors).map(([c, col]) => <div key={c} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '5px', height: '5px', backgroundColor: col, borderRadius: '50%' }} /><span style={{ color: '#94a3b8' }}>{c === 'A' ? 'AD' : c}</span></div>)}
+        <span style={{ color: '#334155' }}>|</span>
+        {Object.entries(mdsColors).map(([m, col]) => <div key={m} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '8px', height: '8px', backgroundColor: col, borderRadius: '2px' }} /><span style={{ color: '#94a3b8' }}>{m === 'C-5M' ? 'C-5' : m}</span></div>)}
+        <span style={{ color: '#334155' }}>|</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '12px', height: '7px', backgroundColor: '#3b82f6', borderRadius: '2px' }} /><span style={{ color: '#94a3b8' }}>GFMAP</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '12px', height: '7px', backgroundColor: '#3b82f6', borderRadius: '2px', boxShadow: 'inset 0 0 0 2px #f59e0b' }} /><span style={{ color: '#94a3b8' }}>RFF</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '12px', height: '7px', backgroundColor: '#3b82f6', borderRadius: '5px' }} /><span style={{ color: '#94a3b8' }}>RFS</span></div>
+        {showDwellLines && <><span style={{ color: '#334155' }}>|</span><div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '5px', height: '5px', backgroundColor: '#22c55e', borderRadius: '50%' }} /><span style={{ color: '#94a3b8' }}>1:5</span></div><div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><div style={{ width: '5px', height: '5px', backgroundColor: '#eab308', borderRadius: '50%' }} /><span style={{ color: '#94a3b8' }}>redline</span></div></>}
+      </div>
+
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Chart */}
+        <div ref={scrollContainerRef} style={{ flex: 1, overflow: 'auto', maxHeight: 'calc(100vh - 280px)' }}>
+          <div style={{ minWidth: LABEL_WIDTH + MONTHS.length * MONTH_WIDTH }}>
+            {/* Header */}
+            <div style={{ display: 'flex', position: 'sticky', top: 0, zIndex: 20, backgroundColor: '#0f172a' }}>
+              <div style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH, padding: '6px 10px', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', position: 'sticky', left: 0, backgroundColor: '#0f172a', zIndex: 25, display: 'flex', alignItems: 'center' }}>
+                <span style={{ fontSize: '9px', color: '#64748b', width: '50px' }}>MDS</span><span style={{ fontSize: '9px', color: '#64748b', width: '70px' }}>Wing</span><span style={{ fontSize: '9px', color: '#64748b', width: '80px' }}>Sqdn</span><span style={{ fontSize: '9px', color: '#64748b', marginLeft: 'auto' }}>Base</span>
+              </div>
+              <div style={{ display: 'flex' }}>{MONTHS.map(month => <div key={month.key} style={{ width: MONTH_WIDTH, minWidth: MONTH_WIDTH, padding: '3px 2px', textAlign: 'center', borderRight: month.isFYStart ? '2px solid #475569' : '1px solid #1e293b', borderBottom: '1px solid #1e293b', backgroundColor: month.isFYStart ? '#1e293b' : 'transparent' }}>{month.isFYStart && <div style={{ fontSize: '8px', color: '#94a3b8', fontWeight: 600 }}>FY{String(month.fiscalYear).slice(2)}</div>}<div style={{ fontSize: '8px', color: '#64748b' }}>{month.label}</div></div>)}</div>
+            </div>
+
+            {/* TDG Requirement Bar - shown when CCMD filtered */}
+            {filters.ccmd !== 'all' && selectedCcmdTdg.length > 0 && (
+              <div style={{ display: 'flex', backgroundColor: '#0f172a', borderBottom: '2px solid ' + ccmdColors[filters.ccmd] }}>
+                <div style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH, padding: '4px 10px', borderRight: '1px solid #1e293b', position: 'sticky', left: 0, backgroundColor: '#0f172a', zIndex: 10, display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '9px', color: ccmdColors[filters.ccmd], fontWeight: 600 }}>{filters.ccmd} TDG</span>
+                  <span style={{ fontSize: '8px', color: '#64748b', marginLeft: '8px' }}>Double-click to edit</span>
+                </div>
+                <div style={{ flex: 1, height: 28, position: 'relative', backgroundColor: '#0a0f1a' }}>
+                  {/* Grid lines */}
+                  {MONTHS.map((month, i) => <div key={month.key} style={{ position: 'absolute', left: i * MONTH_WIDTH, width: MONTH_WIDTH, height: '100%', borderRight: month.isFYStart ? '2px solid #334155' : '1px solid #1e293b15', pointerEvents: 'none' }} />)}
+                  
+                  {/* TDG period blocks */}
+                  {selectedCcmdTdg.map(tdg => {
+                    const startPx = dateToPixel(tdg.startDate);
+                    const endPx = dateToPixel(tdg.endDate);
+                    if (startPx === null || endPx === null) return null;
+                    const width = Math.max(endPx - startPx + MONTH_WIDTH * 0.9, 60);
+                    const bgColor = tdg.state === 'met' ? '#166534' : tdg.state === 'over' ? '#422006' : '#7f1d1d';
+                    const borderColor = tdg.state === 'met' ? '#22c55e' : tdg.state === 'over' ? '#f59e0b' : '#dc2626';
+                    const textColor = tdg.state === 'met' ? '#86efac' : tdg.state === 'over' ? '#fcd34d' : '#fecaca';
+                    
+                    return (
+                      <div
+                        key={tdg.id}
+                        onDoubleClick={() => setEditingTdg(tdg)}
+                        title={`${tdg.period}: ${formatTdgPackages(tdg)} = ${tdg.required.tails}T required\nAllocated: ${tdg.allocated.tails}T (${tdg.delta >= 0 ? '+' : ''}${tdg.delta})\n${tdg.base ? `Location: ${tdg.base} (${tdg.icao})` : ''}\n${tdg.notes ? `Notes: ${tdg.notes}` : ''}`}
+                        style={{
+                          position: 'absolute',
+                          left: startPx,
+                          top: 3,
+                          width,
+                          height: 22,
+                          backgroundColor: bgColor,
+                          border: `1px solid ${borderColor}`,
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          padding: '0 6px',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span style={{ fontSize: '9px', fontWeight: 600, color: textColor }}>{tdg.period}</span>
+                        {width > 100 && (
+                          <span style={{ fontSize: '8px', color: textColor, opacity: 0.8 }}>{formatTdgPackages(tdg)}</span>
+                        )}
+                        <span style={{ fontSize: '9px', color: textColor, marginLeft: 'auto' }}>
+                          {tdg.allocated.tails}/{tdg.required.tails}T
+                        </span>
+                        {tdg.notes && <span style={{ fontSize: '8px', color: textColor, opacity: 0.6 }}>📝</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Rows */}
+            {filteredAndSortedUnits.map((unit, idx) => {
+              const unitCommitments = visibleCommitmentsByUnit.get(unit.id) || [];
+              const unitPhases = getAfforgenPhases(unit);
+              const prevUnit = filteredAndSortedUnits[idx - 1];
+              const showComponentDivider = sortConfig.groupByComponent && prevUnit && !prevUnit.theater && !unit.theater && prevUnit.component !== unit.component && (!sortConfig.groupByMDS || prevUnit.mds === unit.mds);
+              const showMDSDivider = sortConfig.groupByMDS && prevUnit && !prevUnit.theater && !unit.theater && prevUnit.mds !== unit.mds;
+              const showTheaterDivider = prevUnit && !prevUnit.theater && unit.theater;
+              const hasOverride = afforgenOverrides[unit.id]?.useCustom;
+              const isTheater = !!unit.theater;
+              
+              return (
+                <React.Fragment key={unit.id}>
+                  {showMDSDivider && <div style={{ padding: '6px 20px', backgroundColor: '#0f172a', borderBottom: '2px solid ' + (mdsColors[unit.mds] || '#475569'), display: 'flex', alignItems: 'center', gap: '8px' }}><div style={{ width: '10px', height: '10px', backgroundColor: mdsColors[unit.mds], borderRadius: '2px' }} /><span style={{ fontSize: '10px', color: mdsColors[unit.mds], fontWeight: 600 }}>{unit.mds === 'C-5M' ? 'C-5' : unit.mds}</span></div>}
+                  {showComponentDivider && <div style={{ height: '2px', backgroundColor: componentColors[unit.component], opacity: 0.5 }} />}
+                  {showTheaterDivider && <div style={{ padding: '6px 20px', backgroundColor: '#0f172a', borderBottom: '1px solid #1e293b' }}><span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>THEATER</span></div>}
+                  <div style={{ display: 'flex', backgroundColor: isTheater ? '#0d1520' : (idx % 2 === 0 ? '#0a0f1a' : '#0d1117') }}>
+                    <div style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH, height: ROW_HEIGHT, padding: '4px 10px', display: 'flex', alignItems: 'center', borderRight: '1px solid #1e293b', borderBottom: '1px solid #0f172a', position: 'sticky', left: 0, backgroundColor: isTheater ? '#0d1520' : (idx % 2 === 0 ? '#0a0f1a' : '#0d1117'), zIndex: 10, borderLeft: isTheater ? `3px solid ${theaterColors[unit.theater]}` : 'none' }}>
+                      <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: componentColors[unit.component], marginRight: '6px' }} />
+                      <span style={{ fontSize: '9px', color: '#94a3b8', width: '44px' }}>{unit.mds}</span>
+                      <span onClick={() => !unit.theater && setInventoryModal({ wing: unit.wing, mds: unit.mds })} style={{ fontSize: '9px', color: '#64748b', width: '70px', cursor: unit.theater ? 'default' : 'pointer' }} title={unit.theater ? '' : `Click to edit ${unit.wing} inventory`}>{unit.wing}</span>
+                      <span onClick={() => !unit.theater && setCrewModal({ id: unit.id, squadron: unit.squadron, wing: unit.wing })} style={{ fontSize: '10px', color: isTheater ? '#94a3b8' : '#e2e8f0', width: '70px', cursor: unit.theater ? 'default' : 'pointer' }} title={unit.theater ? '' : `Click to edit ${unit.squadron} crews`}>{unit.squadron}</span>
+                      {unit.associateType && <span style={{ fontSize: '7px', padding: '1px 3px', backgroundColor: unit.associateType === 'active' ? '#1e3a8a' : '#166534', borderRadius: '2px', color: unit.associateType === 'active' ? '#93c5fd' : '#86efac', marginRight: '4px' }}>{unit.associateType === 'active' ? 'AA' : 'CA'}</span>}
+                      {isTheater && <span style={{ fontSize: '7px', padding: '1px 4px', backgroundColor: theaterColors[unit.theater], borderRadius: '2px', color: '#fff', marginRight: '4px' }}>{unit.theater}</span>}
+                      {!isTheater && unit.component === 'A' && editMode && <button onClick={() => openAfforgenModal(unit)} style={{ padding: '2px 4px', backgroundColor: hasOverride ? '#1e3a5f' : 'transparent', border: hasOverride ? '1px solid #3b82f6' : '1px solid #334155', borderRadius: '3px', color: hasOverride ? '#60a5fa' : '#64748b', cursor: 'pointer', fontSize: '8px', marginRight: '4px' }}>⚙</button>}
+                      <span style={{ fontSize: '9px', color: '#475569', marginLeft: 'auto' }}>{unit.base}</span>
+                    </div>
+                    <div style={{ flex: 1, height: ROW_HEIGHT, position: 'relative', borderBottom: '1px solid #0f172a', cursor: editMode && !isTheater ? 'crosshair' : 'default' }} onClick={e => { if (e.target === e.currentTarget) handleTimelineClick(e, unit); }}>
+                      {!isTheater && afforgenSettings.displayMode === 'available' && unit.component === 'A' && unitPhases.filter(p => p.id === 'available').map((phase, i) => { const startPx = dateToPixel(phase.start), endPx = dateToPixel(phase.end); if (startPx === null || endPx === null) return null; return <div key={i} style={{ position: 'absolute', left: Math.max(0, startPx), width: endPx - Math.max(0, startPx) + MONTH_WIDTH, height: '100%', backgroundColor: '#374151', opacity: 0.2, pointerEvents: 'none' }} />; })}
+                      {!isTheater && afforgenSettings.displayMode === 'stripes' && unit.component === 'A' && unitPhases.map((phase, i) => { const startPx = dateToPixel(phase.start), endPx = dateToPixel(phase.end); if (startPx === null || endPx === null) return null; return <div key={i} style={{ position: 'absolute', left: Math.max(0, startPx), width: endPx - Math.max(0, startPx) + MONTH_WIDTH, height: '4px', top: 0, backgroundColor: phase.color, opacity: 0.8, pointerEvents: 'none' }} />; })}
+                      {isTheater && <div style={{ position: 'absolute', left: 0, width: '100%', height: '100%', backgroundColor: theaterColors[unit.theater], opacity: 0.05, pointerEvents: 'none' }}><div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '10px', color: theaterColors[unit.theater], opacity: 0.4, fontWeight: 600 }}>{unit.theater === 'PACAF' ? 'INDOPACOM' : 'EUCOM'}</div></div>}
+                      {MONTHS.map((month, i) => <div key={month.key} style={{ position: 'absolute', left: i * MONTH_WIDTH, width: MONTH_WIDTH, height: '100%', borderRight: month.isFYStart ? '2px solid #334155' : '1px solid #1e293b15', pointerEvents: 'none' }} />)}
+                      {!isTheater && showDwellLines && unitCommitments.map(c => { const dwell = getDwellLine(c, unit); if (!dwell) return null; const endPx = dateToPixel(dwell.endDate), redPx = dateToPixel(dwell.redlinePoint), idealPx = dwell.isARC ? dateToPixel(dwell.idealPoint) : null; if (endPx === null) return null; const lineEnd = dwell.isARC ? (idealPx ?? redPx) : redPx; return (<React.Fragment key={`dwell-${c.id}`}>{lineEnd && lineEnd > endPx && <div style={{ position: 'absolute', left: endPx + MONTH_WIDTH * 0.85, top: '50%', width: Math.min(lineEnd - endPx - MONTH_WIDTH * 0.85, MONTHS.length * MONTH_WIDTH - endPx), height: '1px', backgroundColor: '#475569', transform: 'translateY(-50%)', pointerEvents: 'none' }} />}{dwell.isARC && idealPx && idealPx > 0 && idealPx < MONTHS.length * MONTH_WIDTH && <div style={{ position: 'absolute', left: idealPx, top: '50%', width: '6px', height: '6px', backgroundColor: '#22c55e', borderRadius: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, pointerEvents: 'none' }} title="1:5" />}{redPx && redPx > 0 && redPx < MONTHS.length * MONTH_WIDTH && <div style={{ position: 'absolute', left: redPx, top: '50%', width: '6px', height: '6px', backgroundColor: '#eab308', borderRadius: '50%', transform: 'translate(-50%, -50%)', zIndex: 5, pointerEvents: 'none' }} title={dwell.isARC ? '1:4' : '1:2'} />}</React.Fragment>); })}
+                      {!isTheater && showChanges && unitCommitments.filter(c => c.originalStartDate).map(c => { const style = getCommitmentStyle(c, true); return style ? <div key={`ghost-${c.id}`} style={{ position: 'absolute', top: '5px', height: ROW_HEIGHT - 10, borderRadius: '3px', pointerEvents: 'none', ...style }} /> : null; })}
+                      {!isTheater && unitCommitments.map(c => { const style = getCommitmentStyle(c); if (!style) return null; const hasRFS = c.allocations.some(a => a.type === 'RFS'); const hasRFF = hasRFFAllocation(c); const width = parseFloat(style.width) - 8; const isDragging = dragState?.commitmentId === c.id; return (<div key={c.id} onMouseDown={e => handleDragStart(e, c, unit)} onClick={e => { e.stopPropagation(); if (!dragState && editMode) setSelectedCommitment(c); }} onDoubleClick={e => { e.stopPropagation(); setEditMode(true); setSelectedCommitment(c); }} onMouseEnter={e => handleMouseEnter(e, c)} onMouseLeave={() => !dragState && setHoveredCommitment(null)} style={{ position: 'absolute', top: afforgenSettings.displayMode === 'stripes' && unit.component === 'A' ? '6px' : '5px', height: afforgenSettings.displayMode === 'stripes' && unit.component === 'A' ? ROW_HEIGHT - 12 : ROW_HEIGHT - 10, borderRadius: hasRFS && !c.isConversion ? '10px' : '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 600, color: c.isConversion ? '#7f1d1d' : '#fff', cursor: editMode ? (isDragging ? 'grabbing' : 'grab') : 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px', boxShadow: selectedCommitment?.id === c.id ? '0 0 0 2px #fbbf24' : hasRFF ? 'inset 0 0 0 2px rgba(245, 158, 11, 0.8)' : 'none', textShadow: c.isConversion ? 'none' : '0 1px 2px rgba(0,0,0,0.5)', opacity: isDragging ? 0.8 : 1, zIndex: isDragging ? 100 : 1, ...style }}>{getBlockLabel(c, width)}</div>); })}
+                    </div>
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Edit Panel */}
+        {editMode && selectedCommitment && (
+          <div style={{ width: '280px', borderLeft: '1px solid #1e293b', padding: '10px', backgroundColor: '#0f172a', overflow: 'auto', maxHeight: 'calc(100vh - 280px)' }}>
+            <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '8px', fontWeight: 600 }}>EDIT</div>
+            <select value={selectedCommitment.unitId} onChange={e => updateCommitment(selectedCommitment.id, { unitId: e.target.value })} style={{ width: '100%', marginBottom: '6px', padding: '5px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}>{units.filter(u => !u.theater).map(u => <option key={u.id} value={u.id}>{u.squadron} ({u.base})</option>)}</select>
+            <div style={{ padding: '6px', backgroundColor: '#1e293b', borderRadius: '4px', marginBottom: '6px' }}><label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}><input type="checkbox" checked={selectedCommitment.isConversion} onChange={e => handleConversionToggle(e.target.checked)} style={{ accentColor: '#dc2626' }} /><span style={{ fontSize: '10px', color: '#f8fafc' }}>Conversion</span></label>{selectedCommitment.isConversion && <textarea value={selectedCommitment.notes} onChange={e => updateCommitment(selectedCommitment.id, { notes: e.target.value })} placeholder="Notes..." style={{ width: '100%', marginTop: '6px', padding: '4px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit', minHeight: '40px', resize: 'vertical' }} />}</div>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}><div style={{ flex: 1 }}><label style={{ fontSize: '8px', color: '#64748b' }}>Start</label><input type="date" value={selectedCommitment.startDate || ''} onChange={e => { if (e.target.value) updateCommitment(selectedCommitment.id, { startDate: e.target.value }); }} style={{ width: '100%', padding: '4px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }} /></div><div style={{ flex: 1 }}><label style={{ fontSize: '8px', color: '#64748b' }}>End</label><input type="date" value={selectedCommitment.endDate || ''} onChange={e => { if (e.target.value) updateCommitment(selectedCommitment.id, { endDate: e.target.value }); }} style={{ width: '100%', padding: '4px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }} /></div></div>
+            {!selectedCommitment.isConversion && (<><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}><span style={{ fontSize: '9px', color: '#64748b' }}>ALLOC</span><button onClick={addAllocation} style={{ padding: '2px 5px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '3px', color: '#94a3b8', cursor: 'pointer', fontSize: '9px' }}>+</button></div>{selectedCommitment.allocations.map((alloc, idx) => { const tc = getAllocationTailsCrews(alloc); const isCustom = alloc.customTails !== null; return (<div key={idx} style={{ padding: '5px', backgroundColor: '#1e293b', borderRadius: '4px', marginBottom: '4px' }}><div style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}><select value={alloc.type} onChange={e => updateAllocation(idx, 'type', e.target.value)} style={{ flex: 1, padding: '3px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '3px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }}>{Object.keys(commitmentTypes).map(t => <option key={t} value={t}>{t}</option>)}</select><select value={alloc.location} onChange={e => updateAllocation(idx, 'location', e.target.value)} style={{ flex: 1, padding: '3px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '3px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }}>{Object.keys(ccmdColors).map(l => <option key={l} value={l}>{l}</option>)}</select>{selectedCommitment.allocations.length > 1 && <button onClick={() => removeAllocation(idx)} style={{ padding: '2px 5px', backgroundColor: '#7f1d1d', border: 'none', borderRadius: '3px', color: '#fecaca', cursor: 'pointer', fontSize: '9px' }}>×</button>}</div><div style={{ display: 'flex', gap: '3px' }}><select value={alloc.package || ''} onChange={e => updateAllocation(idx, 'package', e.target.value || null)} disabled={isCustom} style={{ flex: 1, padding: '3px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '3px', color: isCustom ? '#64748b' : '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }}><option value="">Cust</option>{Object.keys(packageTypes).map(p => <option key={p} value={p}>{p}</option>)}</select><input type="number" min="0" max="24" value={isCustom ? alloc.customTails : ''} onChange={e => updateAllocation(idx, 'customTails', e.target.value)} placeholder={alloc.package ? packageTypes[alloc.package]?.tails : 'T'} style={{ width: '32px', padding: '3px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '3px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }} /><input type="number" min="0" max="36" value={alloc.customCrews ?? ''} onChange={e => updateAllocation(idx, 'customCrews', e.target.value)} placeholder={tc.crews} style={{ width: '32px', padding: '3px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '3px', color: '#f8fafc', fontSize: '9px', fontFamily: 'inherit' }} /></div><div style={{ marginTop: '2px', fontSize: '8px', color: '#64748b', textAlign: 'right' }}>{tc.tails}T/{tc.crews}C</div></div>); })}<div style={{ padding: '4px', backgroundColor: '#1e293b', borderRadius: '3px', fontSize: '9px', color: '#94a3b8', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Total:</span><span style={{ color: '#f8fafc', fontWeight: 600 }}>{getAllocationTotals(selectedCommitment.allocations).tails}T/{getAllocationTotals(selectedCommitment.allocations).crews}C</span></div></>)}
+            <button onClick={() => deleteCommitment(selectedCommitment.id)} style={{ width: '100%', padding: '5px', backgroundColor: '#7f1d1d', border: '1px solid #dc2626', borderRadius: '4px', color: '#fecaca', cursor: 'pointer', fontSize: '10px', fontWeight: 500, fontFamily: 'inherit' }}>DELETE</button>
+          </div>
+        )}
+      </div>
+
+      {/* Tooltip */}
+      {hoveredCommitment && !dragState && <div style={{ position: 'fixed', left: Math.min(tooltipPos.x, window.innerWidth - 260), top: tooltipPos.y, backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '8px', zIndex: 1000, maxWidth: '240px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span style={{ fontSize: '10px', fontWeight: 600, color: '#f8fafc' }}>{hoveredCommitment.isConversion ? 'CONVERSION' : getAllocationTypes(hoveredCommitment).join('/')}</span><span style={{ fontSize: '9px', color: '#64748b' }}>{hoveredCommitment.startDate} → {hoveredCommitment.endDate}</span></div>{hoveredCommitment.isConversion ? hoveredCommitment.notes && <div style={{ fontSize: '9px', color: '#94a3b8', borderTop: '1px solid #334155', paddingTop: '4px' }}>{hoveredCommitment.notes}</div> : <div style={{ borderTop: '1px solid #334155', paddingTop: '4px' }}>{hoveredCommitment.allocations.map((a, i) => { const tc = getAllocationTailsCrews(a); return <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9px' }}><div style={{ width: '5px', height: '5px', backgroundColor: ccmdColors[a.location], borderRadius: '2px' }} /><span style={{ color: '#94a3b8' }}>{a.type}</span><span style={{ color: '#e2e8f0', flex: 1 }}>{a.location}</span><span style={{ color: '#94a3b8' }}>{a.package || 'Cust'} ({tc.tails}T/{tc.crews}C)</span></div>; })}<div style={{ borderTop: '1px solid #334155', paddingTop: '4px', marginTop: '4px', fontSize: '9px', display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#94a3b8' }}>Total:</span><span style={{ color: '#f8fafc', fontWeight: 600 }}>{getAllocationTotals(hoveredCommitment.allocations).tails}T/{getAllocationTotals(hoveredCommitment.allocations).crews}C</span></div></div>}</div>}
+
+      {/* Badge Tooltip */}
+      {hoveredBadge && <div style={{ position: 'fixed', left: Math.min(tooltipPos.x, window.innerWidth - 220), top: tooltipPos.y, backgroundColor: '#1e293b', border: '1px solid #dc2626', borderRadius: '6px', padding: '10px', zIndex: 1000, maxWidth: '220px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
+        <div style={{ fontSize: '10px', fontWeight: 600, color: '#f8fafc', marginBottom: '6px' }}>{hoveredBadge.ccmd} TDG Issues</div>
+        <div style={{ fontSize: '9px' }}>
+          {hoveredBadge.underCount > 0 && (
+            <div style={{ marginBottom: '6px' }}>
+              <div style={{ color: '#ef4444', marginBottom: '3px' }}>⚠ Under-allocated:</div>
+              {hoveredBadge.underPeriods.map((p, i) => (
+                <div key={i} style={{ color: '#fca5a5', paddingLeft: '10px' }}>{p.period}: {p.delta}T</div>
+              ))}
+            </div>
+          )}
+          {hoveredBadge.overCount > 0 && (
+            <div>
+              <div style={{ color: '#f59e0b', marginBottom: '3px' }}>⚡ Over-allocated:</div>
+              {hoveredBadge.overPeriods.map((p, i) => (
+                <div key={i} style={{ color: '#fcd34d', paddingLeft: '10px' }}>{p.period}: +{p.delta}T</div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>}
+
+      {/* Add Prompt */}
+      {addPrompt && <div style={{ position: 'fixed', left: addPrompt.x, top: addPrompt.y, backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '6px', padding: '10px', zIndex: 2000, boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}><div style={{ fontSize: '11px', color: '#f8fafc', marginBottom: '6px' }}>Add Requirement?</div><div style={{ fontSize: '9px', color: '#94a3b8', marginBottom: '8px' }}>{addPrompt.unit.squadron} • {addPrompt.date}</div><div style={{ display: 'flex', gap: '6px' }}><button onClick={() => setAddPrompt(null)} style={{ padding: '4px 8px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Cancel</button><button onClick={confirmAdd} style={{ padding: '4px 8px', backgroundColor: '#166534', border: '1px solid #22c55e', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Add</button></div></div>}
+
+      {/* Conflict Modal */}
+      {conflictModal && <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}><div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '16px', maxWidth: '360px', width: '90%' }}><h3 style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#f8fafc' }}>⚠️ Conversion Conflict</h3><p style={{ margin: '0 0 10px 0', fontSize: '10px', color: '#94a3b8' }}>{conflictModal.conflicts.length} deployment(s) overlap.</p><div style={{ marginBottom: '12px', padding: '6px', backgroundColor: '#0f172a', borderRadius: '4px', maxHeight: '100px', overflow: 'auto' }}>{conflictModal.conflicts.map(c => <div key={c.id} style={{ fontSize: '9px', color: '#e2e8f0', marginBottom: '3px' }}>• {c.allocations.map(a => a.location).join('/')}</div>)}</div><div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}><button onClick={() => setConflictModal(null)} style={{ padding: '5px 10px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Cancel</button><button onClick={() => handleConflictResolution(false)} style={{ padding: '5px 10px', backgroundColor: '#1e3a8a', border: '1px solid #3b82f6', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Keep</button><button onClick={() => handleConflictResolution(true)} style={{ padding: '5px 10px', backgroundColor: '#7f1d1d', border: '1px solid #dc2626', borderRadius: '4px', color: '#fecaca', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Delete</button></div></div></div>}
+
+      {/* AFFORGEN Modal */}
+      {afforgenModal && <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}><div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '16px', maxWidth: '360px', width: '90%' }}><h3 style={{ margin: '0 0 3px 0', fontSize: '13px', color: '#f8fafc' }}>AFFORGEN</h3><p style={{ margin: '0 0 12px 0', fontSize: '10px', color: '#64748b' }}>{afforgenModal.unit.squadron}</p><label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', marginBottom: '10px' }}><input type="checkbox" checked={afforgenModal.useCustom} onChange={e => setAfforgenModal(m => ({ ...m, useCustom: e.target.checked }))} style={{ accentColor: '#3b82f6' }} /><span style={{ fontSize: '10px', color: '#f8fafc' }}>Custom durations</span></label>{afforgenModal.useCustom && <div style={{ marginBottom: '10px' }}><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>{afforgenPhases.map(phase => <div key={phase.id}><label style={{ fontSize: '8px', color: phase.color }}>{phase.fullLabel}</label><input type="number" min="30" max="365" value={afforgenModal[phase.id]} onChange={e => setAfforgenModal(m => ({ ...m, [phase.id]: parseInt(e.target.value) || 180 }))} style={{ width: '100%', padding: '5px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} /></div>)}</div><div style={{ marginTop: '6px', fontSize: '9px', color: '#64748b' }}>Total: {(afforgenModal.reset + afforgenModal.prepare + afforgenModal.certify + afforgenModal.available)}d</div></div>}<div style={{ marginBottom: '12px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px' }}><label style={{ fontSize: '9px', color: '#64748b' }}>Cycle Start</label><span title="The date when this unit's AFFORGEN cycle begins (first day of Reset phase). Leave blank to auto-calculate based on first deployment." style={{ fontSize: '10px', color: '#64748b', cursor: 'help', border: '1px solid #475569', borderRadius: '50%', width: '14px', height: '14px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>?</span></div><input type="date" value={afforgenModal.cycleStart} onChange={e => setAfforgenModal(m => ({ ...m, cycleStart: e.target.value }))} style={{ width: '100%', padding: '5px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} /><div style={{ fontSize: '8px', color: '#475569', marginTop: '2px' }}>First day of Reset phase</div></div><div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>{afforgenOverrides[afforgenModal.unitId] && <button onClick={clearAfforgenOverride} style={{ padding: '5px 10px', backgroundColor: '#7f1d1d', border: '1px solid #dc2626', borderRadius: '4px', color: '#fecaca', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit', marginRight: 'auto' }}>Reset</button>}<button onClick={() => setAfforgenModal(null)} style={{ padding: '5px 10px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Cancel</button><button onClick={saveAfforgenOverride} style={{ padding: '5px 10px', backgroundColor: '#166534', border: '1px solid #22c55e', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Save</button></div></div></div>}
+
+      {/* TDG Modal */}
+      {tdgModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '16px', maxWidth: '850px', width: '95%', maxHeight: '85vh', overflow: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: '14px', color: '#f8fafc' }}>📋 Top-Down Guidance (TDG)</h3>
+              <button onClick={addTdgEntry} style={{ padding: '4px 10px', backgroundColor: '#166534', border: '1px solid #22c55e', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>+ Add</button>
+            </div>
+            
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9px' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #334155' }}>
+                  <th onClick={() => toggleTdgSort('ccmd')} style={{ padding: '6px', textAlign: 'left', color: '#64748b', cursor: 'pointer' }}>CCMD {tdgSort.field === 'ccmd' && (tdgSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th onClick={() => toggleTdgSort('period')} style={{ padding: '6px', textAlign: 'left', color: '#64748b', cursor: 'pointer' }}>Period {tdgSort.field === 'period' && (tdgSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ padding: '6px', textAlign: 'left', color: '#64748b' }}>Type</th>
+                  <th onClick={() => toggleTdgSort('date')} style={{ padding: '6px', textAlign: 'left', color: '#64748b', cursor: 'pointer' }}>Window {tdgSort.field === 'date' && (tdgSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ padding: '6px', textAlign: 'left', color: '#64748b' }}>Location</th>
+                  <th style={{ padding: '6px', textAlign: 'center', color: '#64748b' }}>Packages</th>
+                  <th style={{ padding: '6px', textAlign: 'right', color: '#64748b' }}>Req</th>
+                  <th style={{ padding: '6px', textAlign: 'right', color: '#64748b' }}>Alloc</th>
+                  <th style={{ padding: '6px', textAlign: 'right', color: '#64748b' }}>Δ</th>
+                  <th style={{ padding: '6px', textAlign: 'center', color: '#64748b' }}>Status</th>
+                  <th style={{ padding: '6px', textAlign: 'center', color: '#64748b' }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedTdgStatus.map(ts => {
+                  const pkgStr = [ts.pkg4L && `${ts.pkg4L}×4L`, ts.pkg4F && `${ts.pkg4F}×4F`, ts.pkg2F && `${ts.pkg2F}×2F`].filter(Boolean).join(' ') || '-';
+                  const addStr = (ts.addTails || ts.addCrews) ? ` +${ts.addTails || 0}T/${ts.addCrews || 0}C` : '';
+                  return (
+                    <tr key={ts.id} style={{ borderBottom: '1px solid #1e293b' }}>
+                      <td style={{ padding: '6px', color: ccmdColors[ts.ccmd] }}>{ts.ccmd}</td>
+                      <td style={{ padding: '6px', color: '#f8fafc', fontWeight: 600 }}>{ts.period}</td>
+                      <td style={{ padding: '6px', color: '#94a3b8' }}>{ts.type}</td>
+                      <td style={{ padding: '6px', color: '#94a3b8' }}>{ts.startDate.slice(5)} → {ts.endDate.slice(5)}</td>
+                      <td style={{ padding: '6px', color: '#94a3b8', fontSize: '8px' }} title={ts.notes || ''}>{ts.icao || '-'}{ts.notes && ' 📝'}</td>
+                      <td style={{ padding: '6px', textAlign: 'center', color: '#94a3b8', fontSize: '8px' }}>{pkgStr}{addStr}</td>
+                      <td style={{ padding: '6px', textAlign: 'right', color: '#f8fafc' }}>{ts.required.tails}T</td>
+                      <td style={{ padding: '6px', textAlign: 'right', color: '#f8fafc' }}>{ts.allocated.tails}T</td>
+                      <td style={{ padding: '6px', textAlign: 'right', color: ts.delta < 0 ? '#ef4444' : ts.delta > 2 ? '#f59e0b' : '#22c55e', fontWeight: 600 }}>{ts.delta > 0 ? '+' : ''}{ts.delta}</td>
+                      <td style={{ padding: '6px', textAlign: 'center' }}><span style={{ padding: '2px 5px', borderRadius: '4px', fontSize: '8px', fontWeight: 600, backgroundColor: ts.state === 'met' ? '#166534' : ts.state === 'over' ? '#422006' : '#7f1d1d', color: ts.state === 'met' ? '#86efac' : ts.state === 'over' ? '#fcd34d' : '#fecaca' }}>{ts.state === 'met' ? 'MET' : ts.state === 'over' ? 'OVER' : 'UNDER'}</span></td>
+                      <td style={{ padding: '6px', textAlign: 'center' }}><button onClick={() => setEditingTdg(ts)} style={{ padding: '2px 6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '3px', color: '#94a3b8', cursor: 'pointer', fontSize: '9px', marginRight: '4px' }}>✎</button><button onClick={() => deleteTdgEntry(ts.id)} style={{ padding: '2px 6px', backgroundColor: '#7f1d1d', border: 'none', borderRadius: '3px', color: '#fecaca', cursor: 'pointer', fontSize: '9px' }}>×</button></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            
+            <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setTdgModal(null)} style={{ padding: '6px 12px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TDG Edit Modal */}
+      {editingTdg && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2100 }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '16px', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#f8fafc' }}>{tdgEntries.find(t => t.id === editingTdg.id) ? 'Edit TDG Entry' : 'Add TDG Entry'}</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b', display: 'block', marginBottom: '3px' }}>CCMD</label>
+                <select value={editingTdg.ccmd} onChange={e => setEditingTdg(t => ({ ...t, ccmd: e.target.value }))} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}>
+                  {Object.keys(ccmdColors).map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b', display: 'block', marginBottom: '3px' }}>Period (e.g., 27.1a)</label>
+                <input type="text" value={editingTdg.period} onChange={e => setEditingTdg(t => ({ ...t, period: e.target.value }))} placeholder="27.1a" style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b', display: 'block', marginBottom: '3px' }}>Type</label>
+                <select value={editingTdg.type} onChange={e => setEditingTdg(t => ({ ...t, type: e.target.value }))} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }}>
+                  <option value="AFFORGEN">AFFORGEN</option><option value="RFF">RFF</option><option value="RFS">RFS</option><option value="Custom">Custom</option>
+                </select>
+              </div>
+              <div></div>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b', display: 'block', marginBottom: '3px' }}>Start Date</label>
+                <input type="date" value={editingTdg.startDate || ''} onChange={e => { if (e.target.value) setEditingTdg(t => ({ ...t, startDate: e.target.value })); }} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b', display: 'block', marginBottom: '3px' }}>End Date</label>
+                <input type="date" value={editingTdg.endDate || ''} onChange={e => { if (e.target.value) setEditingTdg(t => ({ ...t, endDate: e.target.value })); }} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+              </div>
+            </div>
+
+            {/* Location section */}
+            <div style={{ padding: '10px', backgroundColor: '#0f172a', borderRadius: '6px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '8px', fontWeight: 600 }}>LOCATION</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>Base</label>
+                  <input type="text" value={editingTdg.base || ''} onChange={e => setEditingTdg(t => ({ ...t, base: e.target.value }))} placeholder="Al Udeid AB" style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>ICAO</label>
+                  <input type="text" value={editingTdg.icao || ''} onChange={e => setEditingTdg(t => ({ ...t, icao: e.target.value.toUpperCase() }))} placeholder="OTBH" maxLength={4} style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit', textTransform: 'uppercase' }} />
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ padding: '10px', backgroundColor: '#0f172a', borderRadius: '6px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '8px', fontWeight: 600 }}>REQUIREMENT (Packages)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>4L (4T/6C each)</label>
+                  <input type="number" min="0" max="20" value={editingTdg.pkg4L || 0} onChange={e => setEditingTdg(t => ({ ...t, pkg4L: parseInt(e.target.value) || 0 }))} style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '11px', fontFamily: 'inherit', textAlign: 'center' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>4F (4T/6C each)</label>
+                  <input type="number" min="0" max="20" value={editingTdg.pkg4F || 0} onChange={e => setEditingTdg(t => ({ ...t, pkg4F: parseInt(e.target.value) || 0 }))} style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '11px', fontFamily: 'inherit', textAlign: 'center' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>2F (2T/3C each)</label>
+                  <input type="number" min="0" max="20" value={editingTdg.pkg2F || 0} onChange={e => setEditingTdg(t => ({ ...t, pkg2F: parseInt(e.target.value) || 0 }))} style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '11px', fontFamily: 'inherit', textAlign: 'center' }} />
+                </div>
+              </div>
+              <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '6px' }}>Additional (single tails/crews)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>+ Tails</label>
+                  <input type="number" min="0" max="20" value={editingTdg.addTails || 0} onChange={e => setEditingTdg(t => ({ ...t, addTails: parseInt(e.target.value) || 0 }))} style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '11px', fontFamily: 'inherit', textAlign: 'center' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: '8px', color: '#94a3b8', display: 'block', marginBottom: '2px' }}>+ Crews</label>
+                  <input type="number" min="0" max="30" value={editingTdg.addCrews || 0} onChange={e => setEditingTdg(t => ({ ...t, addCrews: parseInt(e.target.value) || 0 }))} style={{ width: '100%', padding: '6px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '11px', fontFamily: 'inherit', textAlign: 'center' }} />
+                </div>
+              </div>
+              <div style={{ marginTop: '10px', padding: '6px', backgroundColor: '#1e293b', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', fontSize: '10px' }}>
+                <span style={{ color: '#94a3b8' }}>Total Requirement:</span>
+                <span style={{ color: '#f8fafc', fontWeight: 600 }}>{calcTdgTotals(editingTdg).tails}T / {calcTdgTotals(editingTdg).crews}C</span>
+              </div>
+            </div>
+
+            {/* Notes section */}
+            <div style={{ padding: '10px', backgroundColor: '#0f172a', borderRadius: '6px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '8px', fontWeight: 600 }}>NOTES & CAPABILITY REQUIREMENTS</div>
+              <textarea 
+                value={editingTdg.notes || ''} 
+                onChange={e => setEditingTdg(t => ({ ...t, notes: e.target.value }))} 
+                placeholder="e.g., Soft basket required, KafMa tails, split ops, exercise support..."
+                style={{ width: '100%', padding: '8px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit', minHeight: '60px', resize: 'vertical' }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setEditingTdg(null)} style={{ padding: '6px 12px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Cancel</button>
+              <button onClick={saveTdgEntry} style={{ padding: '6px 12px', backgroundColor: '#166534', border: '1px solid #22c55e', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inventory Modal */}
+      {inventoryModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '16px', maxWidth: '400px', width: '90%' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#f8fafc' }}>📊 Wing Inventory: {inventoryModal.wing}</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b' }}>TAI (Total)</label>
+                <input type="number" min="0" value={wingInventory[inventoryModal.wing]?.tai || 0} onChange={e => updateWingInventory(inventoryModal.wing, 'tai', e.target.value)} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b' }}>BAI (Backup)</label>
+                <input type="number" min="0" value={wingInventory[inventoryModal.wing]?.bai || 0} onChange={e => updateWingInventory(inventoryModal.wing, 'bai', e.target.value)} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '9px', color: '#64748b' }}>Depot</label>
+                <input type="number" min="0" value={wingInventory[inventoryModal.wing]?.depot || 0} onChange={e => updateWingInventory(inventoryModal.wing, 'depot', e.target.value)} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '10px', fontFamily: 'inherit' }} />
+              </div>
+              <div style={{ backgroundColor: '#0f172a', padding: '6px', borderRadius: '4px' }}>
+                <div style={{ fontSize: '8px', color: '#64748b' }}>Calculated</div>
+                <div style={{ fontSize: '10px', color: '#f8fafc' }}>PAA: {getWingStats(inventoryModal.wing).paa}</div>
+                <div style={{ fontSize: '10px', color: '#22c55e' }}>Possessed: {getWingStats(inventoryModal.wing).possessed}</div>
+              </div>
+            </div>
+            {wingCrewTotals[inventoryModal.wing] && (
+              <div style={{ padding: '8px', backgroundColor: '#0f172a', borderRadius: '4px', marginBottom: '12px' }}>
+                <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '4px' }}>Wing Crew Total: <span style={{ color: '#f8fafc', fontWeight: 600 }}>{wingCrewTotals[inventoryModal.wing].crews}</span></div>
+                <div style={{ fontSize: '8px', color: '#475569' }}>{wingCrewTotals[inventoryModal.wing].squadrons.length} squadrons</div>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setInventoryModal(null)} style={{ padding: '6px 12px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Crew Modal */}
+      {crewModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', padding: '16px', maxWidth: '320px', width: '90%' }}>
+            <h3 style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#f8fafc' }}>👥 Squadron Crews</h3>
+            <p style={{ margin: '0 0 12px 0', fontSize: '10px', color: '#64748b' }}>{crewModal.squadron} • {crewModal.wing}</p>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ fontSize: '9px', color: '#64748b' }}>Authorized Crews</label>
+              <input type="number" min="0" max="50" value={units.find(u => u.id === crewModal.id)?.crews || 0} onChange={e => updateSquadronCrews(crewModal.id, e.target.value)} style={{ width: '100%', padding: '6px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '4px', color: '#f8fafc', fontSize: '12px', fontFamily: 'inherit' }} />
+            </div>
+            {wingCrewTotals[crewModal.wing] && (
+              <div style={{ padding: '8px', backgroundColor: '#0f172a', borderRadius: '4px', marginBottom: '12px' }}>
+                <div style={{ fontSize: '9px', color: '#64748b' }}>Wing Total: <span style={{ color: '#f8fafc', fontWeight: 600 }}>{wingCrewTotals[crewModal.wing].crews}</span></div>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setCrewModal(null)} style={{ padding: '6px 12px', backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px', color: '#f8fafc', cursor: 'pointer', fontSize: '10px', fontFamily: 'inherit' }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Bar */}
+      <div style={{ padding: '6px 20px', borderTop: '1px solid #1e293b', backgroundColor: '#0f172a', display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#64748b' }}>
+        <span>{visibleCommitments.length}{visibleCommitments.length !== commitments.length ? `/${commitments.length}` : ''} commits • {tdgEntries.length} TDG{showTDG && ` • ${Object.values(tdgStatus).filter(t => t.state !== 'met').length} issues`}</span>
+        <span>{editMode ? 'Drag • Click • DoubleClick' : 'View'} • {dateRange.start || dateRange.end ? `${dateRange.start || 'start'} → ${dateRange.end || 'end'}` : 'FY24-30'}</span>
+      </div>
+    </div>
+  );
+}
