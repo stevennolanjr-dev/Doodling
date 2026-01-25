@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HILO Calc">
+  <meta name="theme-color" content="#0a0e14">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <title>C-17 HILO Calculator v8</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg-primary: #0a0e14; --bg-secondary: #131920; --bg-tertiary: #1a2230;
+      --bg-input: #0d1117; --border: #2d3a4a;
+      --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+      --accent-blue: #58a6ff; --accent-green: #3fb950; --accent-amber: #d4a017;
+      --accent-red: #f85149; --accent-cyan: #39c5cf;
+    }
+    html, body { height: 100%; overscroll-behavior: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary); color: var(--text-primary);
+      line-height: 1.4; font-size: 14px;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+    }
+    .container { max-width: 1800px; margin: 0 auto; padding: 12px; }
+    
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header .subtitle { color: var(--text-secondary); font-size: 11px; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    
+    .btn {
+      padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg-tertiary); color: var(--text-primary); font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .btn:active { background: var(--bg-secondary); transform: scale(0.98); }
+    
+    .mode-toggle {
+      display: flex; gap: 4px; background: var(--bg-tertiary); padding: 4px;
+      border-radius: 8px; border: 1px solid var(--border);
+    }
+    .mode-btn {
+      padding: 8px 16px; border: none; border-radius: 6px;
+      background: transparent; color: var(--text-secondary); font-size: 13px;
+      cursor: pointer; font-weight: 500;
+    }
+    .mode-btn.active { background: var(--accent-blue); color: #fff; }
+    .mode-btn.approach.active { background: var(--accent-green); }
+    .mode-btn.lowlevel.active { background: var(--accent-amber); }
+    
+    .main-layout { display: flex; flex-direction: column; gap: 12px; }
+    
+    .profile-row {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px;
+    }
+    .profile-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+    }
+    .profile-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat-box {
+      background: var(--bg-tertiary); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px; text-align: center; min-width: 80px;
+    }
+    .stat-box.green { border-color: var(--accent-green); background: rgba(63, 185, 80, 0.1); }
+    .stat-box.red { border-color: var(--accent-red); background: rgba(248, 81, 73, 0.1); }
+    .stat-box.amber { border-color: var(--accent-amber); background: rgba(212, 160, 23, 0.1); }
+    .stat-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+    .stat-value { font-size: 18px; font-weight: 700; font-family: 'SF Mono', monospace; }
+    .stat-box.green .stat-value { color: var(--accent-green); }
+    .stat-box.red .stat-value { color: var(--accent-red); }
+    .stat-box.amber .stat-value { color: var(--accent-amber); }
+    .stat-unit { font-size: 10px; color: var(--text-secondary); }
+    
+    .profile-container {
+      background: #000; border-radius: 8px; padding: 8px;
+      overflow-x: auto; -webkit-overflow-scrolling: touch; position: relative;
+    }
+    .profile-svg { width: 100%; min-width: 600px; height: 280px; }
+    .drag-hint {
+      position: absolute; top: 8px; right: 8px; font-size: 10px;
+      color: var(--text-muted); background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px;
+    }
+    
+    .controls-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px;
+    }
+    .section {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px;
+    }
+    .section-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 11px; font-weight: 600; color: var(--accent-blue);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    
+    .form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-group { flex: 1; }
+    .form-group.small { flex: 0.6; }
+    .form-label {
+      display: flex; align-items: center; font-size: 11px;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%; padding: 12px; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-primary); font-size: 16px;
+      font-family: 'SF Mono', monospace; -webkit-appearance: none;
+    }
+    .form-input:focus, .form-select:focus {
+      outline: none; border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    }
+    .form-input.calculated { background: rgba(63, 185, 80, 0.1); border-color: var(--accent-green); }
+    .form-input.override { background: rgba(212, 160, 23, 0.1); border-color: var(--accent-amber); }
+    .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+    }
+    
+    .checkbox-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .checkbox-item {
+      display: flex; align-items: center; gap: 8px; font-size: 13px;
+      color: var(--text-secondary); padding: 8px; background: var(--bg-tertiary);
+      border-radius: 6px; cursor: pointer;
+    }
+    .checkbox-item input { width: 20px; height: 20px; accent-color: var(--accent-blue); }
+    .checkbox-item.checked { color: var(--accent-green); background: rgba(63, 185, 80, 0.1); }
+    
+    .toggle-group { display: flex; gap: 4px; }
+    .toggle-btn {
+      padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg-tertiary); color: var(--text-secondary); font-size: 12px; cursor: pointer;
+    }
+    .toggle-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+    
+    .output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .output-box {
+      background: var(--bg-tertiary); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px; text-align: center;
+    }
+    .output-box.highlight { border-color: var(--accent-green); background: rgba(63, 185, 80, 0.1); }
+    .output-box.warning { border-color: var(--accent-red); background: rgba(248, 81, 73, 0.1); }
+    .output-box.hidden { display: none; }
+    .output-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+    .output-value { font-size: 24px; font-weight: 700; font-family: 'SF Mono', monospace; }
+    .output-box.highlight .output-value { color: var(--accent-green); }
+    .output-box.warning .output-value { color: var(--accent-red); }
+    .output-unit { font-size: 11px; color: var(--text-secondary); }
+    
+    .segment-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    .segment-table th {
+      text-align: left; padding: 10px 8px; background: var(--bg-tertiary);
+      color: var(--text-secondary); font-weight: 600; font-size: 10px; text-transform: uppercase;
+    }
+    .segment-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+    .segment-table .val { font-family: 'SF Mono', monospace; text-align: right; color: var(--accent-cyan); }
+    .segment-table tr.total { background: var(--bg-tertiary); font-weight: 600; }
+    .segment-table tr.total .val { color: var(--accent-green); }
+    .segment-table tr.wez { background: rgba(248, 81, 73, 0.1); }
+    .segment-table tr.wez .val { color: var(--accent-red); }
+    
+    .quick-ref {
+      font-size: 12px; background: var(--bg-tertiary); padding: 10px;
+      border-radius: 8px; margin-top: 12px;
+    }
+    .quick-ref-item {
+      display: flex; justify-content: space-between; padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .quick-ref-item:last-child { border-bottom: none; }
+    .quick-ref-label { color: var(--text-secondary); }
+    .quick-ref-value { color: var(--text-primary); font-family: 'SF Mono', monospace; }
+    
+    .note-box { padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-top: 12px; }
+    .note-box.info { background: rgba(88, 166, 255, 0.1); border: 1px solid var(--accent-blue); }
+    .note-box.caution { background: rgba(212, 160, 23, 0.1); border: 1px solid var(--accent-amber); color: var(--accent-amber); }
+    
+    .collapsible-header {
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; padding: 10px 0;
+    }
+    .collapsible-content { display: none; padding-top: 12px; border-top: 1px solid var(--border); }
+    .collapsible-content.open { display: block; }
+    
+    .hold-visual { background: var(--bg-tertiary); border-radius: 8px; padding: 16px; margin-top: 12px; }
+    .hold-svg { width: 100%; height: 180px; }
+    
+    .info-btn {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary);
+      border: 1px solid var(--border); color: var(--text-muted); font-size: 14px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8); display: none; align-items: center;
+      justify-content: center; z-index: 2000; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-content {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; max-width: 600px; width: 100%;
+      max-height: 80vh; overflow-y: auto;
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-header h3 { font-size: 16px; color: var(--accent-blue); }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary);
+      border: none; color: var(--text-primary); font-size: 20px; cursor: pointer;
+    }
+    .modal-body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .modal-body code {
+      background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;
+      font-family: 'SF Mono', monospace; color: var(--accent-cyan);
+    }
+    .modal-body table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11px; }
+    .modal-body th, .modal-body td { padding: 6px; border: 1px solid var(--border); text-align: center; }
+    .modal-body th { background: var(--bg-tertiary); }
+    
+    /* Landing Data Grid */
+    .landing-data-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-top: 12px;
+    }
+    .landing-data-item {
+      background: var(--bg-tertiary); border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px; text-align: center;
+    }
+    .landing-data-item.speed { border-color: var(--accent-cyan); }
+    .landing-data-item.dist { border-color: var(--accent-amber); }
+    .landing-data-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
+    .landing-data-value { font-size: 15px; font-weight: 600; font-family: 'SF Mono', monospace; }
+    .landing-data-item.speed .landing-data-value { color: var(--accent-cyan); }
+    .landing-data-item.dist .landing-data-value { color: var(--accent-amber); }
+    .landing-data-unit { font-size: 9px; color: var(--text-muted); }
+    
+    .wind-component {
+      margin-top: 8px; padding: 8px; background: var(--bg-tertiary);
+      border-radius: 6px; font-size: 12px; text-align: center;
+    }
+    .wind-component .hw { color: var(--accent-green); }
+    .wind-component .tw { color: var(--accent-red); }
+    
+    .draggable-label { cursor: move; user-select: none; }
+    .draggable-label:hover { filter: brightness(1.3); }
+    
+    @media (max-width: 600px) {
+      .header h1 { font-size: 16px; }
+      .btn { padding: 10px 12px; font-size: 12px; }
+      .stat-box { min-width: 70px; padding: 6px 10px; }
+      .stat-value { font-size: 16px; }
+      .landing-data-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>C-17 HILO Calculator</h1>
+        <div class="subtitle">TO 1C-17A-1-1 • v8.0 • Table 5.3 Gradient Lookup</div>
+      </div>
+      <div class="header-actions">
+        <div class="mode-toggle">
+          <button class="mode-btn approach active" onclick="setProfileMode('approach')">Approach</button>
+          <button class="mode-btn lowlevel" onclick="setProfileMode('lowlevel')">Low Level</button>
+        </div>
+        <button class="btn" onclick="showModal('table53')">📊 Tbl 5.3</button>
+        <button class="btn" onclick="showModal('table52')">📋 Tbl 5.2</button>
+        <button class="btn" onclick="showModal('landingData')">✈️ Ldg Data</button>
+      </div>
+    </div>
+    
+    <div class="main-layout">
+      <!-- Profile Diagram -->
+      <div class="profile-row">
+        <div class="profile-header">
+          <div class="section-title">Descent Profile <span id="modeIndicator" style="color: var(--accent-green);">(Approach)</span></div>
+          <div class="profile-stats">
+            <div class="stat-box green">
+              <div class="stat-label">Time</div>
+              <div class="stat-value" id="totalTimeTop">--</div>
+              <div class="stat-unit">min</div>
+            </div>
+            <div class="stat-box green">
+              <div class="stat-label">Dist</div>
+              <div class="stat-value" id="totalDistTop">--</div>
+              <div class="stat-unit">NM</div>
+            </div>
+            <div class="stat-box red" id="wezStatBox">
+              <div class="stat-label">WEZ</div>
+              <div class="stat-value" id="wezTimeTop">--</div>
+              <div class="stat-unit">min</div>
+            </div>
+            <div class="stat-box amber" id="llAltBox" style="display: none;">
+              <div class="stat-label">LL Alt</div>
+              <div class="stat-value" id="llAltTop">--</div>
+              <div class="stat-unit">ft</div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-container">
+          <div class="drag-hint">Drag labels to reposition</div>
+          <svg class="profile-svg" id="profileSvg" viewBox="0 0 900 260"></svg>
+        </div>
+      </div>
+      
+      <!-- Controls -->
+      <div class="controls-row">
+        <!-- Initial Conditions -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Initial Conditions</div>
+            <button class="info-btn" onclick="showModal('initialInfo')">?</button>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Slowdown Alt (MSL)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="initialAlt" value="24000" step="500">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gross Wt (000s)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="grossWeight" value="450" step="10">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Start Speed (KCAS)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="startSpeed" value="310" step="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Speed (KCAS)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="endSpeed" value="230" step="5">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Decel Type</label>
+              <select class="form-select" id="initialDecelType">
+                <option value="panel" selected>Panel</option>
+                <option value="mc">MC</option>
+                <option value="idle_sb">Idle/SB</option>
+                <option value="idle_sb_gear">Idle/SB/Gear</option>
+                <option value="4x_tr">4X TR</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">HW(+)/TW(-) TOD</label>
+              <input type="number" inputmode="numeric" class="form-input" id="windTop" value="0" step="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">HW(+)/TW(-) BOD</label>
+              <input type="number" inputmode="numeric" class="form-input" id="windBot" value="0" step="5">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Descent Profile -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Descent Config</div>
+            <button class="info-btn" onclick="showModal('descentInfo')">?</button>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">
+                VVI (fpm)
+                <div class="toggle-group" style="margin-left: auto;">
+                  <button class="toggle-btn active" id="vviAutoBtn" onclick="setVVIMode('auto')">Auto</button>
+                  <button class="toggle-btn" id="vviManualBtn" onclick="setVVIMode('manual')">Man</button>
+                </div>
+              </label>
+              <input type="number" inputmode="numeric" class="form-input calculated" id="mainVVI" value="4000" step="500" readonly>
+            </div>
+            <div class="form-group" id="wezAltGroup">
+              <label class="form-label">WEZ Alt (MSL)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="wezAlt" value="1000" step="100">
+            </div>
+            <div class="form-group" id="llAltGroup" style="display: none;">
+              <label class="form-label">Low Level Alt (MSL)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="llAlt" value="500" step="100">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Configuration</label></div>
+          </div>
+          
+          <div class="checkbox-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <label class="checkbox-item"><input type="checkbox" id="cfgC"> C</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfgSlats" checked> S</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfgHF" checked> HF</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfgTF"> TF</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfgFF"> FF</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfgSB" checked> SB</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfgGear"> G</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfg2TR"> 2TR</label>
+            <label class="checkbox-item"><input type="checkbox" id="cfg4TR"> 4TR</label>
+          </div>
+          
+          <div class="quick-ref">
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Config</span>
+              <span class="quick-ref-value" id="configString">S, HF, SB</span>
+            </div>
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Gradient</span>
+              <span class="quick-ref-value" id="estGradient">-- ft/NM</span>
+            </div>
+          </div>
+          
+          <div class="note-box caution">
+            <strong>CAUTION:</strong> Below 0.62M/FL260 before slats. Formation: Index 100.
+          </div>
+        </div>
+        
+        <!-- Final / Approach -->
+        <div class="section" id="finalSection">
+          <div class="section-header">
+            <div class="section-title">Final / Approach</div>
+            <button class="info-btn" onclick="showModal('finalInfo')">?</button>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Final SD Alt (MSL)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="finalSlowdownAlt" value="2300" step="100">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Final Decel Type</label>
+              <select class="form-select" id="finalDecelType">
+                <option value="panel">Panel</option>
+                <option value="idle_sb">Idle/SB</option>
+                <option value="idle_sb_gear" selected>Idle/SB/Gear</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Appr Speed (KCAS)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="approachSpeed" value="130" step="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">FAF Dist (NM)</label>
+              <input type="number" inputmode="decimal" class="form-input" id="fafDist" value="2.0" step="0.5">
+            </div>
+          </div>
+          
+          <!-- Landing Data Inputs -->
+          <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <div class="section-title" style="margin-bottom: 10px;">Landing Conditions</div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Field Elev (ft)</label>
+                <select class="form-select" id="fieldElev">
+                  <option value="0" selected>Sea Level</option>
+                  <option value="1000">1,000</option>
+                  <option value="2000">2,000</option>
+                  <option value="3000">3,000</option>
+                  <option value="4000">4,000</option>
+                  <option value="5000">5,000</option>
+                  <option value="6000">6,000</option>
+                  <option value="7000">7,000</option>
+                  <option value="8000">8,000</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Temp (°C)</label>
+                <input type="number" inputmode="numeric" class="form-input" id="tempC" value="15" step="1">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group small">
+                <label class="form-label">Rwy Hdg</label>
+                <select class="form-select" id="rwyHdg">
+                  <option value="10">010</option><option value="20">020</option><option value="30">030</option>
+                  <option value="40">040</option><option value="50">050</option><option value="60">060</option>
+                  <option value="70">070</option><option value="80">080</option><option value="90">090</option>
+                  <option value="100">100</option><option value="110">110</option><option value="120">120</option>
+                  <option value="130">130</option><option value="140">140</option><option value="150">150</option>
+                  <option value="160">160</option><option value="170">170</option><option value="180">180</option>
+                  <option value="190">190</option><option value="200">200</option><option value="210">210</option>
+                  <option value="220">220</option><option value="230">230</option><option value="240">240</option>
+                  <option value="250">250</option><option value="260">260</option><option value="270" selected>270</option>
+                  <option value="280">280</option><option value="290">290</option><option value="300">300</option>
+                  <option value="310">310</option><option value="320">320</option><option value="330">330</option>
+                  <option value="340">340</option><option value="350">350</option><option value="360">360</option>
+                </select>
+              </div>
+              <div class="form-group small">
+                <label class="form-label">Wind Dir</label>
+                <input type="number" inputmode="numeric" class="form-input" id="windDir" value="270" min="0" max="360" step="10">
+              </div>
+              <div class="form-group small">
+                <label class="form-label">Wind Kts</label>
+                <input type="number" inputmode="numeric" class="form-input" id="windKts" value="10" min="0" step="5">
+              </div>
+            </div>
+            
+            <div class="wind-component" id="windComponent">
+              HW: <span class="hw">10</span> kts | XW: <span>0</span> kts | Temp Dev: <span>ISA</span>
+            </div>
+            
+            <div class="form-row" style="margin-top: 12px;">
+              <div class="form-group">
+                <label class="form-label">Landing Config</label>
+                <div class="toggle-group" style="width: 100%;">
+                  <button class="toggle-btn active" id="ldgTFBtn" onclick="setLdgConfig('tf')" style="flex:1;">¾ Flaps</button>
+                  <button class="toggle-btn" id="ldgFFBtn" onclick="setLdgConfig('ff')" style="flex:1;">Full Flaps</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Landing Data Output -->
+          <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <div class="section-title" style="margin-bottom: 10px;">Landing Data <span id="ldgConfigLabel">(¾ Flaps)</span></div>
+            <div class="landing-data-grid">
+              <div class="landing-data-item speed">
+                <div class="landing-data-label">VAPP</div>
+                <div class="landing-data-value" id="ldgVapp">--</div>
+              </div>
+              <div class="landing-data-item speed">
+                <div class="landing-data-label">VMCO</div>
+                <div class="landing-data-value" id="ldgVmco">--</div>
+              </div>
+              <div class="landing-data-item speed">
+                <div class="landing-data-label">VMFR</div>
+                <div class="landing-data-value" id="ldgVmfr">--</div>
+              </div>
+              <div class="landing-data-item speed">
+                <div class="landing-data-label">VMSR</div>
+                <div class="landing-data-value" id="ldgVmsr">--</div>
+              </div>
+              <div class="landing-data-item dist">
+                <div class="landing-data-label">RCR 23</div>
+                <div class="landing-data-value" id="ldgRcr23">--</div>
+                <div class="landing-data-unit">ft</div>
+              </div>
+              <div class="landing-data-item dist">
+                <div class="landing-data-label">RCR 12</div>
+                <div class="landing-data-value" id="ldgRcr12">--</div>
+                <div class="landing-data-unit">ft</div>
+              </div>
+              <div class="landing-data-item dist">
+                <div class="landing-data-label">RCR 5</div>
+                <div class="landing-data-value" id="ldgRcr5">--</div>
+                <div class="landing-data-unit">ft</div>
+              </div>
+              <div class="landing-data-item">
+                <div class="landing-data-label">Flap Idx</div>
+                <div class="landing-data-value" id="ldgFlapIdx">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hold / Orbit Section - Available in both modes -->
+        <div class="section" id="holdPatternSection">
+          <div class="section-header">
+            <div class="section-title">Hold / Orbit</div>
+            <label class="checkbox-item" style="margin-left: auto; margin-right: 8px;">
+              <input type="checkbox" id="includeHold" onchange="calculate()"> Include
+            </label>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Minutes Early</label>
+              <input type="number" inputmode="decimal" class="form-input" id="minutesEarly" value="5" step="0.5" oninput="calculate()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hold Alt (MSL)</label>
+              <input type="number" inputmode="numeric" class="form-input" id="holdAlt" value="24000" step="1000" oninput="calculate()">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Holding KCAS</label>
+              <input type="number" inputmode="numeric" class="form-input" id="holdKCAS" value="230" step="10" oninput="calculate()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Leg Length</label>
+              <select class="form-select" id="holdType" onchange="updateHoldVisual()">
+                <option value="low">1 min (≤14K)</option>
+                <option value="high" selected>1.5 min (&gt;14K)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="hold-visual" id="holdVisual">
+            <svg class="hold-svg" id="holdSvg" viewBox="0 0 420 180"></svg>
+          </div>
+          
+          <div class="quick-ref" id="holdResults" style="margin-top: 8px;">
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Hold TAS</span>
+              <span class="quick-ref-value" id="holdTASCalc">-- kts</span>
+            </div>
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Hold Dist</span>
+              <span class="quick-ref-value" id="holdDistNM">-- NM</span>
+            </div>
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Leg Dist</span>
+              <span class="quick-ref-value" id="holdLegNM">-- NM</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="section">
+          <div class="section-title">Results</div>
+          
+          <div class="output-grid">
+            <div class="output-box highlight">
+              <div class="output-label">Total Time</div>
+              <div class="output-value" id="totalTime">--</div>
+              <div class="output-unit">min</div>
+            </div>
+            <div class="output-box highlight">
+              <div class="output-label">Total Dist</div>
+              <div class="output-value" id="totalDist">--</div>
+              <div class="output-unit">NM</div>
+            </div>
+            <div class="output-box warning" id="wezTimeBox">
+              <div class="output-label">WEZ Time</div>
+              <div class="output-value" id="wezTime">--</div>
+              <div class="output-unit">min</div>
+            </div>
+            <div class="output-box warning" id="wezDistBox">
+              <div class="output-label">WEZ Dist</div>
+              <div class="output-value" id="wezDist">--</div>
+              <div class="output-unit">NM</div>
+            </div>
+          </div>
+          
+          <table class="segment-table">
+            <thead><tr><th>Segment</th><th style="text-align:right;">Time</th><th style="text-align:right;">Dist</th></tr></thead>
+            <tbody id="segmentTableBody"></tbody>
+          </table>
+          
+          <div class="quick-ref">
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">TAS @ TOD</span>
+              <span class="quick-ref-value" id="tasTod">-- kts</span>
+            </div>
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Avg GS</span>
+              <span class="quick-ref-value" id="avgGS">-- kts</span>
+            </div>
+            <div class="quick-ref-item">
+              <span class="quick-ref-label">Alt to Lose</span>
+              <span class="quick-ref-value" id="altToLose">-- ft</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalTitle">Info</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== DECEL RATES =====
+    const decelRates = {
+      1000: { mc: { ktsPerSec: 0.95, ktsPerNM: 14 }, panel: { ktsPerSec: 1.52, ktsPerNM: 23 }, idle_sb: { ktsPerSec: 2.47, ktsPerNM: 36 }, idle_sb_gear: { ktsPerSec: 2.66, ktsPerNM: 37 }, '4x_tr': { ktsPerSec: 3.04, ktsPerNM: 46 } },
+      5000: { mc: { ktsPerSec: 0.89, ktsPerNM: 13 }, panel: { ktsPerSec: 1.46, ktsPerNM: 21 }, idle_sb: { ktsPerSec: 2.34, ktsPerNM: 33 }, idle_sb_gear: { ktsPerSec: 2.51, ktsPerNM: 33 }, '4x_tr': { ktsPerSec: 2.81, ktsPerNM: 40 } },
+      10000: { mc: { ktsPerSec: 0.83, ktsPerNM: 11 }, panel: { ktsPerSec: 1.39, ktsPerNM: 18 }, idle_sb: { ktsPerSec: 2.20, ktsPerNM: 29 }, idle_sb_gear: { ktsPerSec: 2.36, ktsPerNM: 29 }, '4x_tr': { ktsPerSec: 2.58, ktsPerNM: 33 } },
+      15000: { mc: { ktsPerSec: 0.77, ktsPerNM: 10 }, panel: { ktsPerSec: 1.33, ktsPerNM: 16 }, idle_sb: { ktsPerSec: 2.07, ktsPerNM: 24 }, idle_sb_gear: { ktsPerSec: 2.21, ktsPerNM: 26 }, '4x_tr': { ktsPerSec: 2.35, ktsPerNM: 27 } },
+      20000: { mc: { ktsPerSec: 0.71, ktsPerNM: 8 }, panel: { ktsPerSec: 1.26, ktsPerNM: 13 }, idle_sb: { ktsPerSec: 1.93, ktsPerNM: 20 }, idle_sb_gear: { ktsPerSec: 2.06, ktsPerNM: 22 }, '4x_tr': { ktsPerSec: 2.12, ktsPerNM: 21 } }
+    };
+    
+    const gradientTable = {
+      // Table 5.3 - Approximate Aircraft Configuration for Descent Profile (425K GW)
+      // Format: points array with vvi range, kcas range, config, and ft_per_nm
+      points: [
+        { vvi:[0,2000], kcas:[125,132], config:["S","FF"], ft_per_nm:760 },
+        { vvi:[0,2000], kcas:[133,156], config:["S","TF"], ft_per_nm:680 },
+        { vvi:[0,2000], kcas:[157,170], config:["S","HF"], ft_per_nm:600 },
+        { vvi:[0,2000], kcas:[171,190], config:["S"], ft_per_nm:540 },
+        { vvi:[0,2000], kcas:[191,220], config:["S"], ft_per_nm:475 },
+        { vvi:[0,2000], kcas:[221,250], config:["SB"], ft_per_nm:420 },
+        { vvi:[0,2000], kcas:[251,280], config:["SB"], ft_per_nm:370 },
+        { vvi:[0,2000], kcas:[280,320], config:["C"], ft_per_nm:330 },
+        { vvi:[0,2000], kcas:[320,350], config:["C"], ft_per_nm:295 },
+        { vvi:[2000,3000], kcas:[125,132], config:["S","FF","G","DLC"], ft_per_nm:950 },
+        { vvi:[2000,3000], kcas:[133,156], config:["S","TF","G","DLC"], ft_per_nm:850 },
+        { vvi:[2000,3000], kcas:[157,170], config:["S","TF","G"], ft_per_nm:750 },
+        { vvi:[2000,3000], kcas:[171,190], config:["S","SB"], ft_per_nm:680 },
+        { vvi:[2000,3000], kcas:[191,220], config:["S","SB"], ft_per_nm:600 },
+        { vvi:[2000,3000], kcas:[221,250], config:["S","SB"], ft_per_nm:525 },
+        { vvi:[2000,3000], kcas:[251,280], config:["S","SB"], ft_per_nm:460 },
+        { vvi:[2000,3000], kcas:[280,320], config:["SB"], ft_per_nm:410 },
+        { vvi:[2000,3000], kcas:[320,350], config:["SB"], ft_per_nm:370 },
+        { vvi:[3000,4000], kcas:[157,170], config:["S","TF","DLC"], ft_per_nm:1040 },
+        { vvi:[3000,4000], kcas:[171,190], config:["S","HF","SB"], ft_per_nm:950 },
+        { vvi:[3000,4000], kcas:[191,220], config:["S","HF"], ft_per_nm:830 },
+        { vvi:[3000,4000], kcas:[221,250], config:["S","HF"], ft_per_nm:730 },
+        { vvi:[3000,4000], kcas:[251,280], config:["S","SB"], ft_per_nm:650 },
+        { vvi:[3000,4000], kcas:[280,320], config:["SB"], ft_per_nm:575 },
+        { vvi:[3000,4000], kcas:[320,350], config:["SB"], ft_per_nm:520 },
+        { vvi:[4000,5000], kcas:[171,190], config:["S","TF","DLC"], ft_per_nm:1220 },
+        { vvi:[4000,5000], kcas:[191,220], config:["S","HF","SB"], ft_per_nm:1070 },
+        { vvi:[4000,5000], kcas:[221,250], config:["S","HF","SB"], ft_per_nm:950 },
+        { vvi:[4000,5000], kcas:[251,280], config:["SB","2TR"], ft_per_nm:830 },
+        { vvi:[4000,5000], kcas:[280,320], config:["2TR"], ft_per_nm:740 },
+        { vvi:[4000,5000], kcas:[320,350], config:["2TR"], ft_per_nm:650 },
+        { vvi:[5000,6000], kcas:[251,280], config:["4TR"], ft_per_nm:1020 },
+        { vvi:[5000,6000], kcas:[280,320], config:["SB","2TR"], ft_per_nm:900 },
+        { vvi:[5000,6000], kcas:[320,350], config:["SB","2TR"], ft_per_nm:810 },
+        { vvi:[6000,8000], kcas:[221,250], config:["S","HF","SB","G"], ft_per_nm:1500 },
+        { vvi:[6000,8000], kcas:[251,280], config:["SB","4TR"], ft_per_nm:1300 },
+        { vvi:[6000,8000], kcas:[280,320], config:["4TR"], ft_per_nm:1150 },
+        { vvi:[6000,8000], kcas:[320,350], config:["SB","2TR"], ft_per_nm:1030 },
+        { vvi:[8000,10000], kcas:[280,320], config:["SB","4TR"], ft_per_nm:1480 },
+        { vvi:[8000,10000], kcas:[320,350], config:["4TR"], ft_per_nm:1330 },
+        { vvi:[12000,null], kcas:[320,350], config:["SB","4TR"], ft_per_nm:1775 }
+      ]
+    };
+    
+    // ===== LANDING DATA FROM TO 1C-17A-1-1 APPENDIX A =====
+    // Comprehensive array-based data structure
+    // GW indices: [300,320,340,360,380,400,420,440,460,480,500,520,540,560,580] (thousands lbs)
+    const GROSS_WEIGHTS = [300,320,340,360,380,400,420,440,460,480,500,520,540,560,580];
+
+    const threeQuarterFlaps = {
+      "0": { stdTempC: 15, data: [
+        {tempC: 15, isStdDay: true, vapp: [116,120,123,126,129,130,132,135,139,142,145,148,151,154,157], vmco: [116,120,123,126,129,130,132,135,139,142,145,148,151,154,157], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,195], vmsr: [180,186,191,197,202,207,213,218,224,231,237,244,250,255,259], rcr23: [3060,3150,3240,3330,3400,3450,3510,3610,3700,3800,3890,4080,4180,4290,4400], rcr12: [4220,4440,4660,4880,5060,5190,5350,5600,5860,6110,6370,6840,7130,7440,7760], rcr5: [6350,6660,6960,7260,7510,7660,7860,8200,8540,8860,9190,9800,10160,10530,10910]},
+        {tempC: 31, isStdDay: false, vapp: [116,120,123,126,129,130,132,135,139,142,145,148,151,154,157], vmco: [116,120,123,126,129,130,132,135,139,142,145,148,151,154,157], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,195], vmsr: [180,186,191,197,202,207,213,218,224,231,237,244,250,255,259], rcr23: [3140,3240,3330,3420,3500,3540,3610,3720,3820,3920,4030,4210,4320,4440,4560], rcr12: [4410,4650,4880,5110,5310,5420,5610,5890,6160,6430,6720,7210,7530,7850,8200], rcr5: [6620,6940,7260,7570,7830,7970,8210,8570,8930,9270,9640,10260,10640,11030,11440]},
+        {tempC: 40, isStdDay: false, vapp: [116,119,122,123,126,130,133,136,141,145,149,152,156,161,166], vmco: [116,119,122,123,126,130,133,136,141,145,149,152,156,161,166], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,195], vmsr: [180,186,191,197,202,207,213,218,224,231,237,244,250,255,259], rcr23: [3190,3280,3360,3410,3490,3600,3700,3800,3970,4110,4220,4350,4480,4640,4830], rcr12: [4520,4750,4960,5090,5300,5570,5850,6120,6540,6910,7230,7580,7950,8410,8960], rcr5: [6770,7080,7360,7510,7790,8160,8530,8870,9430,9880,10290,10710,11150,11700,12340]}
+      ]},
+      "1000": { stdTempC: 13, data: [
+        {tempC: 13, isStdDay: true, vapp: [116,120,123,126,128,129,132,135,139,142,146,148,151,154,157], vmco: [116,120,123,126,128,129,132,135,139,142,146,148,151,154,157], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,195], vmsr: [180,186,191,197,202,208,213,219,226,232,239,245,250,255,260], rcr23: [3100,3200,3290,3380,3450,3470,3570,3670,3770,3860,4000,4160,4270,4380,4500], rcr12: [4320,4550,4780,5000,5180,5240,5500,5770,6030,6280,6640,7060,7360,7670,8030], rcr5: [6490,6810,7130,7420,7660,7720,8070,8410,8770,9090,9550,10070,10440,10820,11240]},
+        {tempC: 30, isStdDay: false, vapp: [116,120,123,126,128,129,132,136,139,142,148,151,154,158,161], vmco: [116,120,123,126,128,129,132,136,139,142,148,151,154,158,161], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,195], vmsr: [180,186,191,197,202,208,213,219,226,232,239,245,250,255,260], rcr23: [3190,3290,3390,3480,3550,3590,3690,3800,3900,4000,4200,4320,4430,4550,4690], rcr12: [4540,4790,5030,5250,5430,5540,5820,6100,6380,6650,7160,7500,7830,8180,8560], rcr5: [6790,7130,7460,7750,7990,8110,8480,8850,9210,9550,10200,10610,10990,11430,11880]}
+      ]},
+      "2000": { stdTempC: 11, data: [
+        {tempC: 11, isStdDay: true, vapp: [116,120,123,126,128,129,132,136,139,142,148,152,155,159,161], vmco: [116,120,123,126,128,129,132,136,139,142,148,152,155,159,161], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,null], vmsr: [180,186,191,197,202,208,214,220,227,234,241,246,251,255,null], rcr23: [3150,3240,3340,3430,3490,3530,3630,3740,3840,3930,4120,4240,4350,4470,4600], rcr12: [4430,4670,4900,5120,5290,5400,5660,5940,6210,6470,6950,7290,7600,7940,8310], rcr5: [6640,6970,7290,7580,7810,7930,8280,8640,8990,9320,9940,10350,10740,11140,11580]},
+        {tempC: 30, isStdDay: false, vapp: [116,120,123,125,126,129,133,136,139,144,148,152,155,159,163], vmco: [116,120,123,125,126,129,133,136,139,144,148,152,155,159,163], vmfr: [140,145,149,154,158,162,166,170,174,178,181,185,188,192,null], vmsr: [180,186,191,197,202,208,214,220,227,234,241,246,251,255,null], rcr23: [3250,3360,3450,3530,3560,3670,3780,3890,3990,4180,4310,4430,4560,4700,4860], rcr12: [4690,4940,5180,5400,5470,5760,6050,6340,6620,7110,7480,7830,8190,8580,9060], rcr5: [6990,7340,7660,7940,8020,8400,8780,9160,9510,10130,10590,11000,11440,11920,12490]}
+      ]},
+      "3000": { stdTempC: 9, data: [
+        {tempC: 9, isStdDay: true, vapp: [116,120,123,126,127,129,132,136,139,143,148,151,155,158,162], vmco: [116,120,123,126,127,129,132,136,139,143,148,151,155,158,162], vmfr: [140,145,150,154,158,162,166,170,174,178,181,185,189,192,196], vmsr: [180,186,192,197,202,208,215,222,229,236,241,246,251,255,260], rcr23: [3190,3290,3390,3470,3520,3590,3700,3810,3910,4030,4210,4330,4440,4570,4710], rcr12: [4550,4790,5020,5240,5370,5560,5840,6120,6390,6740,7200,7530,7850,8230,8620], rcr5: [6800,7130,7450,7740,7900,8140,8500,8880,9230,9670,10240,10650,11040,11480,11940]},
+        {tempC: 25, isStdDay: false, vapp: [116,120,123,125,126,129,133,136,139,143,148,152,155,158,162], vmco: [116,120,123,125,126,129,133,136,139,143,148,152,155,158,162], vmfr: [140,145,150,154,158,162,166,170,174,178,181,185,189,192,196], vmsr: [180,186,192,197,202,208,215,222,229,236,241,246,251,255,260], rcr23: [3290,3390,3490,3580,3610,3710,3820,3930,4040,4190,4360,4490,4610,4750,4890], rcr12: [4770,5030,5280,5510,5610,5860,6160,6470,6750,7170,7620,7980,8330,8730,9170], rcr5: [7110,7460,7790,8090,8210,8530,8910,9310,9670,10210,10760,11180,11600,12080,12580]}
+      ]},
+      "4000": { stdTempC: 7, data: [
+        {tempC: 7, isStdDay: true, vapp: [116,120,123,125,126,129,133,136,139,144,148,152,155,159,163], vmco: [116,120,123,125,126,129,133,136,139,144,148,152,155,159,163], vmfr: [140,145,150,154,158,162,166,170,174,178,181,185,189,193,197], vmsr: [180,186,192,197,203,210,217,224,231,237,241,246,251,256,260], rcr23: [3240,3350,3440,3520,3550,3660,3770,3880,3980,4160,4300,4420,4540,4680,4840], rcr12: [4670,4920,5160,5370,5440,5730,6020,6310,6590,7070,7440,7790,8140,8530,9000], rcr5: [6960,7310,7630,7900,7980,8360,8740,9120,9470,10080,10540,10950,11380,11840,12390]},
+        {tempC: 25, isStdDay: false, vapp: [116,120,122,124,126,129,133,136,140,145,149,152,156,160,null], vmco: [116,120,122,124,126,129,133,136,140,145,149,152,156,160,null], vmfr: [140,145,150,154,158,162,166,170,174,178,181,185,189,193,null], vmsr: [180,186,192,197,203,210,217,224,231,237,241,246,251,256,null], rcr23: [3350,3460,3550,3630,3680,3800,3920,4030,4170,4350,4480,4610,4750,4910,null], rcr12: [4930,5200,5440,5640,5790,6090,6410,6710,7110,7590,7970,8340,8710,9140,null], rcr5: [7320,7670,7990,8240,8430,8830,9240,9620,10130,10720,11170,11610,12080,12610,null]}
+      ]},
+      "5000": { stdTempC: 5, data: [
+        {tempC: 5, isStdDay: true, vapp: [116,120,122,125,126,129,133,136,140,145,149,152,156,159,165], vmco: [116,120,122,125,126,129,133,136,140,145,149,152,156,159,165], vmfr: [140,145,150,154,158,162,166,170,174,178,182,185,189,194,198], vmsr: [180,186,192,197,204,211,218,225,232,237,242,246,251,256,260], rcr23: [3300,3400,3490,3570,3610,3730,3840,3950,4080,4260,4390,4510,4650,4790,4990], rcr12: [4790,5050,5280,5490,5610,5910,6210,6500,6860,7340,7700,8050,8400,8860,9440], rcr5: [7130,7480,7810,8050,8200,8590,8980,9360,9810,10420,10850,11270,11740,12230,12890]},
+        {tempC: 21, isStdDay: false, vapp: [116,120,122,124,126,129,133,136,140,145,149,152,156,160,null], vmco: [116,120,122,124,126,129,133,136,140,145,149,152,156,160,null], vmfr: [140,145,150,154,158,162,166,170,174,178,182,185,189,194,null], vmsr: [180,186,192,197,204,211,218,225,232,237,242,246,251,256,null], rcr23: [3390,3500,3600,3670,3730,3850,3970,4080,4230,4410,4550,4680,4820,4980,null], rcr12: [5040,5300,5550,5760,5910,6230,6550,6870,7280,7770,8150,8530,8930,9450,null], rcr5: [7450,7810,8140,8390,8590,9000,9410,9800,10320,10930,11390,11850,12340,12890,null]}
+      ]},
+      "6000": { stdTempC: 3, data: [
+        {tempC: 3, isStdDay: true, vapp: [116,119,122,123,126,130,133,136,142,145,149,153,156,161,null], vmco: [116,119,122,123,126,130,133,136,142,145,149,153,157,161,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,186,190,195,null], vmsr: [180,186,192,198,205,213,220,227,232,237,242,247,251,256,null], rcr23: [3350,3450,3540,3580,3680,3800,3910,4020,4210,4350,4480,4620,4760,4940,null], rcr12: [4920,5180,5410,5530,5790,6090,6410,6710,7210,7600,7960,8360,8770,9300,null], rcr5: [7300,7650,7960,8090,8430,8830,9230,9610,10250,10730,11170,11630,12120,12740,null]},
+        {tempC: 20, isStdDay: false, vapp: [116,119,122,123,126,130,133,136,142,146,149,153,157,null,null], vmco: [116,119,122,123,126,130,133,136,142,146,149,153,157,null,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,186,190,null,null], vmsr: [180,186,192,198,205,213,220,227,232,237,242,247,251,null,null], rcr23: [3460,3560,3650,3690,3810,3940,4060,4180,4390,4530,4660,4810,4970,null,null], rcr12: [5200,5470,5710,5820,6140,6470,6800,7150,7710,8100,8490,8930,9390,null,null], rcr5: [7660,8020,8330,8450,8870,9300,9720,10160,10850,11320,11790,12310,12850,null,null]}
+      ]},
+      "7000": { stdTempC: 1, data: [
+        {tempC: 1, isStdDay: true, vapp: [116,119,122,123,126,130,133,137,142,146,149,153,157,158,null], vmco: [116,119,122,123,126,130,133,137,142,146,149,153,158,158,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,186,187,191,null], vmsr: [180,186,192,199,207,214,222,227,232,237,242,247,252,252,null], rcr23: [3400,3500,3590,3630,3750,3870,3990,4130,4310,4450,4580,4740,4730,4890,null], rcr12: [5060,5320,5540,5660,5970,6290,6610,6990,7490,7870,8250,8680,8720,9160,null], rcr5: [7480,7830,8110,8260,8670,9090,9480,9970,10590,11050,11500,12010,12010,12570,null]},
+        {tempC: 16, isStdDay: false, vapp: [116,119,122,123,126,130,133,137,142,146,149,153,null,null,null], vmco: [116,119,122,123,126,130,133,137,142,146,149,153,null,null,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,186,null,null,null], vmsr: [180,186,192,199,207,214,222,227,232,237,242,247,null,null,null], rcr23: [3500,3610,3700,3740,3870,3990,4110,4260,4460,4600,4740,4890,null,null,null], rcr12: [5310,5580,5820,5950,6280,6620,6960,7370,7900,8300,8680,9170,null,null,null], rcr5: [7810,8170,8470,8620,9060,9500,9920,10420,11080,11570,12050,12580,null,null,null]}
+      ]},
+      "8000": { stdTempC: -1, data: [
+        {tempC: -1, isStdDay: true, vapp: [116,119,121,123,127,130,133,139,143,146,150,154,null,null,null], vmco: [116,119,121,123,127,130,133,139,143,146,150,155,null,null,null], vmfr: [141,145,150,154,158,162,167,170,174,178,183,188,null,null,null], vmsr: [180,186,193,201,208,216,222,227,232,237,242,247,null,null,null], rcr23: [3460,3560,3620,3700,3830,3950,4060,4270,4410,4560,4720,4880,null,null,null], rcr12: [5200,5450,5620,5850,6170,6500,6820,7370,7760,8150,8580,9030,null,null,null], rcr5: [7660,8000,8210,8490,8920,9350,9750,10440,10920,11380,11890,12420,null,null,null]},
+        {tempC: 15, isStdDay: false, vapp: [116,119,120,123,127,130,133,139,143,146,150,null,null,null,null], vmco: [116,119,120,123,127,130,133,139,143,146,150,null,null,null,null], vmfr: [141,145,150,154,158,162,167,170,174,178,183,null,null,null,null], vmsr: [180,186,193,201,208,216,222,227,232,237,242,null,null,null,null], rcr23: [3570,3670,3710,3830,3960,4090,4210,4430,4580,4720,4880,null,null,null,null], rcr12: [5480,5740,5870,6180,6530,6880,7240,7830,8240,8670,9160,null,null,null,null], rcr5: [8020,8370,8510,8920,9370,9810,10260,10990,11490,12000,12560,null,null,null,null]}
+      ]}
+    };
+
+    const fullFlaps = {
+      "0": { stdTempC: 15, data: [
+        {tempC: 15, isStdDay: true, vapp: [113,116,118,121,123,125,128,130,133,136,139,null,null,null,null], vmco: [115,118,120,123,126,128,131,134,137,140,143,null,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,191,197,202,207,213,218,224,231,237,null,null,null,null], rcr23: [2200,2280,2340,2410,2470,2540,2610,2690,2780,2860,2950,null,null,null,null], rcr12: [3250,3420,3580,3750,3910,4070,4250,4460,4670,4880,5110,null,null,null,null], rcr5: [5220,5460,5690,5910,6130,6340,6590,6860,7150,7430,7720,null,null,null,null]},
+        {tempC: 31, isStdDay: false, vapp: [113,116,118,121,123,125,128,130,133,136,139,140,null,null,null], vmco: [115,118,120,123,125,128,131,134,137,140,143,144,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,182,null,null,null], vmsr: [180,186,191,197,202,207,213,218,224,231,237,238,null,null,null], rcr23: [2280,2360,2430,2500,2570,2630,2710,2790,2880,2970,3070,3080,null,null,null], rcr12: [3430,3610,3780,3960,4130,4290,4490,4710,4940,5170,5430,5460,null,null,null], rcr5: [5470,5720,5960,6200,6430,6650,6920,7200,7500,7800,8120,8170,null,null,null]},
+        {tempC: 40, isStdDay: false, vapp: [112,115,117,119,122,125,128,131,135,139,144,147,null,null,null], vmco: [115,117,120,122,125,128,131,134,138,141,146,150,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,182,null,null,null], vmsr: [180,186,191,197,202,207,213,218,224,231,237,238,null,null,null], rcr23: [2300,2370,2440,2510,2600,2680,2770,2860,2990,3100,3290,3300,null,null,null], rcr12: [3470,3650,3830,4000,4210,4430,4650,4880,5210,5550,6000,6040,null,null,null], rcr5: [5530,5780,6010,6240,6530,6820,7120,7410,7860,8290,8880,8930,null,null,null]}
+      ]},
+      "1000": { stdTempC: 13, data: [
+        {tempC: 13, isStdDay: true, vapp: [113,116,118,120,123,125,128,130,133,136,140,null,null,null,null], vmco: [115,118,120,123,125,128,131,134,137,140,143,null,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,191,197,202,208,213,219,226,232,239,null,null,null,null], rcr23: [2240,2320,2390,2450,2520,2580,2660,2750,2840,2920,3040,null,null,null,null], rcr12: [3340,3520,3680,3850,4020,4180,4380,4600,4820,5040,5330,null,null,null,null], rcr5: [5350,5590,5830,6050,6280,6490,6770,7050,7340,7630,8000,null,null,null,null]},
+        {tempC: 30, isStdDay: false, vapp: [113,115,118,120,122,125,128,130,133,137,141,null,null,null,null], vmco: [115,118,120,123,125,128,131,134,137,140,144,null,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,191,197,202,208,213,219,226,232,239,null,null,null,null], rcr23: [2330,2400,2480,2550,2620,2690,2780,2860,2960,3050,3200,null,null,null,null], rcr12: [3530,3720,3900,4080,4250,4440,4660,4890,5130,5370,5740,null,null,null,null], rcr5: [5610,5870,6120,6360,6590,6840,7140,7430,7740,8050,8530,null,null,null,null]}
+      ]},
+      "2000": { stdTempC: 11, data: [
+        {tempC: 11, isStdDay: true, vapp: [113,115,118,120,123,125,128,130,133,136,141,null,null,null,null], vmco: [115,118,120,123,125,128,131,134,137,140,144,null,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,191,197,202,208,214,220,227,234,241,null,null,null,null], rcr23: [2280,2360,2430,2500,2560,2640,2720,2810,2900,2980,3130,null,null,null,null], rcr12: [3430,3610,3790,3960,4130,4310,4520,4740,4970,5200,5560,null,null,null,null], rcr5: [5480,5730,5960,6200,6420,6670,6950,7240,7540,7840,8300,null,null,null,null]},
+        {tempC: 30, isStdDay: false, vapp: [112,115,117,120,122,125,128,130,133,138,142,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,137,141,145,null,null,null,null], vmfr: [140,145,149,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,191,197,202,208,214,220,227,234,241,null,null,null,null], rcr23: [2370,2450,2530,2600,2670,2760,2850,2940,3040,3180,3340,null,null,null,null], rcr12: [3650,3840,4020,4210,4390,4620,4850,5090,5340,5700,6080,null,null,null,null], rcr5: [5770,6030,6280,6520,6770,7070,7380,7690,8010,8490,9000,null,null,null,null]}
+      ]},
+      "3000": { stdTempC: 9, data: [
+        {tempC: 9, isStdDay: true, vapp: [113,115,118,120,122,125,128,130,133,137,142,null,null,null,null], vmco: [115,117,120,123,125,128,131,134,137,141,144,null,null,null,null], vmfr: [140,145,150,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,192,197,202,208,215,222,229,236,241,null,null,null,null], rcr23: [2320,2400,2470,2540,2610,2690,2780,2870,2960,3070,3230,null,null,null,null], rcr12: [3530,3710,3890,4070,4240,4450,4670,4900,5140,5420,5790,null,null,null,null], rcr5: [5610,5860,6100,6340,6570,6850,7140,7440,7750,8120,8590,null,null,null,null]},
+        {tempC: 25, isStdDay: false, vapp: [112,115,118,120,122,125,128,130,133,137,142,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,137,141,145,null,null,null,null], vmfr: [140,145,150,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,192,197,202,208,215,222,229,236,241,null,null,null,null], rcr23: [2410,2490,2570,2640,2710,2800,2890,2980,3080,3200,3380,null,null,null,null], rcr12: [3730,3930,4120,4310,4490,4720,4950,5200,5450,5790,6200,null,null,null,null], rcr5: [5880,6150,6410,6660,6900,7200,7510,7830,8150,8590,9110,null,null,null,null]}
+      ]},
+      "4000": { stdTempC: 7, data: [
+        {tempC: 7, isStdDay: true, vapp: [112,115,117,120,122,125,128,130,133,138,143,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,137,141,145,null,null,null,null], vmfr: [140,145,150,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,192,197,203,210,217,224,231,237,241,null,null,null,null], rcr23: [2360,2440,2520,2590,2660,2750,2840,2930,3020,3160,3330,null,null,null,null], rcr12: [3630,3820,4000,4180,4360,4590,4820,5060,5300,5670,6070,null,null,null,null], rcr5: [5740,6000,6250,6490,6730,7040,7340,7650,7970,8440,8960,null,null,null,null]},
+        {tempC: 25, isStdDay: false, vapp: [112,115,117,119,122,125,128,131,134,139,144,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,137,141,146,null,null,null,null], vmfr: [140,145,150,154,158,162,166,170,174,178,181,null,null,null,null], vmsr: [180,186,192,197,203,210,217,224,231,237,241,null,null,null,null], rcr23: [2460,2540,2620,2690,2780,2880,2970,3070,3190,3350,3530,null,null,null,null], rcr12: [3850,4050,4250,4440,4660,4910,5160,5420,5740,6130,6600,null,null,null,null], rcr5: [6040,6320,6580,6830,7130,7450,7780,8100,8530,9020,9640,null,null,null,null]}
+      ]},
+      "5000": { stdTempC: 5, data: [
+        {tempC: 5, isStdDay: true, vapp: [112,115,117,119,122,125,128,131,134,139,144,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,137,141,146,null,null,null,null], vmfr: [140,145,150,154,158,162,166,170,174,178,182,null,null,null,null], vmsr: [180,186,192,197,204,211,218,225,232,237,242,null,null,null,null], rcr23: [2410,2490,2560,2640,2720,2810,2900,2990,3110,3260,3430,null,null,null,null], rcr12: [3730,3920,4110,4300,4510,4740,4980,5230,5530,5940,6360,null,null,null,null], rcr5: [5870,6140,6400,6640,6920,7230,7550,7870,8250,8780,9330,null,null,null,null]},
+        {tempC: 21, isStdDay: false, vapp: [112,114,117,119,122,125,128,131,135,140,145,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,138,142,147,null,null,null,null], vmfr: [140,145,150,154,158,162,166,170,174,178,182,null,null,null,null], vmsr: [180,186,192,197,204,211,218,225,232,237,242,null,null,null,null], rcr23: [2500,2580,2660,2740,2830,2930,3020,3130,3290,3460,3640,null,null,null,null], rcr12: [3950,4160,4360,4560,4810,5070,5330,5610,6020,6480,6950,null,null,null,null], rcr5: [6170,6460,6730,6990,7320,7660,8010,8360,8890,9460,10090,null,null,null,null]}
+      ]},
+      "6000": { stdTempC: 3, data: [
+        {tempC: 3, isStdDay: true, vapp: [112,114,117,119,122,125,128,131,135,140,145,null,null,null,null], vmco: [115,117,120,122,125,128,131,134,138,142,147,null,null,null,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,null,null,null,null], vmsr: [180,186,192,198,205,213,220,227,232,237,242,null,null,null,null], rcr23: [2450,2530,2610,2680,2780,2870,2970,3060,3210,3370,3540,null,null,null,null], rcr12: [3830,4030,4230,4430,4650,4900,5150,5410,5790,6230,6670,null,null,null,null], rcr5: [6020,6290,6570,6850,7130,7460,7790,8120,8590,9150,9730,null,null,null,null]},
+        {tempC: 20, isStdDay: false, vapp: [112,114,116,119,122,125,128,131,136,141,147,null,null,null,null], vmco: [114,117,119,122,125,128,131,134,138,143,149,null,null,null,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,null,null,null,null], vmsr: [180,186,192,198,205,213,220,227,232,237,242,null,null,null,null], rcr23: [2550,2630,2720,2800,2910,3000,3100,3210,3390,3570,3780,null,null,null,null], rcr12: [4070,4290,4510,4730,4990,5260,5530,5840,6330,6820,7380,null,null,null,null], rcr5: [6330,6620,6900,7180,7530,7890,8260,8640,9260,9870,10560,null,null,null,null]}
+      ]},
+      "7000": { stdTempC: 1, data: [
+        {tempC: 1, isStdDay: true, vapp: [112,114,116,119,122,125,128,131,136,141,146,null,null,null,null], vmco: [115,117,119,122,125,128,131,134,138,143,148,null,null,null,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,null,null,null,null], vmsr: [180,186,192,199,207,214,222,227,232,237,242,null,null,null,null], rcr23: [2500,2580,2660,2740,2840,2940,3030,3150,3320,3490,3670,null,null,null,null], rcr12: [3940,4150,4350,4560,4810,5070,5320,5640,6080,6540,7010,null,null,null,null], rcr5: [6160,6440,6700,6980,7320,7650,8000,8390,8960,9540,10150,null,null,null,null]},
+        {tempC: 16, isStdDay: false, vapp: [111,114,116,119,122,125,128,132,137,142,148,null,null,null,null], vmco: [114,117,119,122,125,128,131,135,139,144,150,null,null,null,null], vmfr: [141,145,150,154,158,162,166,170,174,178,182,null,null,null,null], vmsr: [180,186,192,199,207,214,222,227,232,237,242,null,null,null,null], rcr23: [2590,2680,2770,2850,2960,3060,3170,3310,3490,3680,3890,null,null,null,null], rcr12: [4170,4390,4610,4840,5120,5410,5710,6080,6570,7090,7660,null,null,null,null], rcr5: [6470,6760,7040,7320,7700,8070,8450,8930,9550,10200,10900,null,null,null,null]}
+      ]},
+      "8000": { stdTempC: -1, data: [
+        {tempC: -1, isStdDay: true, vapp: [111,114,116,119,122,125,129,132,137,142,148,null,null,null,null], vmco: [114,117,119,122,125,128,132,135,139,144,150,null,null,null,null], vmfr: [141,145,150,154,158,162,167,170,174,178,183,null,null,null,null], vmsr: [180,186,193,201,208,216,222,227,232,237,242,null,null,null,null], rcr23: [2540,2630,2700,2800,2900,3000,3100,3220,3400,3580,3780,null,null,null,null], rcr12: [4060,4270,4480,4710,4980,5260,5530,5880,6360,6850,7380,null,null,null,null], rcr5: [6310,6590,6870,7180,7530,7890,8270,8730,9350,9970,10640,null,null,null,null]},
+        {tempC: 15, isStdDay: false, vapp: [111,114,116,119,122,125,129,134,139,144,151,null,null,null,null], vmco: [114,116,119,122,125,128,132,136,141,147,153,null,null,null,null], vmfr: [141,145,150,154,158,162,167,170,174,178,183,null,null,null,null], vmsr: [180,186,193,201,208,216,222,227,232,237,242,null,null,null,null], rcr23: [2650,2740,2820,2930,3040,3150,3260,3440,3630,3830,4070,null,null,null,null], rcr12: [4320,4550,4790,5040,5350,5680,5990,6480,7010,7560,8200,null,null,null,null], rcr5: [6640,6950,7250,7600,8020,8460,8890,9510,10180,10870,11640,null,null,null,null]}
+      ]}
+    };
+    
+    // Modal content
+    const modalContent = {
+      initialInfo: {
+        title: 'Initial Conditions',
+        body: `<p><strong>Deceleration Types (Table 5.2):</strong></p>
+<p>• <code>MC</code> - Mission Computer (0.05G) ~14 kts/NM</p>
+<p>• <code>Panel</code> - AFCSCP auto throttle ~23 kts/NM</p>
+<p>• <code>Idle/SB</code> - Idle + speedbrakes ~33 kts/NM</p>
+<p>• <code>Idle/SB/Gear</code> - Add gear ~37 kts/NM</p>
+<p>• <code>4X TR</code> - Four TRs from 300+ KCAS ~46 kts/NM</p>`
+      },
+      descentInfo: {
+        title: 'Descent Configuration',
+        body: `<p><strong>VVI Calculation:</strong></p>
+<p><code>VVI = Gradient × (TAS ÷ 60)</code></p>
+<p><strong>Profile Modes:</strong></p>
+<p>• <strong>Approach:</strong> Includes 2000fpm roundout above BOD, final slowdown, FAF-to-runway segment, WEZ exposure tracking</p>
+<p>• <strong>Low Level:</strong> Continuous descent to LL altitude at constant VVI, no roundout/approach segments</p>`
+      },
+      finalInfo: {
+        title: 'Final Approach & Landing Data',
+        body: `<p><strong>Landing Data:</strong> From TO 1C-17A-1-1 Appendix A</p>
+<p><strong>Wind Component:</strong> Calculated from runway heading and wind direction/speed.</p>
+<p><strong>Temp Deviation:</strong> ISA = 15°C at sea level, decreasing 2°C per 1000ft.</p>
+<p><strong>Adjustments applied:</strong></p>
+<p>• -2% ldg dist per 10°C below std</p>
+<p>• +45 ft/kt tailwind (RCR 23)</p>
+<p>• +75 ft/kt tailwind (RCR 12)</p>
+<p>• +130 ft/kt tailwind (RCR 5)</p>`
+      },
+      table53: {
+        title: 'Table 5.3 - Config for Descent',
+        body: `<table><tr><th>VVI</th><th>221-250</th><th>251-280</th></tr>
+<tr><td>3000-4000</td><td>S,HF 730</td><td>S,SB 650</td></tr>
+<tr><td>4000-5000</td><td>S,HF,SB 950</td><td>SB,2TR 830</td></tr>
+<tr><td>5000-6000</td><td>-</td><td>4TR 1020</td></tr></table>
+<p style="margin-top:10px;font-size:11px;color:var(--text-muted);">*425K GW. Values in ft/NM gradient.</p>`
+      },
+      table52: {
+        title: 'Table 5.2 - Deceleration Rates',
+        body: `<table><tr><th>Alt</th><th>Panel</th><th>Idle/SB</th><th>+Gear</th></tr>
+<tr><td>1,000</td><td>23</td><td>36</td><td>37</td></tr>
+<tr><td>10,000</td><td>18</td><td>29</td><td>29</td></tr>
+<tr><td>20,000</td><td>13</td><td>20</td><td>22</td></tr></table>
+<p style="margin-top:10px;font-size:11px;color:var(--text-muted);">*Values in kts/NM. 450K GW, STD day.</p>`
+      },
+      landingData: {
+        title: 'Landing Data Reference',
+        body: `<p>From TO 1C-17A-1-1 Appendix A</p>
+<p><strong>¾ Flaps:</strong> 3-degree approach, air+ground distance from 50ft</p>
+<p><strong>Full Flaps:</strong> Steep approach, ground distance + 500ft</p>
+<table><tr><th>GW</th><th>VAPP</th><th>VMFR</th><th>RCR23</th><th>RCR12</th><th>RCR5</th></tr>
+<tr><td>300</td><td>116/113</td><td>140</td><td>3060/2200</td><td>4220/3250</td><td>6350/5220</td></tr>
+<tr><td>400</td><td>130/123</td><td>162</td><td>3450/2470</td><td>5190/3910</td><td>7660/6130</td></tr>
+<tr><td>450</td><td>137/127</td><td>170</td><td>3700/2650</td><td>5700/4350</td><td>8400/6700</td></tr>
+<tr><td>500</td><td>145/136</td><td>181</td><td>3890/2860</td><td>6370/4880</td><td>9190/7430</td></tr></table>
+<p style="margin-top:10px;font-size:11px;">Values shown: ¾ Flaps / Full Flaps. Sea level, Std day.</p>`
+      }
+    };
+    
+    let vviMode = 'auto';
+    let profileMode = 'approach';
+    let ldgConfig = 'tf'; // 'tf' = 3/4 flaps, 'ff' = full flaps
+    let labelOffsets = { descent: {x:0,y:0}, tod: {x:0,y:0}, bod: {x:0,y:0}, faf: {x:0,y:0}, rwy: {x:0,y:0}, ll: {x:0,y:0}, holdTop: {x:0,y:0}, holdBot: {x:0,y:0}, holdTurn: {x:0,y:0} };
+    let dragTarget = null, dragStartX = 0, dragStartY = 0;
+    
+    // ===== UTILITIES =====
+    function getDecelRate(alt, type) {
+      const alts = [1000, 5000, 10000, 15000, 20000];
+      if (alt <= 1000) return decelRates[1000][type];
+      if (alt >= 20000) return decelRates[20000][type];
+      for (let i = 0; i < alts.length - 1; i++) {
+        if (alt >= alts[i] && alt <= alts[i+1]) {
+          const r = (alt - alts[i]) / (alts[i+1] - alts[i]);
+          const l = decelRates[alts[i]][type], u = decelRates[alts[i+1]][type];
+          return { ktsPerSec: l.ktsPerSec + (u.ktsPerSec - l.ktsPerSec) * r, ktsPerNM: l.ktsPerNM + (u.ktsPerNM - l.ktsPerNM) * r };
+        }
+      }
+      return decelRates[20000][type];
+    }
+    
+    function calcTAS(alt, cas, tempDev = 0) {
+      return (cas + alt/200) * (1 + tempDev * 0.002);
+    }
+    
+    function getGradient(speed, config) {
+      let range = speed <= 220 ? '191-220' : speed <= 250 ? '221-250' : speed <= 280 ? '251-280' : '280-320';
+      const cfg = config.toUpperCase().replace(/\s/g,'');
+      if (cfg.includes('S') && cfg.includes('HF') && cfg.includes('SB')) return gradientTable[range]?.['S,HF,SB'] || 950;
+      if (cfg.includes('S') && cfg.includes('HF')) return gradientTable[range]?.['S,HF'] || 730;
+      if (cfg.includes('S') && cfg.includes('SB')) return gradientTable[range]?.['S,SB'] || 600;
+      if (cfg.includes('SB')) return gradientTable[range]?.['SB'] || 500;
+      return 800;
+    }
+    
+    function getConfigString() {
+      const p = [];
+      if (document.getElementById('cfgC').checked) p.push('C');
+      if (document.getElementById('cfgSlats').checked) p.push('S');
+      if (document.getElementById('cfgHF').checked) p.push('HF');
+      if (document.getElementById('cfgTF').checked) p.push('TF');
+      if (document.getElementById('cfgFF').checked) p.push('FF');
+      if (document.getElementById('cfgSB').checked) p.push('SB');
+      if (document.getElementById('cfgGear').checked) p.push('G');
+      if (document.getElementById('cfg2TR').checked) p.push('2TR');
+      if (document.getElementById('cfg4TR').checked) p.push('4TR');
+      return p.join(', ') || 'C';
+    }
+    
+    // Lookup gradient from Table 5.3 based on VVI and KCAS
+    function getGradientFromTable(vvi, kcas) {
+      // Find matching point in table
+      for (const pt of gradientTable.points) {
+        const vviMatch = vvi >= pt.vvi[0] && (pt.vvi[1] === null || vvi < pt.vvi[1]);
+        const kcasMatch = kcas >= pt.kcas[0] && kcas <= pt.kcas[1];
+        if (vviMatch && kcasMatch) {
+          return { gradient: pt.ft_per_nm, config: pt.config };
+        }
+      }
+      // Fallback: find closest match by VVI first, then KCAS
+      let closest = null;
+      let minDist = Infinity;
+      for (const pt of gradientTable.points) {
+        const vviMid = (pt.vvi[0] + (pt.vvi[1] || pt.vvi[0])) / 2;
+        const kcasMid = (pt.kcas[0] + pt.kcas[1]) / 2;
+        const dist = Math.abs(vvi - vviMid) + Math.abs(kcas - kcasMid);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = pt;
+        }
+      }
+      return closest ? { gradient: closest.ft_per_nm, config: closest.config } : { gradient: 800, config: ['SB'] };
+    }
+    
+    // Update config checkboxes based on recommended config
+    function setRecommendedConfig(configArr) {
+      const mapping = { 'C': 'cfgC', 'S': 'cfgSlats', 'HF': 'cfgHF', 'TF': 'cfgTF', 'FF': 'cfgFF', 
+                        'SB': 'cfgSB', 'G': 'cfgGear', '2TR': 'cfg2TR', '4TR': 'cfg4TR', 'DLC': null };
+      // Clear all first
+      Object.values(mapping).forEach(id => { if (id) document.getElementById(id).checked = false; });
+      // Set recommended
+      configArr.forEach(cfg => { if (mapping[cfg]) document.getElementById(mapping[cfg]).checked = true; });
+      document.getElementById('configString').textContent = getConfigString();
+    }
+    
+    // ISA temperature at altitude
+    function getISATemp(altFt) {
+      return 15 - (altFt / 1000) * 2;
+    }
+    
+    // Wind component calculation
+    function calcWindComponent(rwyHdg, windDir, windKts) {
+      const diff = (windDir - rwyHdg) * Math.PI / 180;
+      const hw = Math.round(windKts * Math.cos(diff)); // positive = headwind
+      const xw = Math.round(Math.abs(windKts * Math.sin(diff)));
+      return { hw, xw };
+    }
+    
+    // Interpolate landing data using comprehensive array-based JSON structure
+    function getLandingDataInterp(flaps, fieldElev, gw, tempC) {
+      const data = flaps === 'tf' ? threeQuarterFlaps : fullFlaps;
+      if (!data) return null;
+      
+      // Find bracketing field elevations
+      const elevKeys = Object.keys(data).map(Number).sort((a, b) => a - b);
+      let lowerElev = elevKeys[0], upperElev = elevKeys[elevKeys.length - 1];
+      for (let i = 0; i < elevKeys.length - 1; i++) {
+        if (fieldElev >= elevKeys[i] && fieldElev <= elevKeys[i + 1]) {
+          lowerElev = elevKeys[i];
+          upperElev = elevKeys[i + 1];
+          break;
+        }
+      }
+      if (fieldElev <= elevKeys[0]) { lowerElev = upperElev = elevKeys[0]; }
+      if (fieldElev >= elevKeys[elevKeys.length - 1]) { lowerElev = upperElev = elevKeys[elevKeys.length - 1]; }
+      
+      const elevRatio = (lowerElev === upperElev) ? 0 : (fieldElev - lowerElev) / (upperElev - lowerElev);
+      
+      // Get data at lower and upper elevations
+      const lowerData = getDataAtElevAndTemp(data[lowerElev], gw, tempC);
+      const upperData = getDataAtElevAndTemp(data[upperElev], gw, tempC);
+      
+      if (!lowerData || !upperData) return lowerData || upperData;
+      
+      // Interpolate between elevations
+      return {
+        vapp: Math.round(lowerData.vapp + (upperData.vapp - lowerData.vapp) * elevRatio),
+        vmco: Math.round(lowerData.vmco + (upperData.vmco - lowerData.vmco) * elevRatio),
+        vmfr: Math.round(lowerData.vmfr + (upperData.vmfr - lowerData.vmfr) * elevRatio),
+        vmsr: Math.round(lowerData.vmsr + (upperData.vmsr - lowerData.vmsr) * elevRatio),
+        rcr23: Math.round(lowerData.rcr23 + (upperData.rcr23 - lowerData.rcr23) * elevRatio),
+        rcr12: Math.round(lowerData.rcr12 + (upperData.rcr12 - lowerData.rcr12) * elevRatio),
+        rcr5: Math.round(lowerData.rcr5 + (upperData.rcr5 - lowerData.rcr5) * elevRatio)
+      };
+    }
+    
+    function getDataAtElevAndTemp(elevData, gw, tempC) {
+      const tempRows = elevData.data;
+      
+      // Find bracketing temperatures
+      const temps = tempRows.map(r => r.tempC).sort((a, b) => a - b);
+      let lowerTemp = temps[0], upperTemp = temps[temps.length - 1];
+      for (let i = 0; i < temps.length - 1; i++) {
+        if (tempC >= temps[i] && tempC <= temps[i + 1]) {
+          lowerTemp = temps[i];
+          upperTemp = temps[i + 1];
+          break;
+        }
+      }
+      if (tempC <= temps[0]) { lowerTemp = upperTemp = temps[0]; }
+      if (tempC >= temps[temps.length - 1]) { lowerTemp = upperTemp = temps[temps.length - 1]; }
+      
+      const tempRatio = (lowerTemp === upperTemp) ? 0 : (tempC - lowerTemp) / (upperTemp - lowerTemp);
+      
+      const lowerTempData = tempRows.find(r => r.tempC === lowerTemp);
+      const upperTempData = tempRows.find(r => r.tempC === upperTemp);
+      
+      const lowerGWData = interpolateGW(lowerTempData, gw);
+      const upperGWData = interpolateGW(upperTempData, gw);
+      
+      if (!lowerGWData || !upperGWData) return lowerGWData || upperGWData;
+      
+      // Interpolate between temperatures
+      return {
+        vapp: lowerGWData.vapp + (upperGWData.vapp - lowerGWData.vapp) * tempRatio,
+        vmco: lowerGWData.vmco + (upperGWData.vmco - lowerGWData.vmco) * tempRatio,
+        vmfr: lowerGWData.vmfr + (upperGWData.vmfr - lowerGWData.vmfr) * tempRatio,
+        vmsr: lowerGWData.vmsr + (upperGWData.vmsr - lowerGWData.vmsr) * tempRatio,
+        rcr23: lowerGWData.rcr23 + (upperGWData.rcr23 - lowerGWData.rcr23) * tempRatio,
+        rcr12: lowerGWData.rcr12 + (upperGWData.rcr12 - lowerGWData.rcr12) * tempRatio,
+        rcr5: lowerGWData.rcr5 + (upperGWData.rcr5 - lowerGWData.rcr5) * tempRatio
+      };
+    }
+    
+    function interpolateGW(tempData, gw) {
+      if (!tempData) return null;
+      
+      // GW array index: (gw - 300) / 20 where GW is 300,320,340...580
+      const gwIndex = (gw - 300) / 20;
+      const lowerIdx = Math.max(0, Math.min(14, Math.floor(gwIndex)));
+      const upperIdx = Math.min(14, lowerIdx + 1);
+      const ratio = gwIndex - lowerIdx;
+      
+      // Helper to get value with null handling
+      const getVal = (arr, idx) => {
+        if (!arr || idx >= arr.length) return null;
+        return arr[idx];
+      };
+      
+      const lVapp = getVal(tempData.vapp, lowerIdx);
+      const uVapp = getVal(tempData.vapp, upperIdx);
+      const lVmco = getVal(tempData.vmco, lowerIdx);
+      const uVmco = getVal(tempData.vmco, upperIdx);
+      const lVmfr = getVal(tempData.vmfr, lowerIdx);
+      const uVmfr = getVal(tempData.vmfr, upperIdx);
+      const lVmsr = getVal(tempData.vmsr, lowerIdx);
+      const uVmsr = getVal(tempData.vmsr, upperIdx);
+      const lRcr23 = getVal(tempData.rcr23, lowerIdx);
+      const uRcr23 = getVal(tempData.rcr23, upperIdx);
+      const lRcr12 = getVal(tempData.rcr12, lowerIdx);
+      const uRcr12 = getVal(tempData.rcr12, upperIdx);
+      const lRcr5 = getVal(tempData.rcr5, lowerIdx);
+      const uRcr5 = getVal(tempData.rcr5, upperIdx);
+      
+      // If upper is null, use lower (at chart limits)
+      const interp = (l, u, r) => {
+        if (l === null) return u;
+        if (u === null) return l;
+        return l + (u - l) * r;
+      };
+      
+      return {
+        vapp: interp(lVapp, uVapp, ratio),
+        vmco: interp(lVmco, uVmco, ratio),
+        vmfr: interp(lVmfr, uVmfr, ratio),
+        vmsr: interp(lVmsr, uVmsr, ratio),
+        rcr23: interp(lRcr23, uRcr23, ratio),
+        rcr12: interp(lRcr12, uRcr12, ratio),
+        rcr5: interp(lRcr5, uRcr5, ratio)
+      };
+    }
+    
+    // Apply tailwind corrections to landing distance
+    function applyTailwindCorrection(ldgData, tw) {
+      if (tw <= 0) return ldgData; // headwind or calm, no adjustment
+      return {
+        ...ldgData,
+        rcr23: ldgData.rcr23 + (tw * 45),
+        rcr12: ldgData.rcr12 + (tw * 75),
+        rcr5: ldgData.rcr5 + (tw * 130)
+      };
+    }
+    
+    // ===== UPDATE LANDING DATA =====
+    function updateLandingData() {
+      const gw = +document.getElementById('grossWeight').value || 450;
+      const fieldElev = +document.getElementById('fieldElev').value || 0;
+      const tempC = +document.getElementById('tempC').value || 15;
+      const rwyHdg = +document.getElementById('rwyHdg').value || 270;
+      const windDir = +document.getElementById('windDir').value || 270;
+      const windKts = +document.getElementById('windKts').value || 0;
+      
+      // Calculate wind component
+      const wind = calcWindComponent(rwyHdg, windDir, windKts);
+      const isaTemp = getISATemp(fieldElev);
+      const tempDev = tempC - isaTemp;
+      const tempDevStr = tempDev === 0 ? 'ISA' : (tempDev > 0 ? `ISA+${tempDev}` : `ISA${tempDev}`);
+      
+      // Update wind component display
+      const wcEl = document.getElementById('windComponent');
+      if (wind.hw >= 0) {
+        wcEl.innerHTML = `HW: <span class="hw">${wind.hw}</span> kts | XW: ${wind.xw} kts | Temp: ${tempDevStr}`;
+      } else {
+        wcEl.innerHTML = `TW: <span class="tw">${Math.abs(wind.hw)}</span> kts | XW: ${wind.xw} kts | Temp: ${tempDevStr}`;
+      }
+      
+      // Get landing data
+      let ldg = getLandingDataInterp(ldgConfig, fieldElev, gw, tempC);
+      
+      if (!ldg) {
+        // Fallback to sea level std day
+        ldg = getLandingDataInterp(ldgConfig, 0, gw, 15);
+      }
+      
+      if (ldg) {
+        // Apply tailwind correction (if tailwind, hw is negative)
+        if (wind.hw < 0) {
+          ldg = applyTailwindCorrection(ldg, Math.abs(wind.hw));
+        }
+        
+        document.getElementById('ldgVapp').textContent = ldg.vapp;
+        document.getElementById('ldgVmco').textContent = ldg.vmco;
+        document.getElementById('ldgVmfr').textContent = ldg.vmfr;
+        document.getElementById('ldgVmsr').textContent = ldg.vmsr;
+        document.getElementById('ldgRcr23').textContent = ldg.rcr23;
+        document.getElementById('ldgRcr12').textContent = ldg.rcr12;
+        document.getElementById('ldgRcr5').textContent = ldg.rcr5;
+        document.getElementById('ldgFlapIdx').textContent = ldg.flapIdx;
+      }
+      
+      document.getElementById('ldgConfigLabel').textContent = ldgConfig === 'tf' ? '(¾ Flaps)' : '(Full Flaps)';
+    }
+    
+    // ===== PROFILE MODE =====
+    function setProfileMode(mode) {
+      profileMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.mode-btn.${mode}`).classList.add('active');
+      
+      const isApproach = mode === 'approach';
+      document.getElementById('modeIndicator').textContent = isApproach ? '(Approach)' : '(Low Level)';
+      document.getElementById('modeIndicator').style.color = isApproach ? 'var(--accent-green)' : 'var(--accent-amber)';
+      
+      document.getElementById('finalSection').style.display = isApproach ? 'block' : 'none';
+      document.getElementById('wezAltGroup').style.display = isApproach ? 'block' : 'none';
+      document.getElementById('llAltGroup').style.display = isApproach ? 'none' : 'block';
+      document.getElementById('wezStatBox').style.display = isApproach ? 'block' : 'none';
+      document.getElementById('llAltBox').style.display = isApproach ? 'none' : 'block';
+      document.getElementById('wezTimeBox').classList.toggle('hidden', !isApproach);
+      document.getElementById('wezDistBox').classList.toggle('hidden', !isApproach);
+      
+      calculate();
+    }
+    
+    function setLdgConfig(cfg) {
+      ldgConfig = cfg;
+      document.getElementById('ldgTFBtn').classList.toggle('active', cfg === 'tf');
+      document.getElementById('ldgFFBtn').classList.toggle('active', cfg === 'ff');
+      updateLandingData();
+    }
+    
+    // ===== MAIN CALCULATION =====
+    function calculate() {
+      const initialAlt = +document.getElementById('initialAlt').value || 24000;
+      const grossWeight = +document.getElementById('grossWeight').value || 450;
+      const startSpeed = +document.getElementById('startSpeed').value || 310;
+      const endSpeed = +document.getElementById('endSpeed').value || 230;
+      const initialDecelType = document.getElementById('initialDecelType').value;
+      const windTop = +document.getElementById('windTop').value || 0;
+      const windBot = +document.getElementById('windBot').value || 0;
+      const fieldElev = +document.getElementById('fieldElev').value || 0;
+      const tempC = +document.getElementById('tempC').value || 15;
+      const tempDev = tempC - getISATemp(fieldElev);
+      
+      const configString = getConfigString();
+      document.getElementById('configString').textContent = configString;
+      
+      const tasTod = calcTAS(initialAlt, startSpeed, tempDev);
+      document.getElementById('tasTod').textContent = tasTod.toFixed(0) + ' kts';
+      
+      // Get gradient from Table 5.3 based on VVI and end speed
+      // Use current VVI for lookup, or estimate from config
+      const currentVVI = +document.getElementById('mainVVI').value || 4000;
+      const gradientLookup = getGradientFromTable(currentVVI, endSpeed);
+      const gradient = gradientLookup.gradient;
+      document.getElementById('estGradient').textContent = gradient + ' ft/NM';
+      
+      // Show recommended config from table
+      const recConfig = gradientLookup.config.join(', ');
+      if (recConfig !== configString) {
+        document.getElementById('estGradient').title = 'Recommended: ' + recConfig;
+      }
+      
+      const initDecel = getDecelRate(initialAlt, initialDecelType);
+      const segments = [];
+      
+      // 1. Init slowdown
+      const speedLoseInit = startSpeed - endSpeed;
+      let initDist = speedLoseInit / initDecel.ktsPerNM;
+      const initTime = speedLoseInit / initDecel.ktsPerSec;
+      if (initialAlt > 10000) initDist += endSpeed > 280 ? 2 : 1;
+      if (grossWeight > 450) initDist += (grossWeight - 450) / 50;
+      segments.push({ name: 'Slowdown', timeSec: initTime, distNM: initDist });
+      
+      // Add hold segment if enabled (at beginning, before descent)
+      const includeHold = document.getElementById('includeHold').checked;
+      if (includeHold) {
+        const holdKCAS = +document.getElementById('holdKCAS').value || endSpeed;
+        const holdAlt = +document.getElementById('holdAlt').value || initialAlt;
+        const holdTAS = calcTAS(holdAlt, holdKCAS, tempDev);
+        const minutesEarly = +document.getElementById('minutesEarly').value || 5;
+        const holdTimeSec = minutesEarly * 60;
+        const holdDistNM = (minutesEarly / 60) * holdTAS;
+        segments.push({ name: 'Hold', timeSec: holdTimeSec, distNM: holdDistNM });
+      }
+      
+      if (profileMode === 'approach') {
+        const wezAlt = +document.getElementById('wezAlt').value || 0;
+        const finalSlowdownAlt = +document.getElementById('finalSlowdownAlt').value || 2300;
+        const finalDecelType = document.getElementById('finalDecelType').value;
+        const approachSpeed = +document.getElementById('approachSpeed').value || 130;
+        const fafDist = +document.getElementById('fafDist').value || 2.0;
+        
+        const tasAvg = (calcTAS(initialAlt, endSpeed, tempDev) + calcTAS(finalSlowdownAlt + 2000, endSpeed, tempDev)) / 2;
+        const avgGS = tasAvg - (windTop + windBot) / 2;
+        document.getElementById('avgGS').textContent = avgGS.toFixed(0) + ' kts';
+        document.getElementById('altToLose').textContent = (initialAlt - finalSlowdownAlt).toLocaleString() + ' ft';
+        
+        const calcVVI = gradient * (avgGS / 60);
+        if (vviMode === 'auto') document.getElementById('mainVVI').value = Math.round(calcVVI / 500) * 500;
+        const mainVVI = +document.getElementById('mainVVI').value || 4000;
+        
+        const finalDecel = getDecelRate(finalSlowdownAlt, finalDecelType);
+        
+        const descentAlt = initialAlt - finalSlowdownAlt - 2000;
+        const descentTime = (descentAlt / mainVVI) * 60;
+        const descentDist = (descentTime / 60) * (avgGS / 60);
+        segments.push({ name: 'Descent', timeSec: descentTime, distNM: descentDist });
+        
+        const roundTime = 60;
+        const roundDist = (roundTime / 60) * ((calcTAS(finalSlowdownAlt + 1000, endSpeed, tempDev) - windBot) / 60);
+        segments.push({ name: 'Roundout', timeSec: roundTime, distNM: roundDist });
+        
+        const speedLoseFinal = endSpeed - approachSpeed;
+        const finalDist = speedLoseFinal / finalDecel.ktsPerNM;
+        const finalTime = speedLoseFinal / finalDecel.ktsPerSec;
+        segments.push({ name: 'Final SD', timeSec: finalTime, distNM: finalDist });
+        
+        const apprTime = (fafDist / (approachSpeed / 60)) * 60;
+        segments.push({ name: 'Approach', timeSec: apprTime, distNM: fafDist });
+        
+        let wezTime = 0, wezDist = 0;
+        if (wezAlt > 0) {
+          const altBelowWEZ = Math.max(0, wezAlt - finalSlowdownAlt - 2000);
+          const timeBelow = (altBelowWEZ / mainVVI) * 60;
+          wezTime = timeBelow + roundTime + finalTime + apprTime;
+          const distBelow = (timeBelow / 60) * (avgGS / 60);
+          wezDist = distBelow + roundDist + finalDist + fafDist;
+        }
+        
+        document.getElementById('wezTime').textContent = wezAlt > 0 ? (wezTime/60).toFixed(1) : 'N/A';
+        document.getElementById('wezTimeTop').textContent = wezAlt > 0 ? (wezTime/60).toFixed(1) : '--';
+        document.getElementById('wezDist').textContent = wezAlt > 0 ? wezDist.toFixed(1) : 'N/A';
+        
+        updateLandingData();
+        drawProfileApproach(segments, initialAlt, finalSlowdownAlt, fieldElev, wezAlt, mainVVI, includeHold);
+        
+      } else {
+        const llAlt = +document.getElementById('llAlt').value || 500;
+        const tasAvg = (calcTAS(initialAlt, endSpeed, tempDev) + calcTAS(llAlt, endSpeed, tempDev)) / 2;
+        const avgGS = tasAvg - (windTop + windBot) / 2;
+        document.getElementById('avgGS').textContent = avgGS.toFixed(0) + ' kts';
+        document.getElementById('altToLose').textContent = (initialAlt - llAlt).toLocaleString() + ' ft';
+        
+        const calcVVI = gradient * (avgGS / 60);
+        if (vviMode === 'auto') document.getElementById('mainVVI').value = Math.round(calcVVI / 500) * 500;
+        const mainVVI = +document.getElementById('mainVVI').value || 4000;
+        
+        const descentAlt = initialAlt - llAlt;
+        const descentTime = (descentAlt / mainVVI) * 60;
+        const descentDist = (descentTime / 60) * (avgGS / 60);
+        segments.push({ name: 'Descent', timeSec: descentTime, distNM: descentDist });
+        
+        document.getElementById('llAltTop').textContent = llAlt.toLocaleString();
+        drawProfileLowLevel(segments, initialAlt, llAlt, mainVVI, includeHold);
+      }
+      
+      const totalTime = segments.reduce((a, b) => a + b.timeSec, 0);
+      const totalDist = segments.reduce((a, b) => a + b.distNM, 0);
+      
+      const tMin = totalTime / 60;
+      document.getElementById('totalTime').textContent = tMin.toFixed(1);
+      document.getElementById('totalTimeTop').textContent = tMin.toFixed(1);
+      document.getElementById('totalDist').textContent = totalDist.toFixed(1);
+      document.getElementById('totalDistTop').textContent = totalDist.toFixed(1);
+      
+      const tbody = document.getElementById('segmentTableBody');
+      let tableHTML = segments.map(s => `<tr><td>${s.name}</td><td class="val">${(s.timeSec/60).toFixed(1)}</td><td class="val">${s.distNM.toFixed(1)}</td></tr>`).join('');
+      tableHTML += `<tr class="total"><td>TOTAL</td><td class="val">${tMin.toFixed(1)}</td><td class="val">${totalDist.toFixed(1)}</td></tr>`;
+      
+      if (profileMode === 'approach') {
+        const wezAlt = +document.getElementById('wezAlt').value || 0;
+        if (wezAlt > 0) {
+          tableHTML += `<tr class="wez"><td>WEZ</td><td class="val">${document.getElementById('wezTime').textContent}</td><td class="val">${document.getElementById('wezDist').textContent}</td></tr>`;
+        }
+      }
+      tbody.innerHTML = tableHTML;
+      
+      // Update hold visual and sync defaults
+      const holdAltEl = document.getElementById('holdAlt');
+      const holdKCASEl = document.getElementById('holdKCAS');
+      if (holdAltEl.value == 24000 || !holdAltEl.dataset.userSet) {
+        holdAltEl.value = initialAlt;
+      }
+      if (holdKCASEl.value == 230 || !holdKCASEl.dataset.userSet) {
+        holdKCASEl.value = endSpeed;
+      }
+      updateHoldVisual();
+    }
+    
+    // ===== DRAW PROFILES =====
+    function drawProfileApproach(segs, startAlt, sdAlt, endAlt, wezAlt, vvi, hasHold) {
+      const svg = document.getElementById('profileSvg');
+      const W = 900, H = 260, m = { t: 25, r: 90, b: 45, l: 55 };
+      const cW = W - m.l - m.r, cH = H - m.t - m.b;
+      const totalDist = segs.reduce((a,b) => a + b.distNM, 0);
+      const maxAlt = Math.ceil(startAlt / 5000) * 5000;
+      const x = d => m.l + (d / (totalDist * 1.1)) * cW;
+      const y = a => m.t + cH - (a / maxAlt) * cH;
+      
+      // Segment index offset when hold is included
+      const ho = hasHold ? 1 : 0;
+      
+      let h = `<rect width="${W}" height="${H}" fill="#000"/>`;
+      for (let a = 0; a <= maxAlt; a += 5000) {
+        h += `<line x1="${m.l}" y1="${y(a)}" x2="${W-m.r}" y2="${y(a)}" stroke="#1a2230"/>`;
+        h += `<text x="${m.l-8}" y="${y(a)+4}" fill="#8b949e" font-size="11" text-anchor="end">${a/1000}K</text>`;
+      }
+      for (let d = 0; d <= totalDist * 1.05; d += 5) {
+        h += `<line x1="${x(d)}" y1="${m.t}" x2="${x(d)}" y2="${H-m.b}" stroke="#1a2230"/>`;
+        h += `<text x="${x(d)}" y="${H-m.b+16}" fill="#8b949e" font-size="10" text-anchor="middle">${d}</text>`;
+      }
+      h += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${H-m.b}" stroke="#4a5568" stroke-width="2"/>`;
+      h += `<line x1="${m.l}" y1="${H-m.b}" x2="${W-m.r}" y2="${H-m.b}" stroke="#4a5568" stroke-width="2"/>`;
+      
+      if (wezAlt > 0) {
+        h += `<rect x="${m.l}" y="${y(wezAlt)}" width="${cW}" height="${y(0)-y(wezAlt)}" fill="rgba(248,81,73,0.12)"/>`;
+        h += `<line x1="${m.l}" y1="${y(wezAlt)}" x2="${W-m.r}" y2="${y(wezAlt)}" stroke="#f85149" stroke-width="2" stroke-dasharray="10,5"/>`;
+        h += `<text x="${m.l+6}" y="${y(wezAlt)-6}" fill="#f85149" font-size="12" font-weight="600">WEZ ${wezAlt}'</text>`;
+      }
+      
+      let d = 0;
+      const pts = [{ x: x(0), y: y(startAlt), lbl: 'TOD', key: 'tod' }];
+      d += segs[0].distNM; // Slowdown
+      
+      // If hold is included, add hold segment at altitude
+      if (hasHold) {
+        d += segs[1].distNM; // Hold distance
+        pts.push({ x: x(d), y: y(startAlt), lbl: 'HOLD', key: 'holdPt', isHold: true });
+      } else {
+        pts.push({ x: x(d), y: y(startAlt) });
+      }
+      
+      d += segs[1 + ho].distNM; // Descent
+      pts.push({ x: x(d), y: y(sdAlt + 2000) });
+      d += segs[2 + ho].distNM; // Roundout
+      pts.push({ x: x(d), y: y(sdAlt), lbl: 'BOD', key: 'bod' });
+      d += segs[3 + ho].distNM; // Final SD
+      pts.push({ x: x(d), y: y(sdAlt), lbl: 'FAF', key: 'faf' });
+      d += segs[4 + ho].distNM; // Approach
+      pts.push({ x: x(d), y: y(endAlt), lbl: 'RWY', key: 'rwy' });
+      
+      const colors = hasHold ? ['#58a6ff', '#a855f7', '#3b82f6', '#d4a017', '#39c5cf', '#3fb950'] : ['#58a6ff', '#3b82f6', '#d4a017', '#39c5cf', '#3fb950'];
+      for (let i = 0; i < pts.length - 1; i++) {
+        h += `<line x1="${pts[i].x}" y1="${pts[i].y}" x2="${pts[i+1].x}" y2="${pts[i+1].y}" stroke="${colors[i]}" stroke-width="4" stroke-linecap="round"/>`;
+      }
+      
+      // Draw hold pattern symbol if included
+      if (hasHold) {
+        const holdPt = pts.find(p => p.isHold);
+        if (holdPt) {
+          const hx = (pts[0].x + holdPt.x) / 2;
+          const hy = holdPt.y;
+          const hw = 50, hh = 16, hr = hh/2;
+          // Racetrack pattern
+          h += `<path d="M ${hx-hw/2+hr} ${hy-hr} L ${hx+hw/2-hr} ${hy-hr} A ${hr} ${hr} 0 0 1 ${hx+hw/2-hr} ${hy+hr} L ${hx-hw/2+hr} ${hy+hr} A ${hr} ${hr} 0 0 1 ${hx-hw/2+hr} ${hy-hr}" fill="none" stroke="#a855f7" stroke-width="2"/>`;
+          // Fix dot at inbound end
+          h += `<circle cx="${hx-hw/2+hr}" cy="${hy}" r="3" fill="#a855f7"/>`;
+          // Arrow on outbound
+          h += `<polygon points="${hx+5},${hy-hr-3} ${hx+12},${hy-hr} ${hx+5},${hy-hr+3}" fill="#a855f7"/>`;
+          // Label
+          h += `<text x="${hx}" y="${hy-hr-8}" fill="#a855f7" font-size="10" text-anchor="middle" font-weight="600">${(segs[1].timeSec/60).toFixed(1)}m</text>`;
+        }
+      }
+      
+      // Descent label
+      const descIdx = hasHold ? 2 : 1;
+      const dx = (pts[descIdx].x + pts[descIdx+1].x) / 2 + labelOffsets.descent.x;
+      const dy = (pts[descIdx].y + pts[descIdx+1].y) / 2 + labelOffsets.descent.y;
+      h += `<g class="draggable-label" data-label="descent" transform="translate(${dx}, ${dy})">
+        <rect x="-45" y="-35" width="90" height="45" fill="rgba(0,0,0,0.7)" rx="4"/>
+        <text x="0" y="-18" fill="#3b82f6" font-size="12" text-anchor="middle" font-weight="600">Descent</text>
+        <text x="0" y="-4" fill="#3b82f6" font-size="10" text-anchor="middle">${(segs[1+ho].timeSec/60).toFixed(1)}m / ${segs[1+ho].distNM.toFixed(1)}NM</text>
+        <text x="0" y="8" fill="#8b949e" font-size="10" text-anchor="middle">${vvi} fpm</text>
+      </g>`;
+      
+      pts.forEach(p => {
+        if (p.lbl && !p.isHold) {
+          const ox = labelOffsets[p.key]?.x || 0, oy = labelOffsets[p.key]?.y || 0;
+          h += `<circle cx="${p.x}" cy="${p.y}" r="6" fill="#fff" stroke="#000" stroke-width="2"/>`;
+          h += `<text class="draggable-label" data-label="${p.key}" x="${p.x + ox}" y="${p.y - 12 + oy}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${p.lbl}</text>`;
+        }
+      });
+      
+      h += `<rect x="${W-m.r+8}" y="${m.t}" width="78" height="70" rx="4" fill="#131920" stroke="#3d4a5c"/>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+16}" fill="#6e7681" font-size="9" text-anchor="middle">TOTAL</text>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+38}" fill="#3fb950" font-size="18" font-weight="700" text-anchor="middle">${(segs.reduce((a,b)=>a+b.timeSec,0)/60).toFixed(1)}</text>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+52}" fill="#8b949e" font-size="9" text-anchor="middle">min</text>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+66}" fill="#3fb950" font-size="12" text-anchor="middle">${totalDist.toFixed(1)} NM</text>`;
+      
+      svg.innerHTML = h;
+      setupDrag('profileSvg');
+    }
+    
+    function drawProfileLowLevel(segs, startAlt, llAlt, vvi, hasHold) {
+      const svg = document.getElementById('profileSvg');
+      const W = 900, H = 260, m = { t: 25, r: 90, b: 45, l: 55 };
+      const cW = W - m.l - m.r, cH = H - m.t - m.b;
+      const totalDist = segs.reduce((a,b) => a + b.distNM, 0);
+      const maxAlt = Math.ceil(startAlt / 5000) * 5000;
+      const x = d => m.l + (d / (totalDist * 1.2)) * cW;
+      const y = a => m.t + cH - (a / maxAlt) * cH;
+      
+      const ho = hasHold ? 1 : 0; // segment offset
+      
+      let h = `<rect width="${W}" height="${H}" fill="#000"/>`;
+      for (let a = 0; a <= maxAlt; a += 5000) {
+        h += `<line x1="${m.l}" y1="${y(a)}" x2="${W-m.r}" y2="${y(a)}" stroke="#1a2230"/>`;
+        h += `<text x="${m.l-8}" y="${y(a)+4}" fill="#8b949e" font-size="11" text-anchor="end">${a/1000}K</text>`;
+      }
+      for (let d = 0; d <= totalDist * 1.1; d += 5) {
+        h += `<line x1="${x(d)}" y1="${m.t}" x2="${x(d)}" y2="${H-m.b}" stroke="#1a2230"/>`;
+        h += `<text x="${x(d)}" y="${H-m.b+16}" fill="#8b949e" font-size="10" text-anchor="middle">${d}</text>`;
+      }
+      h += `<line x1="${m.l}" y1="${m.t}" x2="${m.l}" y2="${H-m.b}" stroke="#4a5568" stroke-width="2"/>`;
+      h += `<line x1="${m.l}" y1="${H-m.b}" x2="${W-m.r}" y2="${H-m.b}" stroke="#4a5568" stroke-width="2"/>`;
+      
+      h += `<line x1="${m.l}" y1="${y(llAlt)}" x2="${W-m.r}" y2="${y(llAlt)}" stroke="#d4a017" stroke-width="2" stroke-dasharray="10,5"/>`;
+      h += `<text x="${m.l+6}" y="${y(llAlt)-6}" fill="#d4a017" font-size="12" font-weight="600">LL ${llAlt}'</text>`;
+      
+      let d = 0;
+      const pts = [{ x: x(0), y: y(startAlt), lbl: 'TOD', key: 'tod' }];
+      d += segs[0].distNM; // Slowdown
+      
+      if (hasHold) {
+        d += segs[1].distNM; // Hold
+        pts.push({ x: x(d), y: y(startAlt), lbl: 'HOLD', key: 'holdPt', isHold: true });
+      } else {
+        pts.push({ x: x(d), y: y(startAlt) });
+      }
+      
+      d += segs[1 + ho].distNM; // Descent
+      pts.push({ x: x(d), y: y(llAlt), lbl: 'LL', key: 'll' });
+      
+      // Draw path segments
+      const colors = hasHold ? ['#58a6ff', '#a855f7', '#d4a017'] : ['#58a6ff', '#d4a017'];
+      for (let i = 0; i < pts.length - 1; i++) {
+        h += `<line x1="${pts[i].x}" y1="${pts[i].y}" x2="${pts[i+1].x}" y2="${pts[i+1].y}" stroke="${colors[i]}" stroke-width="4" stroke-linecap="round"/>`;
+      }
+      h += `<line x1="${pts[pts.length-1].x}" y1="${pts[pts.length-1].y}" x2="${W-m.r}" y2="${pts[pts.length-1].y}" stroke="#d4a017" stroke-width="2" stroke-dasharray="5,5"/>`;
+      
+      // Draw hold pattern symbol if included
+      if (hasHold) {
+        const holdPt = pts.find(p => p.isHold);
+        if (holdPt) {
+          const hx = (pts[0].x + holdPt.x) / 2;
+          const hy = holdPt.y;
+          const hw = 50, hh = 16, hr = hh/2;
+          h += `<path d="M ${hx-hw/2+hr} ${hy-hr} L ${hx+hw/2-hr} ${hy-hr} A ${hr} ${hr} 0 0 1 ${hx+hw/2-hr} ${hy+hr} L ${hx-hw/2+hr} ${hy+hr} A ${hr} ${hr} 0 0 1 ${hx-hw/2+hr} ${hy-hr}" fill="none" stroke="#a855f7" stroke-width="2"/>`;
+          h += `<circle cx="${hx-hw/2+hr}" cy="${hy}" r="3" fill="#a855f7"/>`;
+          h += `<polygon points="${hx+5},${hy-hr-3} ${hx+12},${hy-hr} ${hx+5},${hy-hr+3}" fill="#a855f7"/>`;
+          h += `<text x="${hx}" y="${hy-hr-8}" fill="#a855f7" font-size="10" text-anchor="middle" font-weight="600">${(segs[1].timeSec/60).toFixed(1)}m</text>`;
+        }
+      }
+      
+      // Descent label
+      const descIdx = hasHold ? 2 : 1;
+      const dx = (pts[descIdx-1].x + pts[descIdx].x) / 2 + labelOffsets.descent.x;
+      const dy = (pts[descIdx-1].y + pts[descIdx].y) / 2 + labelOffsets.descent.y;
+      h += `<g class="draggable-label" data-label="descent" transform="translate(${dx}, ${dy})">
+        <rect x="-45" y="-35" width="90" height="45" fill="rgba(0,0,0,0.7)" rx="4"/>
+        <text x="0" y="-18" fill="#d4a017" font-size="12" text-anchor="middle" font-weight="600">Descent</text>
+        <text x="0" y="-4" fill="#d4a017" font-size="10" text-anchor="middle">${(segs[1+ho].timeSec/60).toFixed(1)}m / ${segs[1+ho].distNM.toFixed(1)}NM</text>
+        <text x="0" y="8" fill="#8b949e" font-size="10" text-anchor="middle">${vvi} fpm</text>
+      </g>`;
+      
+      pts.forEach(p => {
+        if (p.lbl && !p.isHold) {
+          const ox = labelOffsets[p.key]?.x || 0, oy = labelOffsets[p.key]?.y || 0;
+          h += `<circle cx="${p.x}" cy="${p.y}" r="6" fill="#fff" stroke="#000" stroke-width="2"/>`;
+          h += `<text class="draggable-label" data-label="${p.key}" x="${p.x + ox}" y="${p.y - 12 + oy}" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">${p.lbl}</text>`;
+        }
+      });
+      
+      h += `<rect x="${W-m.r+8}" y="${m.t}" width="78" height="70" rx="4" fill="#131920" stroke="#d4a017"/>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+16}" fill="#6e7681" font-size="9" text-anchor="middle">TOTAL</text>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+38}" fill="#d4a017" font-size="18" font-weight="700" text-anchor="middle">${(segs.reduce((a,b)=>a+b.timeSec,0)/60).toFixed(1)}</text>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+52}" fill="#8b949e" font-size="9" text-anchor="middle">min</text>`;
+      h += `<text x="${W-m.r+47}" y="${m.t+66}" fill="#d4a017" font-size="12" text-anchor="middle">${totalDist.toFixed(1)} NM</text>`;
+      
+      svg.innerHTML = h;
+      setupDrag('profileSvg');
+    }
+    
+    // ===== HOLD =====
+    function updateHoldVisual() {
+      const type = document.getElementById('holdType').value;
+      const early = +document.getElementById('minutesEarly').value || 5;
+      const holdKCAS = +document.getElementById('holdKCAS').value || 230;
+      const holdAlt = +document.getElementById('holdAlt').value || 24000;
+      
+      // Calculate TAS from KCAS and altitude
+      const holdTAS = calcTAS(holdAlt, holdKCAS);
+      
+      // Turn time: 1.2 min for low alt (<14000), TAS * 0.01 / 2 for high alt
+      const turn180 = type === 'low' ? 1.2 : (holdTAS * 0.01) / 2;
+      const turn360 = turn180 * 2;
+      
+      // Leg time to absorb remaining minutes
+      const legTime = Math.max(0, (early - turn360) / 2);
+      
+      // Calculate distances
+      const legDistNM = (legTime / 60) * holdTAS;
+      const totalHoldTime = (legTime * 2) + turn360;
+      const totalHoldDist = (totalHoldTime / 60) * holdTAS;
+      
+      // Update display values
+      document.getElementById('holdTASCalc').textContent = holdTAS.toFixed(0) + ' kts';
+      document.getElementById('holdDistNM').textContent = totalHoldDist.toFixed(1) + ' NM';
+      document.getElementById('holdLegNM').textContent = legDistNM.toFixed(1) + ' NM';
+      
+      drawHold(legTime, turn180, holdTAS, totalHoldTime);
+    }
+    
+    function drawHold(legTime, turn180, tas, totalTime) {
+      const svg = document.getElementById('holdSvg');
+      const W = 420, H = 180, cy = H/2;
+      
+      // Scale pattern based on leg time vs turn time
+      const turnRatio = turn180 / (legTime + turn180);
+      const patternWidth = Math.min(380, 200 + legTime * 30);
+      const turnRadius = Math.max(25, 35 * turnRatio);
+      const legLength = (patternWidth - turnRadius * 2) / 2;
+      
+      const cx = W/2;
+      const fixX = cx - legLength - turnRadius; // Fix at left side (inbound end)
+      
+      // Build racetrack pattern - standard right turns
+      let h = '';
+      
+      // Inbound leg (bottom, right to left toward fix)
+      h += `<line x1="${cx + legLength}" y1="${cy + turnRadius}" x2="${fixX + turnRadius}" y2="${cy + turnRadius}" stroke="#58a6ff" stroke-width="3"/>`;
+      
+      // Direction arrow on inbound leg
+      h += `<polygon points="${fixX + turnRadius + 30},${cy + turnRadius - 5} ${fixX + turnRadius + 20},${cy + turnRadius} ${fixX + turnRadius + 30},${cy + turnRadius + 5}" fill="#58a6ff"/>`;
+      
+      // Left turn (at fix)
+      h += `<path d="M ${fixX + turnRadius} ${cy + turnRadius} A ${turnRadius} ${turnRadius} 0 0 1 ${fixX + turnRadius} ${cy - turnRadius}" fill="none" stroke="#58a6ff" stroke-width="3"/>`;
+      
+      // Outbound leg (top, left to right)
+      h += `<line x1="${fixX + turnRadius}" y1="${cy - turnRadius}" x2="${cx + legLength}" y2="${cy - turnRadius}" stroke="#58a6ff" stroke-width="3"/>`;
+      
+      // Direction arrow on outbound leg
+      h += `<polygon points="${cx + legLength - 20},${cy - turnRadius - 5} ${cx + legLength - 10},${cy - turnRadius} ${cx + legLength - 20},${cy - turnRadius + 5}" fill="#58a6ff"/>`;
+      
+      // Right turn (far end)
+      h += `<path d="M ${cx + legLength} ${cy - turnRadius} A ${turnRadius} ${turnRadius} 0 0 1 ${cx + legLength} ${cy + turnRadius}" fill="none" stroke="#58a6ff" stroke-width="3"/>`;
+      
+      // Fix marker - at left end of inbound leg
+      h += `<circle cx="${fixX + turnRadius}" cy="${cy + turnRadius}" r="6" fill="#fff" stroke="#f85149" stroke-width="2"/>`;
+      h += `<text x="${fixX + turnRadius}" y="${cy + turnRadius + 25}" fill="#f85149" font-size="11" text-anchor="middle" font-weight="600">FIX</text>`;
+      
+      // Leg time labels
+      h += `<text class="draggable-label" data-label="holdTop" x="${cx + labelOffsets.holdTop.x}" y="${cy - turnRadius - 12 + labelOffsets.holdTop.y}" fill="#3fb950" font-size="12" text-anchor="middle" font-weight="600">${legTime.toFixed(1)} min</text>`;
+      h += `<text class="draggable-label" data-label="holdBot" x="${cx + labelOffsets.holdBot.x}" y="${cy + turnRadius + 35 + labelOffsets.holdBot.y}" fill="#3fb950" font-size="12" text-anchor="middle" font-weight="600">${legTime.toFixed(1)} min</text>`;
+      
+      // Turn time label
+      h += `<text class="draggable-label" data-label="holdTurn" x="${cx + legLength + 20 + labelOffsets.holdTurn.x}" y="${cy + 4 + labelOffsets.holdTurn.y}" fill="#d4a017" font-size="11" font-weight="500">${turn180.toFixed(1)}m</text>`;
+      
+      // Total time/TAS label
+      h += `<text x="12" y="18" fill="#8b949e" font-size="11">Total: ${totalTime.toFixed(1)} min | TAS: ${tas.toFixed(0)} kts</text>`;
+      
+      // North arrow
+      h += `<line x1="${W-25}" y1="30" x2="${W-25}" y2="15" stroke="#6e7681" stroke-width="2"/>`;
+      h += `<polygon points="${W-25},12 ${W-28},18 ${W-22},18" fill="#6e7681"/>`;
+      h += `<text x="${W-25}" y="42" fill="#6e7681" font-size="9" text-anchor="middle">N</text>`;
+      
+      svg.innerHTML = h;
+      setupDrag('holdSvg');
+    }
+    
+    // ===== DRAG =====
+    function setupDrag(svgId) {
+      const svg = document.getElementById(svgId);
+      svg.addEventListener('mousedown', startDrag);
+      svg.addEventListener('mousemove', doDrag);
+      svg.addEventListener('mouseup', endDrag);
+      svg.addEventListener('mouseleave', endDrag);
+      svg.addEventListener('touchstart', startDrag, { passive: false });
+      svg.addEventListener('touchmove', doDrag, { passive: false });
+      svg.addEventListener('touchend', endDrag);
+    }
+    
+    function startDrag(e) {
+      const target = e.target.closest('.draggable-label');
+      if (!target) return;
+      e.preventDefault();
+      dragTarget = target.dataset.label;
+      const pt = e.touches ? e.touches[0] : e;
+      dragStartX = pt.clientX; dragStartY = pt.clientY;
+    }
+    
+    function doDrag(e) {
+      if (!dragTarget) return;
+      e.preventDefault();
+      const pt = e.touches ? e.touches[0] : e;
+      labelOffsets[dragTarget].x += pt.clientX - dragStartX;
+      labelOffsets[dragTarget].y += pt.clientY - dragStartY;
+      dragStartX = pt.clientX; dragStartY = pt.clientY;
+      if (dragTarget.startsWith('hold')) updateHoldVisual(); else calculate();
+    }
+    
+    function endDrag() { dragTarget = null; }
+    
+    // ===== UI =====
+    function setVVIMode(mode) {
+      vviMode = mode;
+      document.getElementById('vviAutoBtn').classList.toggle('active', mode === 'auto');
+      document.getElementById('vviManualBtn').classList.toggle('active', mode === 'manual');
+      const inp = document.getElementById('mainVVI');
+      inp.readOnly = mode === 'auto';
+      inp.classList.toggle('calculated', mode === 'auto');
+      inp.classList.toggle('override', mode === 'manual');
+      calculate();
+    }
+    
+    function showModal(id) {
+      const c = modalContent[id];
+      document.getElementById('modalTitle').textContent = c.title;
+      document.getElementById('modalBody').innerHTML = c.body;
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+    
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+    
+    // Event listeners
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('change', calculate);
+      el.addEventListener('input', calculate);
+    });
+    
+    // Mark hold inputs as user-set when changed manually
+    document.getElementById('holdAlt').addEventListener('input', function() {
+      this.dataset.userSet = 'true';
+    });
+    document.getElementById('holdKCAS').addEventListener('input', function() {
+      this.dataset.userSet = 'true';
+    });
+    
+    document.querySelectorAll('.checkbox-item').forEach(item => {
+      const cb = item.querySelector('input');
+      cb.addEventListener('change', () => item.classList.toggle('checked', cb.checked));
+      if (cb.checked) item.classList.add('checked');
+    });
+    
+    // Init
+    calculate();
+  </script>
+</body>
+</html>
